@@ -1,0 +1,22 @@
+node_modules
+.next
+out
+data/*.db
+data/*.db-*
+data/uploads
+.env
+.env.local
+*.tsbuildinfo
+next-env.d.ts
+.playwright-mcp
+
+# local artifacts — never commit
+check-output.txt
+check.log
+lint-report.txt
+test-results/
+playwright-report/
+.tmp-inspect-sessions.mjs
+
+# third-party reference captures (appearance study only, not ours to publish)
+replica/screens/source-*

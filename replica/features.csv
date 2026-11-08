@@ -1,0 +1,80 @@
+feature,area,priority,original,clone,notes,source
+Promo announcement bar with dismiss and CTA,marketing shell,must,yes,yes,MS homepage top banner,MS
+Sticky white header with logo and primary nav,marketing shell,must,yes,yes,54px at 1440,MS
+Utility menu with grouped links,marketing shell,should,yes,yes,"All Kullo" dropdown,MS
+Global search entry in header,marketing shell,must,yes,yes,opens command palette,MS
+Account entry in header,marketing shell,must,yes,yes,Masuk / Coba gratis,MS
+Full-bleed hero carousel with 2 slides,homepage,must,yes,yes,7s autoplay with pause,MS
+Hero heading body and CTA on image,homepage,must,yes,yes,48/56 weight 500 at 1440,MS
+Carousel arrows bars indicator pause,homepage,must,yes,yes,keyboard accessible,MS
+Quick links row with icons,homepage,should,yes,yes,3 centred links,MS
+Four-up product card row,homepage,must,yes,yes,308px cards 12px radius,MS
+Split feature banner,homepage,must,yes,yes,copy left image right,MS
+Business band with four cards,homepage,must,yes,yes,pale tinted full-bleed,MS
+Six-column footer with legal row,marketing shell,must,yes,yes,locale selector included,MS
+Back-to-top floating pill,marketing shell,could,yes,yes,appears after scroll,MS
+Mobile drawer navigation,marketing shell,must,yes,yes,grouped links and accordions,MS
+Mobile stacking of every section,marketing shell,must,yes,yes,390 verified,MS
+Responsive card scroll on phone,homepage,could,yes,yes,native horizontal scroll,MS
+Locale selector in footer,marketing shell,should,yes,yes,Indonesia (Indonesia),MS
+Card hover elevation and media zoom,homepage,could,yes,yes,reduced-motion safe,MS
+Product overview page with 12 modules,marketing,must,yes,yes,/produk,PRD
+Module detail page for each module,marketing,must,yes,yes,/produk/[slug],PRD
+Solutions page by role,marketing,must,yes,yes,/solusi,PRD
+Pricing page with plan comparison,marketing,must,yes,yes,no invented prices,PRD
+Resource centre with real guides,marketing,should,yes,yes,/sumber-daya,PRD
+Support FAQ and contact form,marketing,should,yes,yes,/dukungan,PRD
+About page with honest roadmap,marketing,should,yes,yes,/tentang,PRD
+Sign up and create organization,onboarding,must,yes,yes,/daftar,PRD
+Sign in with session cookie,onboarding,must,yes,yes,/masuk,PRD
+Dashboard personal and project widgets,dashboard,must,yes,yes,PRD 5.1,PRD
+Quick actions on dashboard,dashboard,must,yes,yes,create task/project/message,PRD
+Activity feed on dashboard,dashboard,must,yes,yes,from activity table,PRD
+My Work with assignee and created filters,my work,must,yes,yes,PRD 5.2,PRD
+My Work list board and calendar views,my work,must,yes,yes,PRD 5.2,PRD
+Project portfolio with filters,projects,must,yes,yes,PRD 5.3,PRD
+Project create and edit,projects,must,yes,yes,duplicate code blocked,PRD
+Project overview with members and milestones,projects,must,yes,yes,PRD 5.3,PRD
+Kanban board with status moves,projects,must,yes,yes,no-op on same column,PRD
+Project list view with sort and filter,projects,must,yes,yes,PRD 5.3,PRD
+Project timeline view,projects,should,yes,yes,PRD 5.3,PRD
+Project files view,projects,should,yes,yes,PRD 5.3,PRD
+Project settings and archive,projects,should,yes,yes,PRD 5.3,PRD
+Task detail drawer with properties,tasks,must,yes,yes,PRD 5.4,PRD
+Task comments with mentions,tasks,must,yes,yes,PRD 5.4,PRD
+Task checklist and subtasks,tasks,must,yes,yes,PRD 5.4,PRD
+Task attachments metadata,tasks,should,yes,yes,PRD 5.4,PRD
+Cross-project task index,tasks,must,yes,yes,PRD 5.4,PRD
+Calendar month week agenda,calendar,must,yes,yes,PRD 5.7,PRD
+Create and edit events,calendar,must,yes,yes,PRD 5.7,PRD
+Team directory with profiles,teams,must,yes,yes,PRD 5.5,PRD
+Department management,teams,must,yes,yes,PRD 5.5,PRD
+Chat channels and direct messages,chat,must,yes,yes,PRD 5.6,PRD
+Send messages and reactions,chat,must,yes,yes,PRD 5.6,PRD
+Convert a message into a task,chat,should,yes,yes,PRD 5.6,PRD
+Documents folders and files,documents,should,yes,yes,metadata plus local adapter,PRD
+Document version history,documents,could,yes,yes,PRD 5.8,PRD
+Requests from templates,requests,must,yes,yes,PRD 5.9,PRD
+Submit request with fields,requests,must,yes,yes,validation server side,PRD
+Approval inbox with decisions,approvals,must,yes,yes,PRD 5.10,PRD
+Multi-level approval routing,approvals,must,yes,yes,self-approval blocked,PRD
+Approval history with notes,approvals,must,yes,yes,PRD 5.10,PRD
+Reports with real aggregates,reports,must,yes,yes,PRD 5.11,PRD
+Report filters by range and department,reports,must,yes,yes,PRD 5.11,PRD
+CSV export of report rows,reports,should,yes,yes,PRD 5.11,PRD
+Profile settings,settings,must,yes,yes,PRD 5.12,PRD
+Organization settings,settings,should,yes,yes,PRD 5.12,PRD
+Member invite and role change,settings,must,yes,yes,PRD 3.2,PRD
+Role permission matrix,settings,must,yes,yes,enforced server-side,PRD
+Notification centre with read state,notifications,must,yes,yes,PRD 6,PRD
+Global search with Ctrl K,search,must,yes,yes,PRD 7,PRD
+Activity log per task and project,activity,should,yes,yes,PRD 5.4,PRD
+Tenant isolation on every query,backend,must,yes,yes,PRD 12,PRD
+Password hashing and secure sessions,backend,must,yes,yes,scrypt plus HttpOnly cookie,PRD
+Seed data for demo organization,backend,should,yes,yes,realistic rows,PRD
+Empty loading and error states,product,must,yes,yes,PRD 20,PRD
+Mobile product navigation and task update,product,must,yes,yes,PRD 10.4,PRD
+Dark mode for product,product,could,yes,yes,optional in PRD,PRD
+AI work assistant,roadmap,could,yes,skip,PRD Phase 4 roadmap only,PRD
+Email and WhatsApp notifications,notifications,could,yes,skip,PRD future channels,PRD
+Online payment checkout,billing,should,yes,skip,requires user's paid account,PRD
