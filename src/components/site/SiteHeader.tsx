@@ -82,7 +82,7 @@ function SiteSearch({ open, onClose }: { open: boolean; onClose: () => void }) {
           ref={inputRef}
           autoFocus
           className="palette-input"
-          placeholder="Cari modul, halaman, atau panduanâ€¦"
+          placeholder="Cari modul, halaman, atau panduan…"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
@@ -104,7 +104,7 @@ function SiteSearch({ open, onClose }: { open: boolean; onClose: () => void }) {
         <div style={{ maxHeight: 360, overflowY: "auto", padding: 8 }}>
           {results.length === 0 ? (
             <p className="help" style={{ padding: 16, margin: 0 }}>
-              Tidak ada hasil untuk â€œ{query}â€. Coba kata lain seperti â€œtugasâ€, â€œpersetujuanâ€, atau â€œhargaâ€.
+              Tidak ada hasil untuk “{query}”. Coba kata lain seperti “tugas”, “persetujuan”, atau “harga”.
             </p>
           ) : (
             results.map((item, index) => (
@@ -186,41 +186,32 @@ export function SiteHeader() {
     <>
       <header className="masthead">
         <div className="shell masthead-inner">
-          <button
-            type="button"
-            className="btn-icon nav-mobile"
-            aria-expanded={drawerOpen}
-            aria-label={drawerOpen ? "Tutup menu" : "Buka menu"}
-            onClick={() => setDrawerPath(drawerOpen ? null : pathname)}
-            style={{ marginRight: 2 }}
-          >
-            {drawerOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-          <button
-            type="button"
-            className="btn-icon nav-mobile"
-            aria-label="Cari"
-            onClick={() => setSearchOpen(true)}
-            style={{ marginRight: 6 }}
-          >
-            <Search size={19} />
-          </button>
+          <div className="masthead-left">
+            <Link href="/masuk" className="utility-btn site-user" aria-label="Masuk ke akun">
+              <span className="avatar sm" aria-hidden>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0116 0" /></svg>
+              </span>
+              <span className="nav-desktop-label">Masuk</span>
+            </Link>
+            <nav className="market-nav nav-desktop" aria-label="Navigasi utama">
+              {PRIMARY_NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn("market-link", pathname === item.href && "market-link-active")}
+                  aria-current={pathname === item.href ? "page" : undefined}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-          <KulloLogo />
+          <div className="masthead-center">
+            <KulloLogo />
+          </div>
 
-          <nav className="market-nav nav-desktop" aria-label="Navigasi utama">
-            {PRIMARY_NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn("market-link", pathname === item.href && "market-link-active")}
-                aria-current={pathname === item.href ? "page" : undefined}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
+          <div className="masthead-right">
           <div className="utility">
             <div style={{ position: "relative" }}>
               <button
@@ -308,12 +299,24 @@ export function SiteHeader() {
             <Link href="/daftar" className="btn btn-primary btn-sm nav-desktop" style={{ marginLeft: 6 }}>
               Coba gratis
             </Link>
-            <Link href="/masuk" className="utility-btn" aria-label="Masuk ke akun">
-              <span className="avatar sm" aria-hidden>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0116 0" /></svg>
-              </span>
-              <span className="nav-desktop-label">Masuk</span>
-            </Link>
+          </div>
+            <button
+              type="button"
+              className="btn-icon nav-mobile site-header-action"
+              aria-label="Cari"
+              onClick={() => setSearchOpen(true)}
+            >
+              <Search size={19} />
+            </button>
+            <button
+              type="button"
+              className="btn-icon nav-mobile site-header-action"
+              aria-expanded={drawerOpen}
+              aria-label={drawerOpen ? "Tutup menu" : "Buka menu"}
+              onClick={() => setDrawerPath(drawerOpen ? null : pathname)}
+            >
+              {drawerOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
         </div>
 
@@ -321,7 +324,7 @@ export function SiteHeader() {
 
       {drawerOpen && (
         <div
-          className="md:hidden"
+          className="site-nav-drawer"
           style={{
             position: "fixed",
             inset: "54px 0 0 0",

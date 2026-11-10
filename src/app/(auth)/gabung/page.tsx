@@ -17,11 +17,11 @@ type SearchParams = Promise<{ token?: string }>;
 export default async function GabungPage({ searchParams }: { searchParams: SearchParams }) {
   const { token } = await searchParams;
   const membership = token
-    ? db.select().from(memberships).where(eq(memberships.inviteTokenHash, hashInviteToken(token))).get()
+    ? (await db.select().from(memberships).where(eq(memberships.inviteTokenHash, hashInviteToken(token))))[0]
     : null;
   const valid = Boolean(membership && membership.status === "invited" && (!membership.inviteExpiresAt || membership.inviteExpiresAt >= nowISO()));
-  const org = membership ? db.select().from(organizations).where(eq(organizations.id, membership.orgId)).get() : null;
-  const user = membership ? db.select().from(users).where(eq(users.id, membership.userId)).get() : null;
+  const org = membership ? (await db.select().from(organizations).where(eq(organizations.id, membership.orgId)))[0] : null;
+  const user = membership ? (await db.select().from(users).where(eq(users.id, membership.userId)))[0] : null;
 
   return (
     <AuthShell

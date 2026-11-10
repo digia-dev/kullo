@@ -7,18 +7,24 @@ import { DEFAULT_ROLE_PERMISSIONS, PERMISSIONS, type Permission } from "./permis
 export { PERMISSIONS, PERMISSION_LABELS, ROLE_LABELS, DEFAULT_ROLE_PERMISSIONS } from "./permissions";
 export type { Permission } from "./permissions";
 
-export function getRolePermissions(orgId: string, roleKey: string): string[] {
-  const row = db
-    .select({ permissions: roles.permissions })
-    .from(roles)
-    .where(and(eq(roles.orgId, orgId), eq(roles.key, roleKey)))
-    .get();
+/**
+ * Load the permission list for a role. Called once per request from
+ * `getAppContext`; `can()` then reads the preloaded set synchronously.
+ */
+export async function getRolePermissions(orgId: string, roleKey: string): Promise<string[]> {
+  if (roleKey === "owner") return [...PERMISSIONS];
+  const row = (
+    await db
+      .select({ permissions: roles.permissions })
+      .from(roles)
+      .where(and(eq(roles.orgId, orgId), eq(roles.key, roleKey)))
+  )[0];
   if (row) {
     try {
       const parsed = JSON.parse(row.permissions) as string[];
       return parsed;
     } catch {
-      return DEFAULT_ROLE_PERMISSIONS[roleKey] ?? [];
+      return [...(DEFAULT_ROLE_PERMISSIONS[roleKey] ?? [])];
     }
   }
   return DEFAULT_ROLE_PERMISSIONS[roleKey] ?? [];
@@ -26,7 +32,7 @@ export function getRolePermissions(orgId: string, roleKey: string): string[] {
 
 export function can(ctx: AppContext, permission: Permission): boolean {
   if (ctx.membership.role === "owner") return true;
-  return getRolePermissions(ctx.org.id, ctx.membership.role).includes(permission);
+  return ctx.permissions.includes(permission);
 }
 
 export function canAny(ctx: AppContext, permissions: Permission[]): boolean {
@@ -39,13 +45,3 @@ export class PermissionError extends Error {
     this.name = "PermissionError";
   }
 }
-
-export function assertCan(ctx: AppContext, permission: Permission) {
-  if (!can(ctx, permission)) throw new PermissionError();
-}
-
-export function isManagerial(ctx: AppContext): boolean {
-  return ["owner", "admin", "manager", "leader"].includes(ctx.membership.role);
-}
-
-export const ALL_PERMISSIONS = PERMISSIONS;

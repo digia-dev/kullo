@@ -6,10 +6,10 @@ export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const ctx = await requireApp();
-  const notifications = getNotifications(ctx.org.id, ctx.user.id, 10);
-  const unread = getUnreadNotificationCount(ctx.org.id, ctx.user.id);
-  const myWork = getMyWorkCount(ctx.org.id, ctx.user.id);
-  const approvals = getPendingApprovalCount(ctx.org.id, ctx.user.id);
+  const notifications = await getNotifications(ctx.org.id, ctx.user.id, 10);
+  const unread = await getUnreadNotificationCount(ctx.org.id, ctx.user.id);
+  const myWork = await getMyWorkCount(ctx.org.id, ctx.user.id);
+  const approvals = await getPendingApprovalCount(ctx.org.id, ctx.user.id);
 
   return (
     <AppShell

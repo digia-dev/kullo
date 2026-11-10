@@ -1,9 +1,8 @@
 import { and, eq } from "drizzle-orm";
-import fs from "node:fs/promises";
-import path from "node:path";
 import { db } from "@/db/client";
 import { documents, documentVersions } from "@/db/schema";
 import { getAppContext } from "@/lib/auth";
+import { getObject } from "@/lib/storage";
 
 const TYPES: Record<string, string> = {
   pdf: "application/pdf",
@@ -27,7 +26,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const ctx = await getAppContext();
   if (!ctx) return new Response("Unauthorized", { status: 401 });
   const { id } = await params;
-  const doc = db.select().from(documents).where(eq(documents.id, id)).get();
+  const doc = (await db.select().from(documents).where(eq(documents.id, id)))[0];
   if (!doc || doc.orgId !== ctx.org.id) return new Response("Not found", { status: 404 });
 
   const url = new URL(request.url);
@@ -37,11 +36,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   let name = doc.name;
 
   if (versionId) {
-    const version = db
-      .select()
-      .from(documentVersions)
-      .where(and(eq(documentVersions.id, versionId), eq(documentVersions.documentId, id)))
-      .get();
+    const version = (
+      await db
+        .select()
+        .from(documentVersions)
+        .where(and(eq(documentVersions.id, versionId), eq(documentVersions.documentId, id)))
+    )[0];
     if (!version?.storageKey) return new Response("Versi tidak memiliki berkas.", { status: 404 });
     storageKey = version.storageKey;
     kind = version.kind ?? doc.kind;
@@ -52,9 +52,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return new Response("File ini adalah metadata contoh dan tidak memiliki berkas tersimpan.", { status: 404 });
   }
 
-  const absolute = path.join(process.cwd(), "data", "uploads", storageKey);
   try {
-    const data = await fs.readFile(absolute);
+    const data = await getObject(storageKey);
     const disposition = url.searchParams.get("download") === "1" ? "attachment" : "inline";
     return new Response(new Uint8Array(data), {
       headers: {

@@ -13,8 +13,8 @@ type SearchParams = Promise<{ new?: string; project?: string; doc?: string }>;
 export default async function DocumentsPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireApp();
   const params = await searchParams;
-  const { folders, documents } = getDocuments(ctx.org.id);
-  const projects = getProjectOptions(ctx.org.id);
+  const { folders, documents } = await getDocuments(ctx.org.id);
+  const projects = await getProjectOptions(ctx.org.id);
   const canManage = can(ctx, "document.manage");
   const totalSize = documents.reduce((sum, doc) => sum + doc.size, 0);
   const versions = documents.reduce((sum, doc) => sum + doc.versions.length, 0);

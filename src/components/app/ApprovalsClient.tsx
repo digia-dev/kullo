@@ -159,9 +159,9 @@ export function ApprovalsClient({
             <div className="modal-foot">
               {tab === "pending" && canDecide && selected.requesterId !== currentUserId ? (
                 <>
-                  <button type="button" className="btn btn-ghost btn-sm" style={{ color: "var(--danger)" }} disabled={pendingAction || !note.trim()} onClick={() => void decide("rejected")}><XCircle size={14} /> Tolak</button>
-                  <button type="button" className="btn btn-outline btn-sm" disabled={pendingAction || !note.trim()} onClick={() => void decide("revision")}><RotateCcw size={14} /> Minta revisi</button>
-                  <button type="button" className="btn btn-primary btn-sm" disabled={pendingAction} onClick={() => void decide("approved")}>{pendingAction ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Setujui</button>
+                  <button type="button" className="btn btn-ghost btn-sm" style={{ color: "var(--danger)" }} disabled={pendingAction || !note.trim()} onClick={async () => void await decide("rejected")}><XCircle size={14} /> Tolak</button>
+                  <button type="button" className="btn btn-outline btn-sm" disabled={pendingAction || !note.trim()} onClick={async () => void await decide("revision")}><RotateCcw size={14} /> Minta revisi</button>
+                  <button type="button" className="btn btn-primary btn-sm" disabled={pendingAction} onClick={async () => void await decide("approved")}>{pendingAction ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Setujui</button>
                 </>
               ) : (
                 <button type="button" className="btn btn-primary btn-sm" onClick={() => setSelected(null)}>Tutup</button>

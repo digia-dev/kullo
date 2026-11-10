@@ -12,13 +12,13 @@ Dokumen ini adalah peta jalan dari kondisi sekarang sampai aplikasi **dipublikas
 | Aspek | Status |
 |---|---|
 | Web app | Next.js 16, 47 route, 18 layar produk + 12 halaman marketing, lolos `npm run check` + 43/43 e2e |
-| Data | SQLite + Drizzle (WAL + busy_timeout), session DB-backed (hash + expiry), RBAC per-organisasi |
+| Data | Supabase Postgres + Drizzle (postgres-js, transaction pooler), session DB-backed (hash + expiry), RBAC per-organisasi |
 | Auth | Login/register, cookie session, gate `/app/*` — **belum ada reset password** |
 | Notifikasi | Tabel `notifications` + satu fungsi `notify()` (15 titik panggil) — in-app saja |
 | Chat | Berfungsi, tapi update via `router.refresh()` — **belum realtime** |
-| Dokumen | Upload ke disk `data/uploads/`, permission-checked |
+| Dokumen | Supabase Storage (bucket privat `kullo-files`), permission-checked; fallback `data/uploads` untuk dev |
 | GitHub | ✅ terhubung; perubahan sesi ini belum di-commit/push |
-| Deploy | Langkah systemd+nginx tertulis di `replica/deploy.md` (belum dieksekusi) |
+| Deploy | Vercel + Supabase; langkah dan env tertulis di `replica/deploy.md` (belum dieksekusi) |
 
 ### Belum ada (blokir publikasi)
 - Git CI (push ≠ terverifikasi), backup, error tracking, uptime, HTTPS/headers/rate-limit
@@ -62,7 +62,7 @@ Dokumen ini adalah peta jalan dari kondisi sekarang sampai aplikasi **dipublikas
 - [ ] GitHub Actions CI: `npm ci && npm run check && npm test` tiap push + PR (add `deploy.yml` nanti) — **dilewati atas permintaan owner 2026-11-10**
 - [ ] Branch protection `main` (butuh repo settings di GitHub - akun Anda)
 - [ ] Pisahkan `db:migrate` dari `db:seed` untuk produksi; akun demo tidak masuk DB produksi
-- [x] Backup SQLite: `npm run db:backup:check` membuat backup + uji integrity; pasang `cron` di server saat deploy
+- [x] Backup: Supabase automated backup/PITR; `npm run db:backup:check` memverifikasi koneksi + jumlah tabel
 - [x] Security header (`next.config.ts`) + rate-limit `/masuk` dan `/api/search`
 - [ ] HTTPS/TLS, monitoring/uptime, dan pembatasan lain di server produksi
 - [ ] Error tracking (Sentry/GlitchTip) + uptime monitor `/api/health`
@@ -77,7 +77,7 @@ Dokumen ini adalah peta jalan dari kondisi sekarang sampai aplikasi **dipublikas
 
 - [ ] Deploy ke VPS (ikuti `replica/deploy.md`): systemd + nginx + TLS
 - [ ] DNS A/CNAME + canonical host + redirect HTTPS
-- [ ] Environment produksi (`DATABASE_PATH` di disk persisten), migrasi tanpa seed
+- [ ] Environment produksi (`DATABASE_URL`, `DIRECT_URL`, kredensial Supabase Storage), migrasi tanpa seed
 - [ ] Analytics ramah privasi (Umami/Plausible self-host) — opsional
 - [ ] Smoke test F01–F08 di live, desktop + browser HP
 - [ ] **(Cepat, opsional)** PWA: manifest + service worker + icon → bisa "Add to Home Screen" — setengah langkah mobile tanpa nunggu Fase 3
@@ -173,7 +173,7 @@ Dokumen ini adalah peta jalan dari kondisi sekarang sampai aplikasi **dipublikas
 ### 4.2 Lainnya
 | Keputusan | Rekomendasi | Butuh Anda |
 |---|---|---|
-| Database | Tetap **SQLite** untuk launch (1 VPS cukup ratusan user); pindah **Postgres** saat butuh 2+ server | setuju kapan pindah |
+| Database | **Supabase Postgres** dipilih owner 2026-11-10 (menggantikan rencana SQLite) | selesai |
 | Email | SMTP murah/Resend/Mailgun free tier untuk transactional | daftar akun (gratis) |
 | Payment | Tunda — pricing masih "Hubungi kami" | kapan perlu |
 | Monorepo | npm workspaces saat Fase 3 mulai | tidak |
@@ -213,7 +213,7 @@ Saya tidak mendaftarkan akun atau mengeluarkan uang — semua akun dibuat & dimi
 |---|---|---|
 | Refactor service layer (Fase 2) regresi web | tinggi | e2e 40 jadi jaring pengaman; refactor bertahap per resource |
 | Apple tolak aplikasi | tinggi | native UX asli (bukan wrapper), hapus akun jelas di settings, demo akun di review notes |
-| SQLite tidak muat multi-node | sedang | pemicu pindah Postgres jelas (§4.2); query sudah lewat Drizzle → migrasi terisolasi |
+| Database terkelola butuh koneksi pooler yang benar | rendah | driver postgres-js prepare: false + max: 1; health check memeriksa koneksi |
 | Chat tanpa realtime terasa lambat | sedang | SSE di Fase 4; push mobile menutupi |
 | Satu developer + banyak fase | sedang | urutan fase sudah dependensi; Fase 1 bisa dirilis lebih dulu |
 | Repo public bocor ide | rendah | sudah diputuskan; bisa di-private kapan saja di Settings GitHub |

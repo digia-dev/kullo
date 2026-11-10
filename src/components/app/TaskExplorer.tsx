@@ -357,19 +357,19 @@ export function TaskExplorer({
     const value = renameValue.trim();
     setRenaming(null);
     if (!group.statusId || !value || value === group.name) return;
-    await boardAction(() => updateStatusAction(group.statusId as string, { name: value }), "Nama tahap diperbarui");
+    await boardAction(async () => await updateStatusAction(group.statusId as string, { name: value }), "Nama tahap diperbarui");
   }
 
   async function changeCategory(group: BoardGroup, category: string) {
     if (!group.statusId) return;
     setMenuColumn(null);
-    await boardAction(() => updateStatusAction(group.statusId as string, { category }), "Kategori tahap diperbarui");
+    await boardAction(async () => await updateStatusAction(group.statusId as string, { category }), "Kategori tahap diperbarui");
   }
 
   async function moveColumn(group: BoardGroup, direction: -1 | 1) {
     if (!group.statusId) return;
     setMenuColumn(null);
-    await boardAction(() => reorderStatusAction(group.statusId as string, direction), "Urutan tahap diperbarui");
+    await boardAction(async () => await reorderStatusAction(group.statusId as string, direction), "Urutan tahap diperbarui");
   }
 
   async function confirmDelete() {
@@ -388,7 +388,7 @@ export function TaskExplorer({
   async function submitList() {
     const value = newListName.trim();
     if (!value || !boardSingleProject) return;
-    const ok = await boardAction(() => createStatusAction(boardSingleProject, value), "Tahap ditambahkan");
+    const ok = await boardAction(async () => await createStatusAction(boardSingleProject, value), "Tahap ditambahkan");
     if (ok) {
       setNewListName("");
       setAddingList(false);
@@ -420,7 +420,7 @@ export function TaskExplorer({
     if (projectId) data.set("projectId", projectId);
     if (status?.id) data.set("statusId", status.id);
     data.set("priority", "medium");
-    const ok = await boardAction(() => createTaskAction(data), "Tugas dibuat");
+    const ok = await boardAction(async () => await createTaskAction(data), "Tugas dibuat");
     if (ok) {
       setComposerTitle("");
       composerInput.current?.focus();
@@ -631,7 +631,7 @@ export function TaskExplorer({
                       type="button"
                       className={`task-check ${task.done ? "done" : ""}`}
                       aria-label={task.done ? "Tandai belum selesai" : "Tandai selesai"}
-                      onClick={(event) => { event.stopPropagation(); void toggleDone(task); }}
+                      onClick={async (event) => { event.stopPropagation(); void await toggleDone(task); }}
                       disabled={saving}
                     >
                       {task.done ? <CheckCircle2 size={15} /> : <Circle size={12} />}
@@ -683,11 +683,11 @@ export function TaskExplorer({
                 className={`board-col ${overColumn === group.name ? "over" : ""}`}
                 onDragOver={group.dropable ? (event) => { event.preventDefault(); setOverColumn(group.name); } : undefined}
                 onDragLeave={group.dropable ? () => setOverColumn((value) => (value === group.name ? null : value)) : undefined}
-                onDrop={group.dropable ? (event) => {
+                onDrop={group.dropable ? async (event) => {
                   event.preventDefault();
                   setOverColumn(null);
                   const task = filtered.find((row) => row.id === dragging);
-                  if (task) void move(task, group.name);
+                  if (task) void await move(task, group.name);
                   setDragging(null);
                 } : undefined}
               >
@@ -700,14 +700,14 @@ export function TaskExplorer({
                       aria-label={`Nama tahap ${group.name}`}
                       value={renameValue}
                       onChange={(event) => setRenameValue(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") void commitRename(group);
+                      onKeyDown={async (event) => {
+                        if (event.key === "Enter") void await commitRename(group);
                         if (event.key === "Escape") {
                           renameCancelled.current = true;
                           setRenaming(null);
                         }
                       }}
-                      onBlur={() => void commitRename(group)}
+                      onBlur={async () => void await commitRename(group)}
                     />
                   ) : (
                     <button
@@ -743,7 +743,7 @@ export function TaskExplorer({
                               className="select"
                               value={group.category}
                               disabled={saving}
-                              onChange={(event) => void changeCategory(group, event.target.value)}
+                              onChange={async (event) => void await changeCategory(group, event.target.value)}
                             >
                               {COL_CATEGORIES.map(([key, label]) => (
                                 <option key={key} value={key}>{label}</option>
@@ -752,10 +752,10 @@ export function TaskExplorer({
                           </label>
                           {(canLeft || canRight) && (
                             <>
-                              <button type="button" role="menuitem" className="board-menu-item" disabled={!canLeft || saving} onClick={() => void moveColumn(group, -1)}>
+                              <button type="button" role="menuitem" className="board-menu-item" disabled={!canLeft || saving} onClick={async () => void await moveColumn(group, -1)}>
                                 <ChevronLeft size={14} /> Pindah ke kiri
                               </button>
-                              <button type="button" role="menuitem" className="board-menu-item" disabled={!canRight || saving} onClick={() => void moveColumn(group, 1)}>
+                              <button type="button" role="menuitem" className="board-menu-item" disabled={!canRight || saving} onClick={async () => void await moveColumn(group, 1)}>
                                 <ChevronRight size={14} /> Pindah ke kanan
                               </button>
                             </>
@@ -831,7 +831,7 @@ export function TaskExplorer({
                         aria-label={`Pindahkan ${task.title}`}
                         value={task.statusName ?? ""}
                         onClick={(event) => event.stopPropagation()}
-                        onChange={(event) => { if (event.target.value) void move(task, event.target.value); }}
+                        onChange={async (event) => { if (event.target.value) void await move(task, event.target.value); }}
                         style={{ marginTop: 7, height: 26, fontSize: 10.5, padding: "0 5px" }}
                       >
                         {!task.statusName && <option value="">Tanpa status</option>}
@@ -867,10 +867,10 @@ export function TaskExplorer({
                         placeholder="Judul tugas…"
                         value={composerTitle}
                         onChange={(event) => setComposerTitle(event.target.value)}
-                        onKeyDown={(event) => {
+                        onKeyDown={async (event) => {
                           if (event.key === "Enter" && !event.shiftKey) {
                             event.preventDefault();
-                            void submitCard(group);
+                            void await submitCard(group);
                           }
                           if (event.key === "Escape") closeComposer();
                         }}
@@ -879,7 +879,7 @@ export function TaskExplorer({
                         }}
                       />
                       <div style={{ display: "flex", gap: 6 }}>
-                        <button type="button" className="btn btn-primary btn-sm" disabled={saving} onClick={() => void submitCard(group)}>
+                        <button type="button" className="btn btn-primary btn-sm" disabled={saving} onClick={async () => void await submitCard(group)}>
                           {saving ? "Menyimpan…" : "Tambah kartu"}
                         </button>
                         <button type="button" className="btn btn-ghost btn-sm" onClick={closeComposer}>Batal</button>
@@ -905,8 +905,8 @@ export function TaskExplorer({
                   placeholder="Nama tahap…"
                   value={newListName}
                   onChange={(event) => setNewListName(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") void submitList();
+                  onKeyDown={async (event) => {
+                    if (event.key === "Enter") void await submitList();
                     if (event.key === "Escape") {
                       setAddingList(false);
                       setNewListName("");
@@ -914,7 +914,7 @@ export function TaskExplorer({
                   }}
                 />
                 <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                  <button type="button" className="btn btn-primary btn-sm" disabled={saving} onClick={() => void submitList()}>
+                  <button type="button" className="btn btn-primary btn-sm" disabled={saving} onClick={async () => void await submitList()}>
                     {saving ? "Menyimpan…" : "Tambah tahap"}
                   </button>
                   <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setAddingList(false); setNewListName(""); }}>Batal</button>
@@ -980,7 +980,7 @@ export function TaskExplorer({
         busyLabel="Menghapus…"
         busy={saving}
         error={deleteError}
-        onConfirm={() => void confirmDelete()}
+        onConfirm={async () => void await confirmDelete()}
         onClose={() => {
           setDeleteTarget(null);
           setDeleteError("");

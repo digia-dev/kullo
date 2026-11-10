@@ -1,64 +1,64 @@
 # Kullo build log
 
-Date: 2026-11-08 Â· Repo: `C:\kullo` (no VCS â€” nothing committed) Â· Builder sessions: 4 concurrent (shared workspace, per user instruction)
+Date: 2026-11-08 Â· Repo: `C:\kullo` (no VCS — nothing committed) Â· Builder sessions: 4 concurrent (shared workspace, per user instruction)
 
 Reference: `https://www.microsoft.com/id-id` used **only** as an appearance/pattern reference (promo bar, header, full-bleed hero + carousel, product card grid, split feature banner, footer). No Microsoft code, copy, assets, or logos were taken. Content is Kullo's own; product screens are clean-room from the PRD (`docs/specs/KULLO.md`).
 
-## Stage 0 â€” Recon
+## Stage 0 — Recon
 
-- `replica/recon.md`: 10 marketing pages (M01â€“M10), 18 product screens (P01â€“P18), 8 flows (F01â€“F08), data model notes.
+- `replica/recon.md`: 10 marketing pages (M01–M10), 18 product screens (P01–P18), 8 flows (F01–F08), data model notes.
 - Source screenshots in `replica/screens/source-ms-id-*.png` (1440 + 390, captured via headless Chrome; recon console logs under `.playwright-mcp/`).
-- `replica/features.csv`: 79 rows â†’ clone=76, skip=3 (AI assistant, email/WhatsApp notification delivery, payment checkout â€” all PRD out-of-scope).
+- `replica/features.csv`: 79 rows â†’ clone=76, skip=3 (AI assistant, email/WhatsApp notification delivery, payment checkout — all PRD out-of-scope).
 
-## Stage 1 â€” Plan
+## Stage 1 — Plan
 
 - Stack: Next.js 16 (App Router, RSC), React 19, TypeScript, Tailwind 4 (tokens in `src/app/globals.css`), Drizzle ORM + better-sqlite3, server actions for mutations, cookie session auth.
 - `replica/architecture.md`, schema in `src/db/schema.ts`, migration + seed via `npm run db:setup`.
 - Design tokens: `replica/design/tokens.json` â†” CSS custom properties (no raw hex in components).
 
-## Stage 2 â€” Marketing rebuild
+## Stage 2 — Marketing rebuild
 
 - Layout pattern reproduced with Kullo content: promo bar, sticky header + mega nav + mobile drawer, hero carousel (art/copy split, dark/light themes, pause, dots), quick links, product card grid, split banners, module map, resources, CTA, footer.
-- Self-hosted Inter (`public/fonts/*.woff2`, OFL) â€” no external font requests.
+- Self-hosted Inter (`public/fonts/*.woff2`, OFL) — no external font requests.
 - `/harga` shows **Hubungi kami** only; no prices were invented anywhere.
 
-## Stage 3 â€” Product rebuild (clean-room)
+## Stage 3 — Product rebuild (clean-room)
 
 - All 18 screens + 6 project views + 7 settings pages implemented (see `replica/route-map.md`).
 - Server actions with RBAC and per-tenant checks in `src/app/(app)/actions.ts`; data layer `src/lib/data.ts`.
 - Real seed data for org *Nusantara Digital* (login `alya@nusantara.id` / `kullo123`). No fabricated metrics: reports read only seeded rows; "Waktu tercatat 0.0 jam" is honest (no time logs seeded).
 
-## Stage 4 â€” Anatomy figure
+## Stage 4 — Anatomy figure
 
-- `src/components/anatomy/` â€” Fig 1 "Kullo Work Router" isometric plate with input-tray â†’ route chips, read-me box, light/dark variants. Built to explain the product's core idea (work routing).
+- `src/components/anatomy/` — Fig 1 "Kullo Work Router" isometric plate with input-tray â†’ route chips, read-me box, light/dark variants. Built to explain the product's core idea (work routing).
 - Verified rendering in production: `replica/screens/rebuild-home-1440-anatomy.png`.
 - **Removed from the homepage on user request (2026-11-08)**, then deleted from the codebase entirely: `src/components/anatomy/` (5 files), `src/components/site/AnatomyFigure.tsx`, `src/app/anatomy.css`, the `.anatomy-*` CSS block in `globals.css`, and the CSS import in `(site)/layout.tsx`. No references remain (verified by grep).
 
-## Stage 5 â€” Visual inspection
+## Stage 5 — Visual inspection
 
 - Compared `replica/screens/rebuild-*` vs `source-ms-id-*` at 1440 and 390 (home top/mid/foot, menu, produk, harga, masuk; 11 app pages at 1440; settings; dashboard/tasks at 390).
-- **Fixed:** mobile hero contrast bug â€” dark-slide copy was white-on-pale at â‰¤860px; dark slides now keep a dark copy panel (`src/app/globals.css`).
-- **Fixed:** `"Segoe UI"` font fallbacks removed (3 hits) â€” `src/app/globals.css`, `src/components/anatomy/iso-kit.ts`, `replica/design/tokens.json`.
+- **Fixed:** mobile hero contrast bug — dark-slide copy was white-on-pale at â‰¤860px; dark slides now keep a dark copy panel (`src/app/globals.css`).
+- **Fixed:** `"Segoe UI"` font fallbacks removed (3 hits) — `src/app/globals.css`, `src/components/anatomy/iso-kit.ts`, `replica/design/tokens.json`.
 
-## Stage 6 â€” Visual identity: bold pass, then Fluent 2 (owner decision, 2026-11-09)
+## Stage 6 — Visual identity: bold pass, then Fluent 2 (owner decision, 2026-11-09)
 
 **Final direction: DESIGN.md (Fluent 2) is authoritative.** Earlier on 2026-11-09 an exploratory bold pass (macOS chrome + Atlassian colour + module colours) was implemented; the owner then supplied `DESIGN.md` (Fluent 2) and chose "follow DESIGN.md fully" with the Segoe UI system stack. The app was re-skinned to the Fluent 2 system:
 
 - Brand `#0F6CBD`, neutral `#FAFAFA`/`#F5F5F5`/`#E8E8E8`, text `#242424`/`#616161`, semantic colours per DESIGN.md Â§2.4.
 - Segoe UI **system font stack** (never bundled); display weights 600; type scale 40/32/28/24 (Â§3).
-- Radius 4/6/8/12, shadows level 1â€“3 only on hover/popover/modal (Â§5.3); no persistent shadows.
+- Radius 4/6/8/12, shadows level 1–3 only on hover/popover/modal (Â§5.3); no persistent shadows.
 - Removed gradients, glassmorphism, ink bands, module colours and oversized radii (Â§19).
 - Sidebar 240 px / topbar 48 px / page padding 24 px (Â§6); buttons 32 px / inputs 32 px / badges 22 px (Â§7).
 - Marketing uses the same neutral + brand system; product screenshots remain as evidence (showcase), restyled to Fluent cards.
 
 Two documented accessibility corrections in DESIGN.md Â§21: control border `#8A8A8A` (3:1), badge text uses `-ink` variants.
 
-**Mobile (MOBILE.md, 2026-11-09):** bottom nav 64px with Beranda / My Work / Proyek / Chat / Lainnya (icons 22, labels 11, active `#0F6CBD`); mobile header 56px with Kullo logo + search + notifications (hamburger, quick-create and avatar hidden â€” More opens the drawer); content padding 16px + 88px bottom safe area; page title 22/600; touch targets 44px for buttons, inputs and header icons; task detail sheet full-screen; dashboard metrics become one full-width card + two-column cards. Chat keeps the conversation list stacked above the thread on mobile (full-screen conversation is a follow-up).
+**Mobile (MOBILE.md, 2026-11-09):** bottom nav 64px with Beranda / My Work / Proyek / Chat / Lainnya (icons 22, labels 11, active `#0F6CBD`); mobile header 56px with Kullo logo + search + notifications (hamburger, quick-create and avatar hidden — More opens the drawer); content padding 16px + 88px bottom safe area; page title 22/600; touch targets 44px for buttons, inputs and header icons; task detail sheet full-screen; dashboard metrics become one full-width card + two-column cards. Chat keeps the conversation list stacked above the thread on mobile (full-screen conversation is a follow-up).
 
-**App theme (owner directive, 2026-11-09):** the application (`/app/*`) now uses a Trello/Atlassian-inspired workspace theme documented in `DESIGN.md` Â§22 â€” blue top command bar, grey canvas, white cards, dense spacing â€” with **light and dark modes** (system preference / stored value, no in-app toggle per later owner request), a **collapsible sidebar** (56px icon rail, persisted), and no organisation name in the header. Marketing keeps the Fluent 2 theme. Dashboard metric cards were compacted and the mobile "Aksi cepat" panel removed (the header **+** menu is the single quick-create entry point). Contrast verified AA/AAA for every app pair in both themes.
+**App theme (owner directive, 2026-11-09):** the application (`/app/*`) now uses a Trello/Atlassian-inspired workspace theme documented in `DESIGN.md` Â§22 — blue top command bar, grey canvas, white cards, dense spacing — with **light and dark modes** (system preference / stored value, no in-app toggle per later owner request), a **collapsible sidebar** (56px icon rail, persisted), and no organisation name in the header. Marketing keeps the Fluent 2 theme. Dashboard metric cards were compacted and the mobile "Aksi cepat" panel removed (the header **+** menu is the single quick-create entry point). Contrast verified AA/AAA for every app pair in both themes.
 
 
-## Stage 6b â€” File uploads & chat attachments (2026-11-09)
+## Stage 6b — File uploads & chat attachments (2026-11-09)
 
 - **Task drawer**: lampiran bukan lagi metadata. File diunggah nyata (`uploadTaskAttachmentAction`) ke `data/uploads`, dicatat sebagai dokumen + versi, dan otomatis masuk folder dokumen **project** (nama proyek) atau **"Lampiran tugas"** bila tanpa proyek. Lampiran di drawer menautkan `/api/documents/{id}/file`.
 - **Chat**: lampiran file/gambar (`sendChatAttachmentAction`) masuk folder **"Chat"**; tabel baru `message_attachments` (migrasi `0003`). Composer punya tombol lampiran, preview chip, dan **paste screenshot Ctrl+V**; bubble menampilkan gambar/file yang bisa dibuka.
@@ -68,15 +68,15 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 
 **Login fix:** cookie sesi sebelumnya `secure: NODE_ENV === "production"`, sehingga di preview HTTP localhost cookie ditolak browser. Sekarang `secure` mengikuti header `x-forwarded-proto`/`x-forwarded-ssl` (HTTPS di produksi, HTTP di localhost).
 
-## Stage 7 â€” Tests
+## Stage 7 — Tests
 
 
 
 - Playwright added (`@playwright/test`, `npm test`), config `playwright.config.ts` (starts `next start -p 3010`, Chrome channel), suite `e2e/smoke.spec.ts`.
 - **Result: 40/40 passed** (health, 12 marketing routes, 18 app auth-gate redirects, 404, F08 sign-in/out/wrong-password, shell render, search auth, pricing honesty, hero CTA).
-- `replica/test-plan.md`: full case matrix (auto + manual) mapped to flows F01â€“F08.
+- `replica/test-plan.md`: full case matrix (auto + manual) mapped to flows F01–F08.
 
-## Stage 8 â€” Scoring
+## Stage 8 — Scoring
 
 | check | result |
 | --- | --- |
@@ -90,22 +90,22 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - Notifications are in-app only; email/WhatsApp delivery skipped by PRD decision.
 - No payments: pricing is contact-sales.
 - No visual-regression diff assertions yet (screenshots stored as evidence).
-- `"Segoe UI"` appears in the font stack by owner decision (DESIGN.md Â§3, system font only â€” no font files bundled). `sweep.py` will flag the string; that is expected and accepted.
+- `"Segoe UI"` appears in the font stack by owner decision (DESIGN.md Â§3, system font only — no font files bundled). `sweep.py` will flag the string; that is expected and accepted.
 - Workspace has no git; "commit" in preflight = not applicable.
 
 ## Final check
 
-- `npm run check` (lint + typecheck + build): **passing, 0 lint problems / 0 warnings** â€” output in `check-output.txt` (Fluent 2 + mobile layer, 2026-11-09).
+- `npm run check` (lint + typecheck + build): **passing, 0 lint problems / 0 warnings** — output in `check-output.txt` (Fluent 2 + mobile layer, 2026-11-09).
 - `npm test` against that build: **40/40 passed** (`test-output.txt`).
 - `contrast.py`: **16 pairs, 0 AA failures** (Fluent tokens).
 - Visual evidence: `replica/screens/fluent-*.png` (1440), `fluent2-home-390.png`, `fluent3/4-app-390.png`, `m-*.png` (mobile per MOBILE.md), `m2-*.png` (density pass: dashboard, my work, chat, projects on 390).
-- Mobile density pass (owner feedback): description text and eyebrow hidden â‰¤640px, secondary header CTAs hidden, stat hints hidden, tableâ†’cards, filter rows scroll horizontally, controls 38â€“40px. Recorded in MOBILE.md Â§27.4.
+- Mobile density pass (owner feedback): description text and eyebrow hidden â‰¤640px, secondary header CTAs hidden, stat hints hidden, tableâ†’cards, filter rows scroll horizontally, controls 38–40px. Recorded in MOBILE.md Â§27.4.
 - Route manifest: 47 routes (`replica/route-map.md`).
 - Deploy steps: `replica/deploy.md`. Env template: `.env.example`.
 
 ### Foto profil & picker peserta (2026-11-09)
 
-- **Foto profil**: unggah di Profil, dikompres di browser (canvas, maks 512px, JPEG kualitas turun otomatis) sampai **â‰¤200 KB**; server memvalidasi ulang. Disimpan di `data/uploads/avatars`, kolom baru `users.avatar_key` (migrasi `0004` â€” ALTER aman, backup dibuat lebih dulu). API `/api/avatar/[id]` menyajikan foto atau fallback SVG inisial; dipakai header, sidebar, tim, chat, komentar, proyek, laporan, persetujuan.
+- **Foto profil**: unggah di Profil, dikompres di browser (canvas, maks 512px, JPEG kualitas turun otomatis) sampai **â‰¤200 KB**; server memvalidasi ulang. Disimpan di `data/uploads/avatars`, kolom baru `users.avatar_key` (migrasi `0004` — ALTER aman, backup dibuat lebih dulu). API `/api/avatar/[id]` menyajikan foto atau fallback SVG inisial; dipakai header, sidebar, tim, chat, komentar, proyek, laporan, persetujuan.
 - **Peserta agenda**: multi-select Ctrl diganti **pencarian anggota + daftar yang bisa diklik**, chip peserta terpilih, hidden input `participants`. Diuji membuat agenda dengan Maya diundang (event_participants + notifikasi).
 
 ### Umpan balik, refresh dashboard, filter notifikasi (2026-11-09)
@@ -129,9 +129,9 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 
 ### Batch 3: toolbar My Work disamakan dengan Tasks + refresh dashboard dihapus (2026-11-09)
 
-- **My Work = Tasks**: `TaskExplorer` untuk `mode="my"` kini merender baris yang sama dengan halaman Tugas â€” kiri: badge `{n} tugas`, kanan: switch tampilan (List/Board/Kalender) + tombol **Tugas**. Tab scope (Ditugaskan/Dibuat/Diikuti/Selesai/Terlambat) dihilangkan atas permintaan owner; link tetap `<a>` ber-`href` `?view=...&scope=...` sehingga view tetap URL-driven, sementara Tasks tetap state-driven `<button>` dengan gaya identik (12px, padding 6px 10px, radius 7).
+- **My Work = Tasks**: `TaskExplorer` untuk `mode="my"` kini merender baris yang sama dengan halaman Tugas — kiri: badge `{n} tugas`, kanan: switch tampilan (List/Board/Kalender) + tombol **Tugas**. Tab scope (Ditugaskan/Dibuat/Diikuti/Selesai/Terlambat) dihilangkan atas permintaan owner; link tetap `<a>` ber-`href` `?view=...&scope=...` sehingga view tetap URL-driven, sementara Tasks tetap state-driven `<button>` dengan gaya identik (12px, padding 6px 10px, radius 7).
 - Scope tetap hidup lewat URL (mis. link kartu dashboard `?scope=overdue`); bila scope berbeda dari default, labelnya muncul di badge (`0 tugas Â· Terlambat`) agar filter tersirat tidak senyap. Empty state `mode="my"` disesuaikan (tab sudah tidak ada).
-- **Dashboard**: tombol `Diperbarui HH.MM` (item 25) dihapus atas permintaan owner â€” komponen `DashboardRefresh.tsx` dan aturan `.dash-mobile-refresh` ikut dihapus; `docs/specs/PLAN.md` Â§10.3 ditandai "dihapus atas permintaan owner".
+- **Dashboard**: tombol `Diperbarui HH.MM` (item 25) dihapus atas permintaan owner — komponen `DashboardRefresh.tsx` dan aturan `.dash-mobile-refresh` ikut dihapus; `docs/specs/PLAN.md` Â§10.3 ditandai "dihapus atas permintaan owner".
 - Properti `hideViewSwitch` dihapus dari `TaskExplorer` (satu-satunya pemakai My Work). `window.confirm`/tab lain tidak terpengaruh.
 - Verifikasi: `npm run check` lulus; `npm test` **40/40**; `contrast.py` 16 pasang, **0 gagal AA**; `sweep.py src` bersih.
 - Bukti browser (3005): klik Board -> `/app/my-work?view=board&scope=assigned` (papan dirender); `?scope=overdue` -> badge `0 tugas Â· Terlambat`; toolbar My Work vs Tasks identik terstruktur dan identik `getComputedStyle`.
@@ -182,7 +182,7 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 ### Batch 7: bottom sheet "Lainnya" + perbaikan chat (2026-11-09)
 
 - **"Lainnya" jadi bottom sheet**: tab kelima tidak lagi membuka drawer sidebar. Lembar naik dari bawah (animasi 260ms `cubic-bezier(.2,.8,.2,1)` + backdrop fade) berisi handle geser, nama workspace, judul "Menu", tombol tutup, dan grid 4 kolom berisi 12 tujuan (Dashboard, My Work, Proyek, Tugas, Kalender, Tim, Chat, Dokumen, Permintaan, Persetujuan, Laporan, Pengaturan) dengan ikon, status aktif, serta badge jumlah My Work/Persetujuan. Interaksi: tap tile menavigasi & menutup, backdrop/Escape/X menutup, handle bisa diseret ke bawah (mengikuti jari via pointer events, tutup bila >90px), body scroll dikunci, `prefers-reduced-motion` mematikan animasi. Di layar â‰¥1024 sheet disembunyikan.
-- **Chat mobile â€” komposer menggantikan tab bar**: saat percakapan dibuka (`chat-layout.has-active`) di â‰¤1023px, tab bar disembunyikan, padding bawah konten menyusut ke safe-area, dan `.chat-layout` memakai tinggi `100dvh - topbar - padding` dengan feed `flex:1` sehingga input menempel di dasar layar. Setelah feedback owner, jarak bawah input dinaikkan menjadi **21px** dari tepi layar (`app-content` 16px + compose 6px + safe area) agar tidak terlalu mepet; daftar chat tanpa percakapan aktif tetap menampilkan tab bar (terukur `grid`), dan tombol kembali mengembalikannya.
+- **Chat mobile — komposer menggantikan tab bar**: saat percakapan dibuka (`chat-layout.has-active`) di â‰¤1023px, tab bar disembunyikan, padding bawah konten menyusut ke safe-area, dan `.chat-layout` memakai tinggi `100dvh - topbar - padding` dengan feed `flex:1` sehingga input menempel di dasar layar. Setelah feedback owner, jarak bawah input dinaikkan menjadi **21px** dari tepi layar (`app-content` 16px + compose 6px + safe area) agar tidak terlalu mepet; daftar chat tanpa percakapan aktif tetap menampilkan tab bar (terukur `grid`), dan tombol kembali mengembalikannya.
 - **Teks bantuan dihapus**: baris "Enter untuk kirim Â· Shift+Enter untuk baris baru. Mention memakai @nama. Tempel screenshot dengan Ctrl+V" dihapus dari komposer (diverifikasi `hasEnter=false`, isi `.chat-compose` hanya tombol Kirim).
 - **Edit pesan inline**: modal "Edit pesan" dihapus. Klik Edit mengganti bubble menjadi textarea + Batal/Simpan di posisi yang sama (autoFocus, Enter simpan, Shift+Enter baris baru, Escape batal, error tampil di dalam blok). Diuji: ubah teks â†’ Simpan â†’ bubble berubah, lalu dikembalikan ke teks asli.
 - **Warna aksi lebih lembut**: baris aksi (Reaksi/Tugas/Balas/Edit/Hapus) memakai `--text-muted` (rgb 68,84,111) sementara isi pesan `--text` (rgb 23,43,77); hover menggelap, chip reaksi aktif tetap aksen.
@@ -192,13 +192,13 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 ### Batch 8: peran anggota & ikon kanal + filter daftar chat (2026-11-09)
 
 - **Badge "anggota" â†’ menu titik tiga**: badge jumlah anggota di header chat dihapus; menu "..." kini punya item **Anggota** untuk semua jenis percakapan. Deskripsi kanal di bawah nama juga dihapus (header hanya nama).
-- **Peran anggota (migrasi 0005)**: kolom `conversation_members.role` (`admin`/`member`, default member); migrasi mengangkat anggota pertama tiap percakapan non-DM menjadi admin. Aksi baru `setConversationMemberRoleAction`; `addConversationMemberAction`/`removeConversationMemberAction` kini mensyaratkan admin (keluar sendiri tetap boleh). Admin terakhir tidak bisa dicabut atau dikeluarkan â€” pesan "Angkat admin lain sebelum keluarâ€¦". Pembuat percakapan/kanal otomatis admin.
+- **Peran anggota (migrasi 0005)**: kolom `conversation_members.role` (`admin`/`member`, default member); migrasi mengangkat anggota pertama tiap percakapan non-DM menjadi admin. Aksi baru `setConversationMemberRoleAction`; `addConversationMemberAction`/`removeConversationMemberAction` kini mensyaratkan admin (keluar sendiri tetap boleh). Admin terakhir tidak bisa dicabut atau dikeluarkan — pesan "Angkat admin lain sebelum keluar…". Pembuat percakapan/kanal otomatis admin.
 - **Modal Anggota**: daftar anggota dengan badge **Admin**, tombol Jadikan/Cabut admin dan Keluarkan untuk admin, tombol Keluar untuk diri sendiri, catatan khusus untuk non-admin, serta **pencarian** pada daftar "Tambah anggota" (diverifikasi: cari "sin" â†’ Sinta Dewi).
 - **Ikon kanal (migrasi 0006)**: kolom `conversations.icon`; dialog **+** kini punya tab **Chat & grup** dan **Kanal**. Kanal baru: nama + pilihan ikon tagar/bintang/hati/pin (gaya Discord), memakai aksi `createChannelAction` (nama unik, pembuat jadi admin). Ikon dipakai di daftar dan header (diverifikasi kanal uji dengan ikon bintang, lalu dihapus).
 - **Filter daftar chat**: label "Percakapan N" diganti segmented control **Semua / Belum dibaca / Kanal**; filter memilih daftar (kanal vs pesan langsung) dan menampilkan empty state yang sesuai. Diukur muat di 390px tanpa overflow.
-- **Default mobile & tampilan list**: `/app/projects` membuka **List** di â‰¤1023px (deteksi UA di server + komponen `MobileDefaultList` untuk mode responsif) sementara desktop tetap Board; My Work di mobile kini menampilkan **tabel penuh** (header Tugas/Proyek/Status/â€¦) yang bergulir di dalam panel seperti daftar proyek, bukan kartu bertumpuk (aturan kartu mobile dibatasi `:not([data-mode="my"])`).
+- **Default mobile & tampilan list**: `/app/projects` membuka **List** di â‰¤1023px (deteksi UA di server + komponen `MobileDefaultList` untuk mode responsif) sementara desktop tetap Board; My Work di mobile kini menampilkan **tabel penuh** (header Tugas/Proyek/Status/…) yang bergulir di dalam panel seperti daftar proyek, bukan kartu bertumpuk (aturan kartu mobile dibatasi `:not([data-mode="my"])`).
 - **Kalender mobile lebih besar & bisa digeser**: sel 92Ã—96px (sebelumnya 52px) dengan teks 11/10.5px, grid dibungkus `.calendar-scroll` (overflow-x auto); halaman Kalender memakai grid yang sama sehingga bisa di-swipe tanpa membuat halaman melebar. Terukur: grid 645px pada viewport 390 (scroll), `pageOverflow=false`.
-- Verifikasi: `npm run check` lulus; `npm test` **40/40**; `contrast.py` 16 pasang, **0 gagal AA**; `sweep.py src` bersih. Backup DB sebelum migrasi: `data/kullo.backup-2026-11-09-before-chat-admin.db`, `â€¦-before-channel-icon.db`.
+- Verifikasi: `npm run check` lulus; `npm test` **40/40**; `contrast.py` 16 pasang, **0 gagal AA**; `sweep.py src` bersih. Backup DB sebelum migrasi: `data/kullo.backup-2026-11-09-before-chat-admin.db`, `…-before-channel-icon.db`.
 - Bukti: `replica/screens/chat-members-admin-1440.png`, `chat-members-nonadmin-1440.png`, `chat-members-search-1440.png`, `chat-channel-star-1440.png`, `chat-header-nodec-1440.png`, `chat-filter-all-1440.png`, `chat-filter-390.png`, `projects-mobile-default-list-390.png`, `mywork-mobile-table-390.png`, `calendar-mobile-bigger-390.png`, `calendar-page-mobile-bigger-390.png`.
 
 ### Batch 9: edit pesan lewat komposer + empty state "Belum dibaca" (2026-11-09)
@@ -213,30 +213,30 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 
 - Atas permintaan owner, menu **Dokumen** dikembalikan ke versi sebelum eksperimen Google Drive/OneDrive/DRIVE.md: kartu ringkasan (Berkas, Terpakai, Riwayat versi, Folder), toolbar cari + jumlah file + **Unggah dokumen**, sidebar folder 190px, daftar baris (ikon tipe, nama, versi/ukuran/folder/tanggal, badge visibilitas), panel **Detail dokumen** (pratinjau, unduh, riwayat versi, tambah versi), modal pratinjau, modal unggah.
 - Yang dihapus: shell Drive (sidebar My Drive/Shared/Recent/Starred/Trash, kartu folder, storage meter, grid kartu, bulk selection, dialog share, drag-drop upload) beserta aksi server khusus Drive (`createFolderAction`, `renameDocumentAction`, `moveDocumentAction`, `setDocumentStarAction`, `trashDocumentAction`, `restoreDocumentAction`, `deleteDocumentAction`, `shareDocumentAction`, `unshareDocumentAction`) dan CSS-nya. `docs/specs/DRIVE.md` tetap tersimpan sebagai dokumen produk tetapi tidak diterapkan.
-- Catatan data: migrasi 0007 (komentar bergambar) tetap dipakai; migrasi 0008 (`documents.is_starred/is_trashed/deleted_at`) dan 0009 (`document_permissions`) sudah masuk DB tetapi kini tidak direferensikan UI â€” dibiarkan agar tidak perlu rebuild tabel SQLite. Backup sebelum migrasi Drive: `data/kullo.backup-2026-11-09-before-drive-fields.db`, `â€¦-before-doc-sharing.db`.
+- Catatan data: migrasi 0007 (komentar bergambar) tetap dipakai; migrasi 0008 (`documents.is_starred/is_trashed/deleted_at`) dan 0009 (`document_permissions`) sudah masuk DB tetapi kini tidak direferensikan UI — dibiarkan agar tidak perlu rebuild tabel SQLite. Backup sebelum migrasi Drive: `data/kullo.backup-2026-11-09-before-drive-fields.db`, `…-before-doc-sharing.db`.
 - Verifikasi: `npm run check` lulus; `npm test` **40/40**; `contrast.py` 16 pasang, **0 gagal AA**; `sweep.py src` bersih. Diperiksa di 1440 & 390: tidak ada `.doc-shell`/nav Drive, `.doc-layout` 3 kolom desktop dan 1 kolom mobile, tanpa overflow.
 - Bukti: `replica/screens/documents-reverted-1440.png`, `documents-reverted-390.png`.
 
 ### Batch 11: durasi tugas, versi dokumen, arsip, dan interaksi folder (2026-11-10)
 
-- **Durasi tugas**: drawer menampilkan blok **Total waktu** (mis. "5 hari 7 jam") dari `createdAt` sampai status masuk kategori Done; tugas terbuka menampilkan "Berjalan sejak â€¦". `tasks.completed_at` diisi saat status berubah ke Done dan dikosongkan saat dibuka kembali (migrasi 0010 + backfill tugas Done = `updated_at`). Laporan mendapat kartu **Rata-rata durasi** dan grafik mingguan memakai `completed_at`.
+- **Durasi tugas**: drawer menampilkan blok **Total waktu** (mis. "5 hari 7 jam") dari `createdAt` sampai status masuk kategori Done; tugas terbuka menampilkan "Berjalan sejak …". `tasks.completed_at` diisi saat status berubah ke Done dan dikosongkan saat dibuka kembali (migrasi 0010 + backfill tugas Done = `updated_at`). Laporan mendapat kartu **Rata-rata durasi** dan grafik mingguan memakai `completed_at`.
 - **Versi dokumen = ganti file**: tombol **Ganti file (versi baru)** mengunggah revisi ke `data/uploads/versions`, menaikkan versi dokumen, dan menyimpan file lama sebagai versi di riwayat (bisa diunduh via `?version=`). **Kembalikan versi ini** membuat versi baru dari file lama (file saat ini ikut disnapshot), jadi tidak ada file yang hilang. Diverifikasi: v1â†’v2 (md 72 B) lalu pulihkan v1 â†’ v3 (png 190 B), unduhan versi 200 OK.
 - **Arsip**: tombol **Arsip** di samping **Unggah dokumen**; menghapus dokumen memindahkannya ke arsip (`is_trashed` + `deleted_at`), bisa **Pulihkan** atau **Hapus permanen**, dan otomatis dibersihkan setelah **30 hari** saat halaman dimuat (file + seluruh file versi ikut dihapus).
 - **Folder & drag-drop**: tombol **+** di panel Folder untuk membuat folder (termasuk subfolder di folder aktif), baris/kartu bisa diseret ke folder atau breadcrumb (**Semua file**/folder induk) untuk memindahkan file naik/turun.
-- **Toolbar**: urutan **Arsip Â· Aâ€“Z/Zâ€“A Â· List/Board Â· Pilih Â· Unggah**; board menampilkan preview gambar langsung (atau ikon tipe besar). Mode **Pilih** memunculkan checkbox dan bar aksi **Salin / Pindah / Hapus**; item yang disalin/dipotong ditempel ke folder aktif lewat **Tempel (n)** (salinan dibuat sebagai file baru "(salinan)", pindah memakai move).
-- Verifikasi browser: salin 1 dokumen ke folder Chat â†’ muncul "Anggaran 2027 â€” Draft (salinan).xlsx" lalu dihapus permanen untuk merapikan; drag Spek videotron Chat â†’ Semua file â†’ Chat (toast benar); buat subfolder "Sub Uji" lalu dibersihkan; sort Zâ€“A mengubah urutan; 390px tanpa overflow.
+- **Toolbar**: urutan **Arsip Â· A–Z/Z–A Â· List/Board Â· Pilih Â· Unggah**; board menampilkan preview gambar langsung (atau ikon tipe besar). Mode **Pilih** memunculkan checkbox dan bar aksi **Salin / Pindah / Hapus**; item yang disalin/dipotong ditempel ke folder aktif lewat **Tempel (n)** (salinan dibuat sebagai file baru "(salinan)", pindah memakai move).
+- Verifikasi browser: salin 1 dokumen ke folder Chat â†’ muncul "Anggaran 2027 — Draft (salinan).xlsx" lalu dihapus permanen untuk merapikan; drag Spek videotron Chat â†’ Semua file â†’ Chat (toast benar); buat subfolder "Sub Uji" lalu dibersihkan; sort Z–A mengubah urutan; 390px tanpa overflow.
 - Verifikasi: `npm run check` lulus; `npm test` **40/40**; `contrast.py` 16 pasang, **0 gagal AA**; `sweep.py src` bersih. Backup sebelum migrasi 0010: `data/kullo.backup-2026-11-10-before-cycle-versioning.db`.
 - Bukti: `replica/screens/task-duration-done-1440.png`, `task-duration-complete-1440.png`, `reports-cycle-time-1440.png`, `doc-version-after-replace-1440.png`, `doc-version-restored-1440.png`, `documents-archive-btn-1440.png`, `documents-archive-modal-1440.png`, `documents-toolbar-order-1440.png`, `documents-board-v3-1440.png`, `documents-paste-copy-1440.png`, `documents-enhanced-390.png`.
 
 ### Batch 12: menu Database (CRM) + hapus Pengaturan dari bottom sheet (2026-11-10)
 
 - **Menu Database baru** sesuai docs/specs/DATABASE.md (subset inti): halaman `/app/database` dengan **Overview** (Contacts, Organizations, Clients, Leads, Vendors, Follow-up + overdue/upcoming), daftar **Follow-up terdekat**, dan **Aktivitas terbaru**.
-- **Saved views**: Overview, All Contacts, Organizations, Clients, Leads, Vendors, Partners, Favorites, Follow-ups â€” semuanya filter atas satu kumpulan record (bukan tabel ganda).
+- **Saved views**: Overview, All Contacts, Organizations, Clients, Leads, Vendors, Partners, Favorites, Follow-ups — semuanya filter atas satu kumpulan record (bukan tabel ganda).
 - **Data model**: migrasi 0011 menambah `business_records` (type person/organization, kontak, industri, status, favorit, organisasi induk), `business_classifications`, `follow_ups` (subjek, jenis, tenggat, PIC, status) dan `business_activities`. Seed idempoten 9 record (5 organisasi/4 kontak) + 5 follow-up; role lama disinkronkan dengan izin baru `database.view`/`database.manage` (owner/admin/manager/leader manage, staff view, guest none).
 - **Aksi**: `createBusinessRecordAction`, `updateBusinessRecordAction`, `toggleBusinessFavoriteAction`, `createFollowUpAction`, `toggleFollowUpAction` (semua org-scoped, permission database.manage kecuali favorit).
 - **UI**: toolbar (cari, Follow-up, Tambah data), dialog Tambah data (Organisasi/Kontak, klasifikasi multi-pilih, organisasi induk, industri/ukuran), dialog follow-up (record, jenis, tanggal, PIC), dialog detail record (kontak, klasifikasi, favorit, follow-up per record + tandai selesai), tabel dengan status badge dan tombol favorit. Sidebar menampilkan **Database** di grup Kolaborasi; label halaman "Database".
 - **Mobile "Lainnya"**: opsi **Pengaturan dihapus** dari bottom sheet (masih bisa diakses lewat rute/desktop). Database ikut muncul di sheet.
-- **Belum dibangun** dari docs/specs/DATABASE.md: pipeline/kanban, custom fields, import data, dan tombol **Data** pada popup tugas (relasi taskâ€“record) â€” dicatat di DESIGN Â§8.11.
+- **Belum dibangun** dari docs/specs/DATABASE.md: pipeline/kanban, custom fields, import data, dan tombol **Data** pada popup tugas (relasi task–record) — dicatat di DESIGN Â§8.11.
 - Verifikasi browser: overview memuat 4 contacts/5 organizations/2 clients/1 lead/1 vendor, follow-up overdue tampil merah; tab Clients menampilkan 2 record; detail PT ABC dan toggle follow-up selesaiâ†’pending berfungsi; 390px tanpa overflow dan sheet berisi 12 tile tanpa Pengaturan.
 - Verifikasi: `npm run check` lulus; `npm test` **40/40**; `contrast.py` 16 pasang, **0 gagal AA**; `sweep.py src` bersih. Backup sebelum migrasi: `data/kullo.backup-2026-11-10-before-database.db`.
 - Bukti: `replica/screens/database-overview-1440.png`, `database-client-detail-1440.png`, `database-mobile-390.png`, `mobile-more-no-settings-390.png`.
@@ -273,7 +273,7 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 ### Batch 16: mockup laptop macOS + ponsel di beranda (2026-11-10)
 
 - Section **Di dalam Kullo / Ini tampilan aplikasinya** diganti dari tiga kartu screenshot menjadi satu panggung produk: laptop bergaya macOS (bezel, kamera, menu bar traffic lights, judul Dashboard) berisi screenshot asli Dashboard, dan ponsel di kanan bawah berisi screenshot asli Chat.
-- Screenshot diambil ulang dengan Playwright dari aplikasi berjalan: `public/shots/laptop-dashboard.png` (1440Ãƒâ€”900) dan `public/shots/phone-chat.png` (390Ãƒâ€”844). Tidak ada mockup yang digambar tangan.
+- Screenshot diambil ulang dengan Playwright dari aplikasi berjalan: `public/shots/laptop-dashboard.png` (1440Ãƒ—900) dan `public/shots/phone-chat.png` (390Ãƒ—844). Tidak ada mockup yang digambar tangan.
 - Panggung memakai `--accent-soft`, label Desktop/Ponsel, tautan Buka demo, bayangan perangkat secukupnya; responsif sampai 390px tanpa overflow.
 - Verifikasi: `npm run check` lulus; `npm test` 40/40; `contrast.py` 16 pasang, 0 gagal AA; `sweep.py src` bersih.
 - Bukti: `replica/screens/home-device-mockup-1440.png`, `home-device-mockup-stage-1440.png`, `home-device-mockup-390.png`.
@@ -284,7 +284,7 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - **Open redirect login diperbaiki**: `safeNextPath` mem-parse `next` dengan `new URL(..., SITE.url)`, menolak origin berbeda dan backslash, lalu redirect ke `pathname + search + hash` (`src/lib/auth-actions.ts`).
 - **Link footer**: Ã¢â‚¬Å“KeamananÃ¢â‚¬Â diarahkan ke `/dukungan#keamanan` yang benar-benar ada; anchor `/tentang#keamanan` dihapus.
 - **Dropdown Ã¢â‚¬Å“Lihat fiturÃ¢â‚¬Â**: pola ARIA diubah dari `menu` ke disclosure navigation; backdrop tidak lagi menjadi tombol fokus tak terlihat; tombol memakai `aria-controls`.
-- **Auth**: dimensi ilustrasi per file diperbaiki (793Ãƒâ€”552, 870Ãƒâ€”520, 543Ãƒâ€”634); akun demo hanya tampil di development atau bila `KULLO_SHOW_DEMO=1`.
+- **Auth**: dimensi ilustrasi per file diperbaiki (793Ãƒ—552, 870Ãƒ—520, 543Ãƒ—634); akun demo hanya tampil di development atau bila `KULLO_SHOW_DEMO=1`.
 - **Konsistensi istilah**: template baru memakai Ã¢â‚¬Å“Penggantian biayaÃ¢â‚¬Â, Ã¢â‚¬Å“Permintaan pembelianÃ¢â‚¬Â, Ã¢â‚¬Å“Perjalanan dinasÃ¢â‚¬Â, Ã¢â‚¬Å“Dukungan ITÃ¢â‚¬Â, Ã¢â‚¬Å“Permintaan umumÃ¢â‚¬Â; judul pemilik organisasi memakai Ã¢â‚¬Å“Pemilik OrganisasiÃ¢â‚¬Â. Demo DB disinkronkan.
 - **Arsitektur**: `auth-actions.ts` dan `invite-actions.ts` dipindah dari `(site)` ke `src/lib/`.
 - **Housekeeping**: CSS `.showcase-grid/side/main/card/tag` yang mati dihapus; screenshot lama `dashboard-v3`, `tasks-v3`, `chat-v3` dihapus.
@@ -329,13 +329,13 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - **Aksi footer**: "Selesai" yang hanya menutup drawer diganti **Tutup**; tombol Diskusi duplikat di footer dihapus.
 - **Escape berlapis**: Escape pada saran label/PIC/arsip tidak lagi menutup drawer; handler drawer berhenti saat `labelOpen`, `archiveOpen`, atau `discardOpen`.
 - **Focus trap**: drawer memfokuskan tombol tutup, mengurung Tab, dan mengembalikan fokus; `ConfirmDialog` juga mendapat focus trap untuk dialog arsip/buang draft.
-- **Dirty guard**: deskripsi/komentar yang belum disimpan memunculkan konfirmasi â€œTutup tanpa menyimpan?â€; draft deskripsi juga tidak hilang saat mengubah status/PIC.
+- **Dirty guard**: deskripsi/komentar yang belum disimpan memunculkan konfirmasi "Tutup tanpa menyimpan?"; draft deskripsi juga tidak hilang saat mengubah status/PIC.
 - **Tab aksesibel**: `aria-controls`, `role="tabpanel"`, roving tabindex, ArrowLeft/Right, Home/End.
 - **Form**: label `aria-label` untuk deskripsi, komentar, checklist, subtugas, menit, catatan; checklist memakai `role="checkbox"`.
-- **Lampiran**: file input native diganti tombol â€œPilih fileâ€ + nama file + tombol Unggah.
+- **Lampiran**: file input native diganti tombol "Pilih file" + nama file + tombol Unggah.
 - **Mobile**: target 44px untuk tombol/tab/input drawer, `100dvh`, padding safe-area footer, file picker responsif.
-- **Data**: fallback reporter â€œAnggotaâ€ menggantikan â€œâ€”â€; loading fetch memakai AbortController; `TaskDrawerHost` memakai `key={taskId}` agar draft tidak bocor antar tugas.
-- **Umpan balik**: indikator â€œTersimpanâ€ setelah perubahan properti.
+- **Data**: fallback reporter "Anggota" menggantikan "—"; loading fetch memakai AbortController; `TaskDrawerHost` memakai `key={taskId}` agar draft tidak bocor antar tugas.
+- **Umpan balik**: indikator "Tersimpan" setelah perubahan properti.
 - PLAN Â§10 ditandai sebagai backlog UI/UX (bukan Fase 6 terpisah) dan mencatat perbaikan drawer.
 - Verifikasi: `npm run check` lulus; `npm test` **43/43**.
 - Bukti: `replica/screens/task-review-drawer-final-1440.png`, `task-review-drawer-fixed-390.png`.
@@ -344,31 +344,55 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 ### Batch 22: sistem aksen warna + tab File + hapus lampiran (2026-11-10)
 
 - **Token aksen**: menambah `--marker-purple`, `--marker-teal`, `--marker-orange`, dan `--mention` (Kullo blue `#0F6CBD`) beserta surface/ink di theme situs, app, dan dark. `tokens.json`, `DESIGN.md` Â§2.4, dan `contrast.py` (20 pair, 0 gagal) ikut diperbarui.
-- **Penanda tugas**: `DueBadge` (terlambat/hari ini/besok/nanti/selesai), prioritas (merah/oranye/biru/abu), status (termasuk Terhambat), dan badge â€œSayaâ€ untuk PIC saat ini. Dipakai di daftar, papan, dashboard, overview proyek, dan drawer.
+- **Penanda tugas**: `DueBadge` (terlambat/hari ini/besok/nanti/selesai), prioritas (merah/oranye/biru/abu), status (termasuk Terhambat), dan badge "Saya" untuk PIC saat ini. Dipakai di daftar, papan, dashboard, overview proyek, dan drawer.
 - **Penanda lain**: kalender memakai token acara (rapat/pribadi/perusahaan/tenggat/pengingat), dokumen menampilkan versi baru dan visibilitas, peran anggota memakai chip owner/admin/manager/staff/guest, beban tim memakai tone kapasitas, notifikasi punya warna per jenis, dan command palette menandai jenis entitas.
 - **Mention**: `MentionText` merender `@Nama` sebagai chip biru Kullo di chat dan komentar tugas; pemilih mention memakai surface mention.
 - **Filter aktif**: chip filter di TaskExplorer dengan tombol hapus per filter.
-- **Tab File**: drawer tugas sekarang punya tab **Detail Â· Diskusi Â· File Â· Aktivitas**. File dipindah dari â€œWaktu & lampiranâ€ ke tab File, dengan unggah, pratinjau/unduh, dan hapus.
+- **Tab File**: drawer tugas sekarang punya tab **Detail Â· Diskusi Â· File Â· Aktivitas**. File dipindah dari "Waktu & lampiran" ke tab File, dengan unggah, pratinjau/unduh, dan hapus.
 - **Hapus lampiran**: `deleteTaskAttachmentAction` memeriksa izin `task.edit`, org, dan tugas; menghapus baris lampiran, dokumen terkait, dan berkas di `data/uploads`. Dialog konfirmasi + toast + reload drawer.
 - **Section waktu dihapus**: seluruh blok waktu, time log, dan lampiran di tab Detail dihilangkan atas permintaan owner.
-- **Theme init**: script inline dipindah ke `public/theme-init.js`; error console React â€œscript tag while renderingâ€ hilang (0 error di browser console).
+- **Theme init**: script inline dipindah ke `public/theme-init.js`; error console React "script tag while rendering" hilang (0 error di browser console).
 - Verifikasi: `npm run check` lulus; `npm test` **43/43**; uji manual unggah lalu hapus `test-delete-upload.txt` berhasil (baris lampiran dan file tersimpan dibersihkan).
 - Bukti: `replica/screens/final-task-file-1440.png`, `final-task-file-390.png`, `task-file-delete-dialog-1440.png`, `task-file-deleted-1440.png`, `markers-tasks-1440.png`, `markers-calendar-1440.png`, `markers-documents-1440.png`, `markers-dashboard-1440.png`.
 
 
 ### Batch 23: perbaikan header mobile dan PIC (2026-11-10)
 
-- **Chat baru di mobile**: tombol **+** pada header daftar percakapan kini 44Ã—44 px, memakai grup filter yang boleh menyusut (`flex: 1 1 0`), dan berada di dalam viewport 390px. Tombol membuka dialog â€œPercakapan baruâ€ dengan fokus awal yang benar.
-- **Menu Lainnya**: tile **Pengaturan** dikembalikan ke sheet â€œLainnyaâ€ (12 tile: Dashboard sampai Pengaturan).
-- **PIC**: label â€œSayaâ€/â€œUntuk sayaâ€ di kolom PIC, kartu papan, dan drawer dihapus; nama PIC tetap ditampilkan.
+- **Chat baru di mobile**: tombol **+** pada header daftar percakapan kini 44Ã—44 px, memakai grup filter yang boleh menyusut (`flex: 1 1 0`), dan berada di dalam viewport 390px. Tombol membuka dialog "Percakapan baru" dengan fokus awal yang benar.
+- **Menu Lainnya**: tile **Pengaturan** dikembalikan ke sheet "Lainnya" (12 tile: Dashboard sampai Pengaturan).
+- **PIC**: label "Saya"/"Untuk saya" di kolom PIC, kartu papan, dan drawer dihapus; nama PIC tetap ditampilkan.
 - Verifikasi: `npm run check` lulus; `npm test` **43/43**; bukti `replica/screens/mobile-more-with-settings.png`, `mobile-chat-new-fixed.png`.
 
 
 ### Batch 24: dependensi tugas + status simpan (2026-11-10)
 
 - **Dependensi tugas**: `TaskRow` membawa `dependencyIds` dan `blockedByCount`; daftar/papan menampilkan badge **Terhambat** bila prasyarat belum selesai.
-- **Editor dependensi**: tab Detail punya section **Dependensi** â€” daftar prasyarat + status, penanda â€œMenunggu/Selesaiâ€, daftar tugas yang menjadikan tugas ini prasyarat, pilihan tambah prasyarat, dan hapus.
+- **Editor dependensi**: tab Detail punya section **Dependensi** — daftar prasyarat + status, penanda "Menunggu/Selesai", daftar tugas yang menjadikan tugas ini prasyarat, pilihan tambah prasyarat, dan hapus.
 - **Server**: `addTaskDependencyAction` / `removeTaskDependencyAction` memeriksa izin `task.edit`, org, duplikat, diri sendiri, dan dependensi melingkar; aktivitas dicatat.
 - **Status simpan**: sinyal client `kullo:sync` membuat indikator header berubah **Menyinkronkan â†’ Tersimpan / Gagal menyimpan** untuk aksi tugas (properti, checklist, komentar, lampiran, arsip, papan). Indikator tetap jujur: tidak mengklaim antrean offline.
-- Verifikasi: `npm run check` lulus; `npm test` **43/43**; uji tambah dependensi `tsk_01 â†’ tsk_294â€¦` lalu hapus berhasil, badge Terhambat muncul/hilang.
+- Verifikasi: `npm run check` lulus; `npm test` **43/43**; uji tambah dependensi `tsk_01 â†’ tsk_294…` lalu hapus berhasil, badge Terhambat muncul/hilang.
 - Bukti: `replica/screens/task-dependencies-1440.png`, `task-dependency-added-1440.png`, `task-dependency-removed-1440.png`.
+
+### Batch 25: header situs tiga kolom (2026-11-10)
+
+- Header marketing memakai grid tiga kolom: **pengguna di kiri**, **logo tepat di tengah**, **aksi di kanan**.
+- Desktop: `Masuk` + navigasi utama di kiri; `Lihat fitur`, `Cari`, `Coba gratis` di kanan.
+- Mobile/tablet <1200px: avatar pengguna di kiri; logo di tengah; tombol cari dan hamburger di kanan (cari tepat di samping hamburger). Drawer memakai class `site-nav-drawer` agar breakpoint sama.
+- Verifikasi visual 390, 768, 1024, 1200, 1440; menu mobile tetap terbuka; `npm run check` lulus dan `npm test` **43/43**.
+- Bukti: `replica/screens/site-header-final-390.png`, `site-header-final-768.png`, `site-header-final2-1024.png`, `site-header-final2-1200.png`, `site-header-final-1440.png`, `site-header-menu-after-390.png`.
+
+
+### Batch 26: migrasi penuh ke Supabase Postgres + Storage (2026-11-10)
+
+- **Database**: seluruh schema Drizzle dipindah dari SQLite (`sqlite-core`) ke PostgreSQL (`pg-core`). 42 tabel, foreign key, dan index dibuat ulang; migrasi baru ada di `drizzle/0000_stiff_rattler.sql`, migrasi SQLite lama diarsipkan di `drizzle-sqlite/`.
+- **Driver**: `src/db/client.ts` memakai `postgres` (postgres-js) dengan `prepare: false`, `max: 1`, dan SSL aktif — sesuai batasan Supabase transaction pooler di Vercel.
+- **Async**: 418 situs query dikonversi ke `await` (Drizzle Postgres bersifat async), lalu 126 pemanggil ikut di-`await` dengan bantuan type checker. TypeScript `--noEmit` bersih.
+- **Izin per peran**: `AppContext` sekarang membawa `permissions` yang dimuat sekali per request, sehingga `can()` tetap sinkron dan tidak menambah query di 61 titik pemakaian.
+- **Storage**: `src/lib/storage.ts` menjadi adapter Supabase Storage (bucket privat `kullo-files`, service role hanya di server, signed download). Upload/hapus/salin dokumen, versi, lampiran, dan avatar memakai adapter ini; tanpa kredensial Supabase, adapter jatuh ke `data/uploads` agar dev dan tes tetap jalan.
+- **Supabase project**: schema, FK, index, RLS (42/42 tabel), dan bucket privat dibuat lewat MCP pada project `iwpnhnglffjrcdpeecqh`.
+- **Health check**: `/api/health` sekarang mengecek koneksi database dan melaporkan storage (`supabase`/`local`); mengembalikan 503 bila database mati.
+- **Skrip**: `db:migrate`, `db:seed`, `db:reset`, dan `db:backup:check` memakai Postgres; `better-sqlite3` dihapus dari dependensi.
+- **Verifikasi**: `npm run check` lulus (lint + typecheck + build 47 route); `npm test` **43/43** terhadap PostgreSQL lokal; `/api/health` mengembalikan `database: up`.
+- **Belum diverifikasi**: halaman produksi Vercel dengan kredensial Supabase asli (butuh environment variables di akun pemilik) dan upload nyata ke Supabase Storage.
+- **Perbaikan teks**: 102 urutan mojibake (`â€”`, `â€“`, `â€œ`, `â€`, `â€¦`) di 7 berkas diperbaiki menjadi em dash, en dash, kutip lengkung, dan elipsis; nama dokumen demo sekarang tampil benar (`Anggaran 2027 — Draft.xlsx`).
+- **Bukti**: `replica/screens/batch26-documents-1440.png`, `batch26-documents-390.png`, `batch26-tasks-1440.png`; contrast 20 pair 0 gagal; sweep bersih.

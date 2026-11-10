@@ -1,6 +1,4 @@
-﻿import { and, asc, desc, eq, inArray, isNull, ne } from "drizzle-orm";
-import fs from "node:fs";
-import path from "node:path";
+import { and, asc, desc, eq, inArray, isNull, ne } from "drizzle-orm";
 import { db } from "@/db/client";
 import {
   activity,
@@ -40,6 +38,7 @@ import {
   users,
 } from "@/db/schema";
 import { daysFromToday, todayISO } from "@/lib/utils";
+import { deleteObject } from "@/lib/storage";
 
 export type Person = {
   id: string;
@@ -58,8 +57,8 @@ export type Person = {
   openTasks?: number;
 };
 
-export function getPeople(orgId: string): Person[] {
-  const rows = db
+export async function getPeople(orgId: string): Promise<Person[]> {
+  const rows = await db
     .select({
       user: users,
       membershipId: memberships.id,
@@ -75,21 +74,19 @@ export function getPeople(orgId: string): Person[] {
     .innerJoin(users, eq(users.id, memberships.userId))
     .leftJoin(departments, eq(departments.id, memberships.departmentId))
     .where(eq(memberships.orgId, orgId))
-    .orderBy(asc(users.name))
-    .all();
+    .orderBy(asc(users.name));
 
-  const open = db
+  const open = await db
     .select({ assigneeId: tasks.assigneeId, statusId: tasks.statusId })
     .from(tasks)
-    .where(and(eq(tasks.orgId, orgId), isNull(tasks.archivedAt)))
-    .all();
+    .where(and(eq(tasks.orgId, orgId), isNull(tasks.archivedAt)));
   const doneStatuses = new Set(
-    db
-      .select({ id: projectStatuses.id })
-      .from(projectStatuses)
-      .where(eq(projectStatuses.category, "done"))
-      .all()
-      .map((row) => row.id),
+    (
+      await db
+        .select({ id: projectStatuses.id })
+        .from(projectStatuses)
+        .where(eq(projectStatuses.category, "done"))
+    ).map((row) => row.id),
   );
   const openByUser = new Map<string, number>();
   for (const task of open) {
@@ -126,11 +123,11 @@ export type DepartmentRow = {
   projects: number;
 };
 
-export function getDepartments(orgId: string): DepartmentRow[] {
-  const depts = db.select().from(departments).where(eq(departments.orgId, orgId)).orderBy(asc(departments.name)).all();
-  const people = getPeople(orgId);
-  const projectRows = db.select({ departmentId: projects.departmentId }).from(projects).where(eq(projects.orgId, orgId)).all();
-  const taskRows = getTaskRows(orgId);
+export async function getDepartments(orgId: string): Promise<DepartmentRow[]> {
+  const depts = await db.select().from(departments).where(eq(departments.orgId, orgId)).orderBy(asc(departments.name));
+  const people = await getPeople(orgId);
+  const projectRows = await db.select({ departmentId: projects.departmentId }).from(projects).where(eq(projects.orgId, orgId));
+  const taskRows = await getTaskRows(orgId);
 
   return depts.map((dept) => {
     const head = people.find((person) => person.id === dept.headUserId);
@@ -174,14 +171,14 @@ export type ProjectRow = {
   milestoneDone: number;
 };
 
-export function getProjects(orgId: string, options?: { includeArchived?: boolean }): ProjectRow[] {
-  const rows = db.select().from(projects).where(eq(projects.orgId, orgId)).orderBy(desc(projects.createdAt)).all();
+export async function getProjects(orgId: string, options?: { includeArchived?: boolean }): Promise<ProjectRow[]> {
+  const rows = await db.select().from(projects).where(eq(projects.orgId, orgId)).orderBy(desc(projects.createdAt));
   const filtered = options?.includeArchived ? rows : rows.filter((project) => !project.archivedAt);
-  const people = getPeople(orgId);
-  const taskRows = getTaskRows(orgId);
-  const memberRows = db.select().from(projectMembers).all();
-  const milestoneRows = db.select().from(milestones).all();
-  const deptRows = db.select().from(departments).where(eq(departments.orgId, orgId)).all();
+  const people = await getPeople(orgId);
+  const taskRows = await getTaskRows(orgId);
+  const memberRows = await db.select().from(projectMembers);
+  const milestoneRows = await db.select().from(milestones);
+  const deptRows = await db.select().from(departments).where(eq(departments.orgId, orgId));
 
   return filtered.map((project) => {
     const projectTasks = taskRows.filter((task) => task.projectId === project.id);
@@ -251,35 +248,32 @@ export type TaskRow = {
   checklistTotal: number;
 };
 
-export function getTaskRows(orgId: string): TaskRow[] {
-  const taskRows = db
+export async function getTaskRows(orgId: string): Promise<TaskRow[]> {
+  const taskRows = await db
     .select()
     .from(tasks)
     .where(and(eq(tasks.orgId, orgId), isNull(tasks.archivedAt)))
-    .orderBy(desc(tasks.number))
-    .all();
-  return enrichTasks(orgId, taskRows);
+    .orderBy(desc(tasks.number));
+  return await enrichTasks(orgId, taskRows);
 }
 
-function enrichTasks(orgId: string, taskRows: Array<typeof tasks.$inferSelect>): TaskRow[] {
+async function enrichTasks(orgId: string, taskRows: Array<typeof tasks.$inferSelect>): Promise<TaskRow[]> {
   if (taskRows.length === 0) return [];
-  const projectRows = db.select().from(projects).where(eq(projects.orgId, orgId)).all();
-  const statusRows = db.select().from(projectStatuses).all();
-  const people = getPeople(orgId);
-  const linkRows = db
+  const projectRows = await db.select().from(projects).where(eq(projects.orgId, orgId));
+  const statusRows = await db.select().from(projectStatuses);
+  const people = await getPeople(orgId);
+  const linkRows = await db
     .select({ taskId: taskLabelLinks.taskId, labelId: taskLabels.id, name: taskLabels.name, color: taskLabels.color })
     .from(taskLabelLinks)
-    .innerJoin(taskLabels, eq(taskLabels.id, taskLabelLinks.labelId))
-    .all();
-  const commentRows = db.select({ taskId: comments.taskId }).from(comments).all();
-  const attachmentRows = db.select({ taskId: attachments.taskId }).from(attachments).all();
-  const checklistRows = db
+    .innerJoin(taskLabels, eq(taskLabels.id, taskLabelLinks.labelId));
+  const commentRows = await db.select({ taskId: comments.taskId }).from(comments);
+  const attachmentRows = await db.select({ taskId: attachments.taskId }).from(attachments);
+  const checklistRows = await db
     .select({ taskId: checklists.taskId, done: checklistItems.done })
     .from(checklists)
-    .leftJoin(checklistItems, eq(checklistItems.checklistId, checklists.id))
-    .all();
-  const collaboratorRows = db.select().from(taskCollaborators).all();
-  const dependencyRows = db.select().from(taskDependencies).all();
+    .leftJoin(checklistItems, eq(checklistItems.checklistId, checklists.id));
+  const collaboratorRows = await db.select().from(taskCollaborators);
+  const dependencyRows = await db.select().from(taskDependencies);
   const taskById = new Map(taskRows.map((row) => [row.id, row]));
   const statusById = new Map(statusRows.map((row) => [row.id, row]));
 
@@ -345,41 +339,37 @@ export type ProjectBundle = {
   activity: Array<{ id: string; actorName: string; verb: string; meta: string | null; createdAt: string }>;
 };
 
-export function getProjectBundle(orgId: string, projectId: string): ProjectBundle | null {
-  const project = getProjects(orgId, { includeArchived: true }).find((row) => row.id === projectId);
+export async function getProjectBundle(orgId: string, projectId: string): Promise<ProjectBundle | null> {
+  const project = (await getProjects(orgId, { includeArchived: true })).find((row) => row.id === projectId);
   if (!project) return null;
-  const statuses = db
+  const statuses = await db
     .select()
     .from(projectStatuses)
     .where(eq(projectStatuses.projectId, projectId))
-    .orderBy(asc(projectStatuses.position))
-    .all();
-  const tasksAll = enrichTasks(
+    .orderBy(asc(projectStatuses.position));
+  const tasksAll = await enrichTasks(
     orgId,
-    db
+    await db
       .select()
       .from(tasks)
       .where(and(eq(tasks.orgId, orgId), eq(tasks.projectId, projectId), isNull(tasks.archivedAt)))
-      .orderBy(asc(tasks.number))
-      .all(),
+      .orderBy(asc(tasks.number)),
   );
-  const memberIds = db.select({ userId: projectMembers.userId }).from(projectMembers).where(eq(projectMembers.projectId, projectId)).all();
-  const people = getPeople(orgId);
+  const memberIds = await db.select({ userId: projectMembers.userId }).from(projectMembers).where(eq(projectMembers.projectId, projectId));
+  const people = await getPeople(orgId);
   const members = memberIds.map((row) => people.find((person) => person.id === row.userId)).filter(Boolean) as Person[];
-  const projectMilestones = db
+  const projectMilestones = await db
     .select()
     .from(milestones)
     .where(eq(milestones.projectId, projectId))
-    .orderBy(asc(milestones.position))
-    .all();
-  const docRows = db.select().from(documents).where(and(eq(documents.orgId, orgId), eq(documents.projectId, projectId))).all();
-  const activityRows = db
+    .orderBy(asc(milestones.position));
+  const docRows = await db.select().from(documents).where(and(eq(documents.orgId, orgId), eq(documents.projectId, projectId)));
+  const activityRows = await db
     .select()
     .from(activity)
     .where(and(eq(activity.orgId, orgId), eq(activity.entityType, "project"), eq(activity.entityId, projectId)))
     .orderBy(desc(activity.createdAt))
-    .limit(12)
-    .all();
+    .limit(12);
   const peopleMap = new Map(people.map((person) => [person.id, person]));
 
   return {
@@ -433,37 +423,34 @@ export type TaskDetail = {
   canEdit: boolean;
 };
 
-export function getTaskDetail(orgId: string, taskId: string, canEdit: boolean): TaskDetail | null {
-  const allTasks = getTaskRows(orgId);
+export async function getTaskDetail(orgId: string, taskId: string, canEdit: boolean): Promise<TaskDetail | null> {
+  const allTasks = await getTaskRows(orgId);
   const task = allTasks.find((row) => row.id === taskId);
   if (!task) return null;
-  const people = getPeople(orgId);
+  const people = await getPeople(orgId);
   const peopleMap = new Map(people.map((person) => [person.id, person]));
-  const commentRows = db.select().from(comments).where(eq(comments.taskId, taskId)).orderBy(asc(comments.createdAt)).all();
-  const commentAttachmentRows = db
+  const commentRows = await db.select().from(comments).where(eq(comments.taskId, taskId)).orderBy(asc(comments.createdAt));
+  const commentAttachmentRows = await db
     .select({ commentId: commentAttachments.commentId, id: documents.id, name: documents.name, kind: documents.kind })
     .from(commentAttachments)
-    .innerJoin(documents, eq(documents.id, commentAttachments.documentId))
-    .all();
-  const checklistRows = db.select().from(checklists).where(eq(checklists.taskId, taskId)).orderBy(asc(checklists.position)).all();
+    .innerJoin(documents, eq(documents.id, commentAttachments.documentId));
+  const checklistRows = await db.select().from(checklists).where(eq(checklists.taskId, taskId)).orderBy(asc(checklists.position));
   const itemRows = checklistRows.length
-    ? db
+    ? await db
         .select()
         .from(checklistItems)
         .where(inArray(checklistItems.checklistId, checklistRows.map((row) => row.id)))
         .orderBy(asc(checklistItems.position))
-        .all()
     : [];
-  const attachmentRows = db.select().from(attachments).where(eq(attachments.taskId, taskId)).all();
-  const logRows = db.select().from(timeLogs).where(eq(timeLogs.taskId, taskId)).orderBy(desc(timeLogs.loggedOn)).all();
-  const collaboratorRows = db.select().from(taskCollaborators).where(eq(taskCollaborators.taskId, taskId)).all();
-  const activityRows = db
+  const attachmentRows = await db.select().from(attachments).where(eq(attachments.taskId, taskId));
+  const logRows = await db.select().from(timeLogs).where(eq(timeLogs.taskId, taskId)).orderBy(desc(timeLogs.loggedOn));
+  const collaboratorRows = await db.select().from(taskCollaborators).where(eq(taskCollaborators.taskId, taskId));
+  const activityRows = await db
     .select()
     .from(activity)
     .where(and(eq(activity.orgId, orgId), eq(activity.entityType, "task"), eq(activity.entityId, taskId)))
     .orderBy(desc(activity.createdAt))
-    .limit(20)
-    .all();
+    .limit(20);
   const subtasks = allTasks.filter((row) => row.parentTaskId === taskId);
   const dependencies = task.dependencyIds
     .map((dependencyId) => allTasks.find((row) => row.id === dependencyId))
@@ -473,10 +460,10 @@ export function getTaskDetail(orgId: string, taskId: string, canEdit: boolean): 
     (row) => row.id !== taskId && !task.dependencyIds.includes(row.id) && !dependents.some((dependent) => dependent.id === row.id),
   );
   const statusRows = task.projectId
-    ? db.select().from(projectStatuses).where(eq(projectStatuses.projectId, task.projectId)).orderBy(asc(projectStatuses.position)).all()
+    ? await db.select().from(projectStatuses).where(eq(projectStatuses.projectId, task.projectId)).orderBy(asc(projectStatuses.position))
     : [];
   const memberIds = task.projectId
-    ? db.select({ userId: projectMembers.userId }).from(projectMembers).where(eq(projectMembers.projectId, task.projectId)).all()
+    ? await db.select({ userId: projectMembers.userId }).from(projectMembers).where(eq(projectMembers.projectId, task.projectId))
     : [];
   const members = memberIds
     .map((row) => peopleMap.get(row.userId))
@@ -535,46 +522,44 @@ export function getTaskDetail(orgId: string, taskId: string, canEdit: boolean): 
     })),
     projectStatuses: statusRows,
     members: members.length ? members : people,
-    availableLabels: db
+    availableLabels: await db
       .select({ id: taskLabels.id, name: taskLabels.name, color: taskLabels.color })
       .from(taskLabels)
       .where(eq(taskLabels.orgId, orgId))
-      .orderBy(asc(taskLabels.name))
-      .all(),
+      .orderBy(asc(taskLabels.name)),
     canEdit,
   };
 }
 
-export function getDashboard(orgId: string, userId: string) {
-  const taskRows = getTaskRows(orgId);
+export async function getDashboard(orgId: string, userId: string) {
+  const taskRows = await getTaskRows(orgId);
   const myTasks = taskRows.filter((task) => task.assigneeId === userId && !task.done);
   const dueToday = myTasks.filter((task) => task.dueDate === todayISO());
   const overdue = myTasks.filter((task) => task.overdue);
   const completed = taskRows.filter((task) => task.assigneeId === userId && task.done);
-  const projectRows = getProjects(orgId).filter((project) => project.status === "active");
-  const people = getPeople(orgId);
+  const projectRows = (await getProjects(orgId)).filter((project) => project.status === "active");
+  const people = await getPeople(orgId);
   const peopleMap = new Map(people.map((person) => [person.id, person]));
-  const eventRows = db
-    .select()
-    .from(events)
-    .where(eq(events.orgId, orgId))
-    .orderBy(asc(events.startsAt))
-    .all()
+  const eventRows = (
+    await db
+      .select()
+      .from(events)
+      .where(eq(events.orgId, orgId))
+      .orderBy(asc(events.startsAt))
+  )
     .filter((event) => new Date(event.startsAt).getTime() >= Date.now() - 86400000)
     .slice(0, 5);
-  const activityRows = db
+  const activityRows = await db
     .select()
     .from(activity)
     .where(eq(activity.orgId, orgId))
     .orderBy(desc(activity.createdAt))
-    .limit(9)
-    .all();
-  const pendingSteps = db
+    .limit(9);
+  const pendingSteps = await db
     .select({ step: approvalSteps, request: requests })
     .from(approvalSteps)
     .innerJoin(requests, eq(requests.id, approvalSteps.requestId))
-    .where(and(eq(approvalSteps.approverId, userId), eq(approvalSteps.status, "pending"), eq(requests.orgId, orgId)))
-    .all();
+    .where(and(eq(approvalSteps.approverId, userId), eq(approvalSteps.status, "pending"), eq(requests.orgId, orgId)));
 
   return {
     myTasks,
@@ -604,30 +589,28 @@ export function getDashboard(orgId: string, userId: string) {
   };
 }
 
-export function getNotifications(orgId: string, userId: string, limit = 8) {
-  return db
+export async function getNotifications(orgId: string, userId: string, limit = 8) {
+  return await db
     .select()
     .from(notifications)
     .where(and(eq(notifications.orgId, orgId), eq(notifications.userId, userId)))
     .orderBy(desc(notifications.createdAt))
-    .limit(limit)
-    .all();
+    .limit(limit);
 }
 
-export function getUnreadNotificationCount(orgId: string, userId: string) {
-  return db
+export async function getUnreadNotificationCount(orgId: string, userId: string) {
+  return (await db
     .select({ id: notifications.id })
     .from(notifications)
-    .where(and(eq(notifications.orgId, orgId), eq(notifications.userId, userId), isNull(notifications.readAt)))
-    .all().length;
+    .where(and(eq(notifications.orgId, orgId), eq(notifications.userId, userId), isNull(notifications.readAt)))).length;
 }
 
-export function getMyWorkCount(orgId: string, userId: string) {
-  return getTaskRows(orgId).filter((task) => task.assigneeId === userId && !task.done).length;
+export async function getMyWorkCount(orgId: string, userId: string) {
+  return (await getTaskRows(orgId)).filter((task) => task.assigneeId === userId && !task.done).length;
 }
 
-export function getPendingApprovalCount(orgId: string, userId: string) {
-  return db
+export async function getPendingApprovalCount(orgId: string, userId: string) {
+  return (await db
     .select({ id: approvalSteps.id })
     .from(approvalSteps)
     .innerJoin(requests, eq(requests.id, approvalSteps.requestId))
@@ -638,53 +621,52 @@ export function getPendingApprovalCount(orgId: string, userId: string) {
         eq(requests.orgId, orgId),
         inArray(requests.status, ["pending", "submitted"]),
       ),
-    )
-    .all().length;
+    )).length;
 }
 
-export function getEvents(orgId: string) {
-  return db
+export async function getEvents(orgId: string) {
+  const rows = await db
     .select()
     .from(events)
     .where(eq(events.orgId, orgId))
-    .orderBy(asc(events.startsAt))
-    .all()
-    .map((event) => {
-      const participants = db.select().from(eventParticipants).where(eq(eventParticipants.eventId, event.id)).all();
+    .orderBy(asc(events.startsAt));
+  return await Promise.all(
+    rows.map(async (event) => {
+      const participants = await db.select().from(eventParticipants).where(eq(eventParticipants.eventId, event.id));
       return { ...event, participantCount: participants.length };
-    });
+    }),
+  );
 }
 
-export function getConversations(ctx: { org: { id: string }; user: { id: string } }) {
-  const memberRows = db
+export async function getConversations(ctx: { org: { id: string }; user: { id: string } }) {
+  const memberRows = await db
     .select({ conversation: conversations })
     .from(conversationMembers)
     .innerJoin(conversations, eq(conversations.id, conversationMembers.conversationId))
-    .where(and(eq(conversationMembers.userId, ctx.user.id), eq(conversations.orgId, ctx.org.id)))
-    .all();
-  const allMessages = db.select().from(messages).all().sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const people = getPeople(ctx.org.id);
+    .where(and(eq(conversationMembers.userId, ctx.user.id), eq(conversations.orgId, ctx.org.id)));
+  const allMessages = (await db.select().from(messages)).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const people = await getPeople(ctx.org.id);
   const peopleMap = new Map(people.map((person) => [person.id, person]));
 
-  return memberRows
-    .map(({ conversation }) => {
+  const list = await Promise.all(
+    memberRows.map(async ({ conversation }) => {
       const convMessages = allMessages.filter((message) => message.conversationId === conversation.id);
       const last = convMessages[convMessages.length - 1];
-      const membership = db
-        .select()
-        .from(conversationMembers)
-        .where(and(eq(conversationMembers.conversationId, conversation.id), eq(conversationMembers.userId, ctx.user.id)))
-        .get();
+      const membership = (
+        await db
+          .select()
+          .from(conversationMembers)
+          .where(and(eq(conversationMembers.conversationId, conversation.id), eq(conversationMembers.userId, ctx.user.id)))
+      )[0];
       const unread = convMessages.filter(
         (message) => message.authorId !== ctx.user.id && (!membership?.lastReadAt || message.createdAt > membership.lastReadAt),
       ).length;
       let displayName = conversation.name;
       if (conversation.kind === "dm") {
-        const members = db
+        const members = await db
           .select()
           .from(conversationMembers)
-          .where(eq(conversationMembers.conversationId, conversation.id))
-          .all();
+          .where(eq(conversationMembers.conversationId, conversation.id));
         const otherId = members.find((member) => member.userId !== ctx.user.id)?.userId;
         if (otherId) displayName = peopleMap.get(otherId)?.name ?? displayName;
       }
@@ -701,25 +683,26 @@ export function getConversations(ctx: { org: { id: string }; user: { id: string 
         lastAt: last?.createdAt ?? null,
         unread,
       };
-    })
-    .sort((a, b) => (b.lastAt ?? "").localeCompare(a.lastAt ?? ""));
+    }),
+  );
+
+  return list.sort((a, b) => (b.lastAt ?? "").localeCompare(a.lastAt ?? ""));
 }
 
-export function getConversation(ctx: { org: { id: string }; user: { id: string } }, conversationId?: string) {
-  const list = getConversations(ctx);
+export async function getConversation(ctx: { org: { id: string }; user: { id: string } }, conversationId?: string) {
+  const list = await getConversations(ctx);
   const active = conversationId ? list.find((conversation) => conversation.id === conversationId) ?? null : null;
   if (!active) return { list, active: null, messages: [] };
-  const rows = db
+  const rows = await db
     .select()
     .from(messages)
     .where(eq(messages.conversationId, active.id))
-    .orderBy(asc(messages.createdAt))
-    .all();
-  const people = getPeople(ctx.org.id);
+    .orderBy(asc(messages.createdAt));
+  const people = await getPeople(ctx.org.id);
   const peopleMap = new Map(people.map((person) => [person.id, person]));
-  const allReactions = db.select().from(messageReactions).all();
-  const attachmentRows = db.select().from(messageAttachments).all();
-  const documentRows = db.select().from(documents).all();
+  const allReactions = await db.select().from(messageReactions);
+  const attachmentRows = await db.select().from(messageAttachments);
+  const documentRows = await db.select().from(documents);
   const documentMap = new Map(documentRows.map((doc) => [doc.id, doc]));
   const enriched = rows.map((message) => ({
     id: message.id,
@@ -746,44 +729,43 @@ export function getConversation(ctx: { org: { id: string }; user: { id: string }
         .entries(),
     ).map(([emoji, userIds]) => ({ emoji, count: userIds.length, mine: userIds.includes(ctx.user.id) })),
   }));
-  const memberRows = db
+  const memberRows = await db
     .select()
     .from(conversationMembers)
-    .where(eq(conversationMembers.conversationId, active.id))
-    .all();
+    .where(eq(conversationMembers.conversationId, active.id));
   const memberIds = memberRows.map((member) => member.userId);
   const roles: Record<string, string> = {};
   for (const member of memberRows) roles[member.userId] = member.role;
   return { list, active: { ...active, memberIds, roles }, messages: enriched };
 }
 
-export function getDocuments(orgId: string) {
+export async function getDocuments(orgId: string) {
   // Arsip otomatis dibersihkan setelah 30 hari.
   const cutoffIso = new Date(Date.now() - 30 * 86400000).toISOString();
-  const initialDocs = db.select().from(documents).where(eq(documents.orgId, orgId)).all();
+  const initialDocs = await db.select().from(documents).where(eq(documents.orgId, orgId));
   const expired = initialDocs.filter((doc) => doc.isTrashed && doc.deletedAt && doc.deletedAt < cutoffIso);
   if (expired.length > 0) {
-    const versionRows = db.select().from(documentVersions).all();
+    const versionRows = await db.select().from(documentVersions);
     for (const doc of expired) {
       const keys = new Set<string>();
       if (doc.storageKey) keys.add(doc.storageKey);
       for (const row of versionRows) if (row.documentId === doc.id && row.storageKey) keys.add(row.storageKey);
-      db.delete(documents).where(eq(documents.id, doc.id)).run();
+      await db.delete(documents).where(eq(documents.id, doc.id));
       for (const key of keys) {
         try {
-          fs.rmSync(path.join(process.cwd(), "data", "uploads", key), { force: true });
+          await deleteObject(key);
         } catch {
           /* abaikan */
         }
       }
     }
   }
-  const folderRows = db.select().from(folders).where(eq(folders.orgId, orgId)).orderBy(asc(folders.name)).all();
-  const docRows = db.select().from(documents).where(eq(documents.orgId, orgId)).orderBy(desc(documents.createdAt)).all();
-  const people = getPeople(orgId);
+  const folderRows = await db.select().from(folders).where(eq(folders.orgId, orgId)).orderBy(asc(folders.name));
+  const docRows = await db.select().from(documents).where(eq(documents.orgId, orgId)).orderBy(desc(documents.createdAt));
+  const people = await getPeople(orgId);
   const peopleMap = new Map(people.map((person) => [person.id, person]));
-  const projectRows = db.select().from(projects).where(eq(projects.orgId, orgId)).all();
-  const versions = db.select().from(documentVersions).all();
+  const projectRows = await db.select().from(projects).where(eq(projects.orgId, orgId));
+  const versions = await db.select().from(documentVersions);
   return {
     folders: folderRows.map((folder) => ({
       ...folder,
@@ -798,7 +780,7 @@ export function getDocuments(orgId: string) {
       visibility: doc.visibility,
       folderId: doc.folderId,
       folderName: folderRows.find((folder) => folder.id === doc.folderId)?.name ?? "Tanpa folder",
-      ownerName: doc.ownerId ? peopleMap.get(doc.ownerId)?.name ?? "Anggota" : "â€”",
+      ownerName: doc.ownerId ? peopleMap.get(doc.ownerId)?.name ?? "Anggota" : "—",
       projectName: projectRows.find((project) => project.id === doc.projectId)?.name ?? null,
       storageKey: doc.storageKey,
       isTrashed: doc.isTrashed,
@@ -816,7 +798,7 @@ export function getDocuments(orgId: string) {
           size: version.size,
           hasFile: Boolean(version.storageKey),
           createdAt: version.createdAt,
-          authorName: version.authorId ? peopleMap.get(version.authorId)?.name ?? "Anggota" : "â€”",
+          authorName: version.authorId ? peopleMap.get(version.authorId)?.name ?? "Anggota" : "—",
         })),
     })),
   };
@@ -847,12 +829,12 @@ export type RequestRow = {
   }>;
 };
 
-export function getRequests(orgId: string): RequestRow[] {
-  const rows = db.select().from(requests).where(eq(requests.orgId, orgId)).orderBy(desc(requests.createdAt)).all();
-  const people = getPeople(orgId);
+export async function getRequests(orgId: string): Promise<RequestRow[]> {
+  const rows = await db.select().from(requests).where(eq(requests.orgId, orgId)).orderBy(desc(requests.createdAt));
+  const people = await getPeople(orgId);
   const peopleMap = new Map(people.map((person) => [person.id, person]));
-  const templates = db.select().from(formTemplates).where(eq(formTemplates.orgId, orgId)).all();
-  const stepRows = db.select().from(approvalSteps).all();
+  const templates = await db.select().from(formTemplates).where(eq(formTemplates.orgId, orgId));
+  const stepRows = await db.select().from(approvalSteps);
 
   return rows.map((request) => {
     let data: Record<string, string | number> = {};
@@ -892,26 +874,26 @@ export function getRequests(orgId: string): RequestRow[] {
   });
 }
 
-export function getRequestTemplates(orgId: string) {
-  const templates = db
+export async function getRequestTemplates(orgId: string) {
+  const templates = await db
     .select()
     .from(formTemplates)
     .where(and(eq(formTemplates.orgId, orgId), eq(formTemplates.active, true)))
-    .orderBy(asc(formTemplates.name))
-    .all();
-  return templates.map((template) => ({
-    ...template,
-    fields: db
-      .select()
-      .from(formFields)
-      .where(eq(formFields.templateId, template.id))
-      .orderBy(asc(formFields.position))
-      .all(),
-  }));
+    .orderBy(asc(formTemplates.name));
+  return Promise.all(
+    templates.map(async (template) => ({
+      ...template,
+      fields: await db
+        .select()
+        .from(formFields)
+        .where(eq(formFields.templateId, template.id))
+        .orderBy(asc(formFields.position)),
+    })),
+  );
 }
 
-export function getApprovalInbox(ctx: { org: { id: string }; user: { id: string } }) {
-  const all = getRequests(ctx.org.id);
+export async function getApprovalInbox(ctx: { org: { id: string }; user: { id: string } }) {
+  const all = await getRequests(ctx.org.id);
   const pending = all.filter((request) => {
     if (!["pending", "submitted"].includes(request.status)) return false;
     const current = request.steps.find((step) => step.position === request.currentStep);
@@ -923,12 +905,12 @@ export function getApprovalInbox(ctx: { org: { id: string }; user: { id: string 
   return { pending, history, all };
 }
 
-export function getReports(orgId: string, filters?: { departmentId?: string; from?: string; to?: string; projectId?: string }) {
-  const departmentsList = getDepartments(orgId);
-  const projectsList = getProjects(orgId);
-  const tasksAll = getTaskRows(orgId);
-  const people = getPeople(orgId);
-  const projectRows = db.select().from(projects).where(eq(projects.orgId, orgId)).all();
+export async function getReports(orgId: string, filters?: { departmentId?: string; from?: string; to?: string; projectId?: string }) {
+  const departmentsList = await getDepartments(orgId);
+  const projectsList = await getProjects(orgId);
+  const tasksAll = await getTaskRows(orgId);
+  const people = await getPeople(orgId);
+  const projectRows = await db.select().from(projects).where(eq(projects.orgId, orgId));
 
   const from = filters?.from ?? "";
   const to = filters?.to ?? "";
@@ -957,7 +939,7 @@ export function getReports(orgId: string, filters?: { departmentId?: string; fro
   const avgCycleHours = cycleHours.length
     ? Math.round((cycleHours.reduce((sum, hours) => sum + hours, 0) / cycleHours.length) * 10) / 10
     : null;
-  const timeRows = db.select().from(timeLogs).all();
+  const timeRows = await db.select().from(timeLogs);
   const taskIds = new Set(filtered.map((task) => task.id));
   const minutes = timeRows.filter((row) => taskIds.has(row.taskId)).reduce((sum, row) => sum + row.minutes, 0);
 
@@ -1027,12 +1009,12 @@ export function getReports(orgId: string, filters?: { departmentId?: string; fro
   };
 }
 
-export function getSearchResults(ctx: { org: { id: string } }, query: string) {
+export async function getSearchResults(ctx: { org: { id: string } }, query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return [];
   const results: Array<{ id: string; type: string; title: string; subtitle: string; href: string }> = [];
-  const people = getPeople(ctx.org.id);
-  for (const task of getTaskRows(ctx.org.id)) {
+  const people = await getPeople(ctx.org.id);
+  for (const task of await getTaskRows(ctx.org.id)) {
     if (`${task.title} ${task.projectCode ?? ""} #${task.number}`.toLowerCase().includes(q)) {
       results.push({
         id: task.id,
@@ -1043,7 +1025,7 @@ export function getSearchResults(ctx: { org: { id: string } }, query: string) {
       });
     }
   }
-  for (const project of getProjects(ctx.org.id)) {
+  for (const project of await getProjects(ctx.org.id)) {
     if (`${project.name} ${project.code}`.toLowerCase().includes(q)) {
       results.push({
         id: project.id,
@@ -1065,7 +1047,7 @@ export function getSearchResults(ctx: { org: { id: string } }, query: string) {
       });
     }
   }
-  const docs = db.select().from(documents).where(eq(documents.orgId, ctx.org.id)).all();
+  const docs = await db.select().from(documents).where(eq(documents.orgId, ctx.org.id));
   for (const doc of docs) {
     if (doc.name.toLowerCase().includes(q)) {
       results.push({ id: doc.id, type: "Dokumen", title: doc.name, subtitle: `${doc.kind.toUpperCase()} Â· v${doc.version}`, href: `/app/documents?doc=${doc.id}` });
@@ -1074,37 +1056,35 @@ export function getSearchResults(ctx: { org: { id: string } }, query: string) {
   return results.slice(0, 24);
 }
 
-export function getUnreadCount(orgId: string, userId: string) {
-  return getUnreadNotificationCount(orgId, userId);
+export async function getUnreadCount(orgId: string, userId: string) {
+  return await getUnreadNotificationCount(orgId, userId);
 }
 
-export function getTeamOverview(orgId: string) {
-  const people = getPeople(orgId);
-  const departmentsList = getDepartments(orgId);
-  const projectsList = getProjects(orgId);
+export async function getTeamOverview(orgId: string) {
+  const people = await getPeople(orgId);
+  const departmentsList = await getDepartments(orgId);
+  const projectsList = await getProjects(orgId);
   return { people, departments: departmentsList, projects: projectsList };
 }
 
-export function getProjectOptions(orgId: string) {
-  return db
+export async function getProjectOptions(orgId: string) {
+  return await db
     .select({ id: projects.id, code: projects.code, name: projects.name, status: projects.status })
     .from(projects)
     .where(and(eq(projects.orgId, orgId), isNull(projects.archivedAt), ne(projects.status, "cancelled")))
-    .orderBy(asc(projects.name))
-    .all();
+    .orderBy(asc(projects.name));
 }
 
-export function getStatuses(orgId: string) {
-  const ids = db.select({ id: projects.id }).from(projects).where(eq(projects.orgId, orgId)).all().map((row) => row.id);
+export async function getStatuses(orgId: string) {
+  const ids = (await db.select({ id: projects.id }).from(projects).where(eq(projects.orgId, orgId))).map((row) => row.id);
   if (!ids.length) return [];
-  return db
+  return await db
     .select()
     .from(projectStatuses)
     .where(inArray(projectStatuses.projectId, ids))
-    .orderBy(asc(projectStatuses.position))
-    .all();
+    .orderBy(asc(projectStatuses.position));
 }
 
-export function getRoleMatrix(orgId: string) {
-  return db.select().from(roles).where(eq(roles.orgId, orgId)).all();
+export async function getRoleMatrix(orgId: string) {
+  return await db.select().from(roles).where(eq(roles.orgId, orgId));
 }

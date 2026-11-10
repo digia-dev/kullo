@@ -19,7 +19,7 @@ export const metadata: Metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const ctx = await requireApp();
-  const data = getDashboard(ctx.org.id, ctx.user.id);
+  const data = await getDashboard(ctx.org.id, ctx.user.id);
   const totalOpen = data.myTasks.length;
   const now = new Date().getTime();
   const completedWeek = data.completed.filter((task) => {

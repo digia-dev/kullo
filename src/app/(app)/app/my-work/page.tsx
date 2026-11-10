@@ -17,10 +17,10 @@ type SearchParams = Promise<{ scope?: string; view?: string }>;
 export default async function MyWorkPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireApp();
   const { scope, view } = await searchParams;
-  const tasks = getTaskRows(ctx.org.id);
-  const people = getPeople(ctx.org.id);
-  const projects = getProjectOptions(ctx.org.id);
-  const statuses = getStatuses(ctx.org.id);
+  const tasks = await getTaskRows(ctx.org.id);
+  const people = await getPeople(ctx.org.id);
+  const projects = await getProjectOptions(ctx.org.id);
+  const statuses = await getStatuses(ctx.org.id);
   const activeView = VIEW_OPTIONS.some((item) => item.key === view) ? view : "list";
 
   return (

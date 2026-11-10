@@ -882,7 +882,7 @@ export function ChatClient({
                         setPendingFile(image);
                       }
                     }}
-                    onKeyDown={(event) => {
+                    onKeyDown={async (event) => {
                       if (mentionOpen && mentionMatches.length > 0) {
                         if (event.key === "ArrowDown") {
                           event.preventDefault();
@@ -907,8 +907,8 @@ export function ChatClient({
                       }
                       if (event.key === "Enter" && !event.shiftKey) {
                         event.preventDefault();
-                        if (editMessage) void saveEdit();
-                        else void send();
+                        if (editMessage) void await saveEdit();
+                        else void await send();
                       }
                       if (event.key === "Escape") {
                         setMentionOpen(false);
@@ -922,7 +922,7 @@ export function ChatClient({
                     className="btn btn-primary"
                     style={{ height: 40 }}
                     disabled={pending || (editMessage ? !body.trim() : !body.trim() && !pendingFile)}
-                    onClick={() => (editMessage ? void saveEdit() : void send())}
+                    onClick={async () => (editMessage ? void await saveEdit() : void await send())}
                   >
                     {pending ? <Loader2 size={15} className="animate-spin" /> : editMessage ? <Check size={15} /> : <Send size={15} />}
                     {editMessage ? "Simpan" : "Kirim"}
@@ -1062,7 +1062,7 @@ export function ChatClient({
                     type="button"
                     className="btn btn-primary btn-sm"
                     disabled={creating || selected.length === 0}
-                    onClick={() => void createConversation()}
+                    onClick={async () => void await createConversation()}
                   >
                     {creating ? "Membuat…" : selected.length > 1 ? "Buat grup" : "Mulai chat"}
                   </button>
@@ -1119,7 +1119,7 @@ export function ChatClient({
                     type="button"
                     className="btn btn-primary btn-sm"
                     disabled={creating || channelName.trim().length < 2}
-                    onClick={() => void createChannel()}
+                    onClick={async () => void await createChannel()}
                   >
                     {creating ? "Membuat…" : "Buat kanal"}
                   </button>
@@ -1160,7 +1160,7 @@ export function ChatClient({
                 type="button"
                 className="btn btn-primary btn-sm"
                 disabled={actionBusy || renameValue.trim().length < 2}
-                onClick={() => void saveRename()}
+                onClick={async () => void await saveRename()}
               >
                 {actionBusy ? "Menyimpan…" : "Simpan"}
               </button>
@@ -1191,7 +1191,7 @@ export function ChatClient({
             {actionError && <p className="error-text" style={{ margin: 0 }} role="alert">{actionError}</p>}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
               <button type="button" className="btn btn-outline btn-sm" onClick={() => setDeleteOpen(false)}>Batal</button>
-              <button type="button" className="btn btn-danger btn-sm" disabled={actionBusy} onClick={() => void removeConversation()}>
+              <button type="button" className="btn btn-danger btn-sm" disabled={actionBusy} onClick={async () => void await removeConversation()}>
                 {actionBusy ? "Menghapus…" : "Hapus percakapan"}
               </button>
             </div>
@@ -1273,7 +1273,7 @@ export function ChatClient({
                         type="button"
                         className="btn btn-ghost btn-sm"
                         disabled={memberBusy}
-                        onClick={() => void setRole(person.id, role === "admin" ? "member" : "admin")}
+                        onClick={async () => void await setRole(person.id, role === "admin" ? "member" : "admin")}
                         title={role === "admin" ? "Cabut admin" : "Jadikan admin kanal"}
                       >
                         {role === "admin" ? "Cabut admin" : "Jadikan admin"}
@@ -1284,7 +1284,7 @@ export function ChatClient({
                         type="button"
                         className="btn btn-ghost btn-sm"
                         disabled={memberBusy}
-                        onClick={() => void removeMember(person.id)}
+                        onClick={async () => void await removeMember(person.id)}
                         title={isMe ? "Keluar dari percakapan" : "Keluarkan anggota"}
                       >
                         <UserMinus size={14} /> {isMe ? "Keluar" : "Keluarkan"}
@@ -1316,7 +1316,7 @@ export function ChatClient({
                       <div key={person.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 4px" }}>
                         <Avatar name={person.name} color={person.avatarColor} size={24} personId={person.id} />
                         <span style={{ flex: 1, minWidth: 0, fontSize: 13 }}>{person.name}</span>
-                        <button type="button" className="btn btn-outline btn-sm" disabled={memberBusy} onClick={() => void addMember(person.id)}>
+                        <button type="button" className="btn btn-outline btn-sm" disabled={memberBusy} onClick={async () => void await addMember(person.id)}>
                           <UserPlus size={14} /> Tambah
                         </button>
                       </div>

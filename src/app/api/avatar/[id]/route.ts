@@ -1,25 +1,23 @@
 import { NextResponse } from "next/server";
-import fs from "node:fs/promises";
-import path from "node:path";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { users } from "@/db/schema";
 import { getSessionUser } from "@/lib/auth";
+import { getObject } from "@/lib/storage";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSessionUser();
   if (!session) return new NextResponse("Unauthorized", { status: 401 });
   const { id } = await params;
-  const user = db.select().from(users).where(eq(users.id, id)).get();
+  const user = (await db.select().from(users).where(eq(users.id, id)))[0];
   if (!user) return new NextResponse("Not found", { status: 404 });
 
   if (user.avatarKey) {
     try {
-      const filePath = path.join(process.cwd(), "data", "uploads", user.avatarKey);
-      const file = await fs.readFile(filePath);
+      const file = await getObject(user.avatarKey);
       const extension = user.avatarKey.split(".").pop()?.toLowerCase();
       const type = extension === "png" ? "image/png" : extension === "webp" ? "image/webp" : "image/jpeg";
-      return new NextResponse(file, {
+      return new NextResponse(new Uint8Array(file), {
         headers: { "content-type": type, "cache-control": "private, no-store" },
       });
     } catch {

@@ -254,12 +254,12 @@ export function DocumentsClient({
         setDropTarget(target ?? "root");
       },
       onDragLeave: () => setDropTarget((current) => ((current === (target ?? "root")) ? null : current)),
-      onDrop: (event: DragEvent<HTMLElement>) => {
+      onDrop: async (event: DragEvent<HTMLElement>) => {
         event.preventDefault();
         const id = event.dataTransfer.getData("text/kullo-doc") || draggingId;
         setDropTarget(null);
         setDraggingId(null);
-        if (id) void moveInto(id, target);
+        if (id) void await moveInto(id, target);
       },
     };
   }
@@ -321,7 +321,7 @@ export function DocumentsClient({
           <CheckSquare size={14} /> Pilih
         </button>
         {clipboard && (
-          <button type="button" className="btn btn-outline btn-sm" disabled={pending} onClick={() => void pasteClipboard()}>
+          <button type="button" className="btn btn-outline btn-sm" disabled={pending} onClick={async () => void await pasteClipboard()}>
             <ClipboardPaste size={14} /> Tempel ({clipboard.ids.length})
           </button>
         )}
@@ -422,7 +422,7 @@ export function DocumentsClient({
               >
                 <Scissors size={14} /> Pindah
               </button>
-              <button type="button" className="btn btn-ghost btn-sm" style={{ color: "var(--danger)" }} disabled={pending} onClick={() => void bulkArchive()}>
+              <button type="button" className="btn btn-ghost btn-sm" style={{ color: "var(--danger)" }} disabled={pending} onClick={async () => void await bulkArchive()}>
                 <Trash2 size={14} /> Hapus
               </button>
               <button type="button" className="btn btn-ghost btn-sm" style={{ marginLeft: "auto" }} onClick={() => setPicked([])}>
@@ -829,9 +829,9 @@ export function DocumentsClient({
               <button type="button" className="icon-btn" onClick={() => setFolderModal(false)} aria-label="Tutup" style={{ marginLeft: "auto" }}><X size={17} /></button>
             </div>
             <form
-              onSubmit={(event) => {
+              onSubmit={async (event) => {
                 event.preventDefault();
-                void submitFolder();
+                void await submitFolder();
               }}
             >
               <div className="modal-body">
@@ -890,7 +890,7 @@ export function DocumentsClient({
                     <span className="badge badge-neutral">Arsip</span>
                     {canManage && (
                       <>
-                        <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={() => void restoreArchived(doc.id)}>
+                        <button type="button" className="btn btn-ghost btn-sm" disabled={pending} onClick={async () => void await restoreArchived(doc.id)}>
                           <RotateCcw size={14} /> Pulihkan
                         </button>
                         <button type="button" className="btn btn-ghost btn-sm" style={{ color: "var(--danger)" }} disabled={pending} onClick={() => setDeleteTarget(doc.id)}>
@@ -917,11 +917,11 @@ export function DocumentsClient({
         busyLabel="Menghapus…"
         busy={deleting}
         onClose={() => setDeleteTarget(null)}
-        onConfirm={() => void confirmDelete()}
+        onConfirm={async () => void await confirmDelete()}
       />
 
       <p className="help" style={{ marginTop: 12 }}>
-        File disimpan di adapter lokal <code>data/uploads</code>. Untuk produksi, ganti dengan S3-compatible storage lewat kunci lingkungan.
+        File disimpan di Supabase Storage (bucket privat). Di lingkungan pengembangan tanpa kredensial, berkas memakai folder lokal <code>data/uploads</code>.
         <Link href="/sumber-daya/catatan-rilis" className="textlink" style={{ marginLeft: 6 }}>Catatan rilis</Link>
       </p>
     </>

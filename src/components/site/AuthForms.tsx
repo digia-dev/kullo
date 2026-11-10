@@ -49,7 +49,7 @@ export function LoginForm({ next }: { next?: string }) {
         </p>
       )}
       <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
-        {pending ? "Memeriksaâ€¦" : "Masuk"} <ArrowRight size={17} />
+        {pending ? "Memeriksa…" : "Masuk"} <ArrowRight size={17} />
       </button>
       <p className="help" style={{ margin: 0, textAlign: "center" }}>
         Belum punya akun? <Link href="/daftar" className="textlink">Buat akun gratis</Link>
@@ -106,7 +106,7 @@ export function RegisterForm() {
         </p>
       )}
       <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
-        {pending ? "Membuat organisasiâ€¦" : "Buat akun dan organisasi"} <ArrowRight size={17} />
+        {pending ? "Membuat organisasi…" : "Buat akun dan organisasi"} <ArrowRight size={17} />
       </button>
       <p className="help" style={{ margin: 0, textAlign: "center" }}>
         Sudah punya akun? <Link href="/masuk" className="textlink">Masuk</Link>

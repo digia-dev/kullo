@@ -298,7 +298,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
     data.set("taskId", detail.task.id);
     data.set("body", comment);
     for (const entry of commentFiles) data.append("files", entry.file);
-    const ok = await act(() => addCommentWithFilesAction(data));
+    const ok = await act(async () => await addCommentWithFilesAction(data));
     if (!ok) return;
     for (const entry of commentFiles) URL.revokeObjectURL(entry.url);
     setCommentFiles([]);
@@ -329,7 +329,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
     setLabelQuery("");
     setLabelOpen(false);
     if (currentIds.includes(labelId)) return;
-    const ok = await act(() => setTaskLabelsAction(detail.task.id, [...currentIds, labelId as string]));
+    const ok = await act(async () => await setTaskLabelsAction(detail.task.id, [...currentIds, labelId as string]));
     if (ok) toast("Label diperbarui");
   }
 
@@ -398,7 +398,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                     className="select"
                     value={detail.task.statusId ?? ""}
                     disabled={!detail.canEdit || saving}
-                    onChange={(event) => void patch({ statusId: event.target.value })}
+                    onChange={async (event) => void await patch({ statusId: event.target.value })}
                   >
                     {detail.projectStatuses.map((status) => (
                       <option key={status.id} value={status.id}>{status.name}</option>
@@ -411,7 +411,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                     className="select"
                     value={detail.task.priority}
                     disabled={!detail.canEdit || saving}
-                    onChange={(event) => void patch({ priority: event.target.value })}
+                    onChange={async (event) => void await patch({ priority: event.target.value })}
                   >
                     <option value="urgent">Urgent</option>
                     <option value="high">High</option>
@@ -425,7 +425,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                     value={detail.task.assigneeId}
                     members={detail.members}
                     disabled={!detail.canEdit || saving}
-                    onChange={(id) => void patch({ assigneeId: id })}
+                    onChange={async (id) => void await patch({ assigneeId: id })}
                   />
                 </div>
                 <label className="field">
@@ -435,7 +435,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                     type="date"
                     value={detail.task.dueDate ?? ""}
                     disabled={!detail.canEdit || saving}
-                    onChange={(event) => void patch({ dueDate: event.target.value || null })}
+                    onChange={async (event) => void await patch({ dueDate: event.target.value || null })}
                   />
                 </label>
                 <div className="field" style={{ minWidth: 0 }}>
@@ -453,8 +453,8 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                               title="Hapus label"
                               disabled={saving}
                               onClick={async () => {
-                                const ok = await act(() =>
-                                  setTaskLabelsAction(
+                                const ok = await act(async () =>
+                                  await setTaskLabelsAction(
                                     detail.task.id,
                                     detail.task.labels.filter((row) => row.id !== label.id).map((row) => row.id),
                                   ),
@@ -484,10 +484,10 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                             setLabelQuery(event.target.value);
                             setLabelOpen(true);
                           }}
-                          onKeyDown={(event) => {
+                          onKeyDown={async (event) => {
                             if (event.key === "Enter") {
                               event.preventDefault();
-                              void addLabelByName(labelQuery || labelSuggestions[0]?.name || "");
+                              void await addLabelByName(labelQuery || labelSuggestions[0]?.name || "");
                             }
                             if (event.key === "Escape") {
                               event.stopPropagation();
@@ -512,7 +512,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                               aria-selected={false}
                               className="label-suggest-item"
                               onMouseDown={(event) => event.preventDefault()}
-                              onClick={() => void addLabelByName(row.name)}
+                              onClick={async () => void await addLabelByName(row.name)}
                             >
                               <span className="label-dot" style={{ background: row.color }} aria-hidden />
                               {row.name}
@@ -575,7 +575,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                           type="button"
                           className="btn btn-ghost btn-sm"
                           disabled={saving || description === (detail.task.description ?? "")}
-                          onClick={() => void patch({ description })}
+                          onClick={async () => void await patch({ description })}
                         >
                           Simpan
                         </button>
@@ -608,7 +608,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                             role="checkbox"
                             aria-checked={item.done}
                             disabled={!detail.canEdit}
-                            onClick={() => void act(() => toggleChecklistItemAction(item.id, !item.done))}
+                            onClick={async () => void await act(async () => await toggleChecklistItemAction(item.id, !item.done))}
                             style={{
                               display: "flex",
                               gap: 8,
@@ -635,7 +635,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                         onSubmit={(event) => {
                           event.preventDefault();
                           if (!checkItem.trim()) return;
-                          void act(() => addChecklistItemAction(detail.task.id, checkItem)).then((ok) => ok && setCheckItem(""));
+                          void act(async () => await addChecklistItemAction(detail.task.id, checkItem)).then((ok) => ok && setCheckItem(""));
                         }}
                       >
                         <input className="input" placeholder="Tambah item checklist…" aria-label="Item checklist baru" value={checkItem} onChange={(event) => setCheckItem(event.target.value)} />
@@ -710,7 +710,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                                 aria-label={`Hapus dependensi ${dependency.title}`}
                                 title="Hapus dependensi"
                                 disabled={saving}
-                                onClick={() => void act(() => removeTaskDependencyAction(detail.task.id, dependency.id)).then((ok) => ok && toast("Dependensi dihapus", "info"))}
+                                onClick={() => void act(async () => await removeTaskDependencyAction(detail.task.id, dependency.id)).then((ok) => ok && toast("Dependensi dihapus", "info"))}
                               >
                                 <X size={14} />
                               </button>
@@ -730,7 +730,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                         onSubmit={(event) => {
                           event.preventDefault();
                           if (!dependencyTarget) return;
-                          void act(() => addTaskDependencyAction(detail.task.id, dependencyTarget)).then((ok) => {
+                          void act(async () => await addTaskDependencyAction(detail.task.id, dependencyTarget)).then((ok) => {
                             if (ok) {
                               setDependencyTarget("");
                               toast("Dependensi ditambahkan");
@@ -831,7 +831,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                         type="button"
                         className="btn btn-primary btn-sm"
                         disabled={saving || (!comment.trim() && commentFiles.length === 0)}
-                        onClick={() => void submitComment()}
+                        onClick={async () => void await submitComment()}
                       >
                         {saving ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} Kirim
                       </button>
@@ -914,7 +914,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                         const formData = new FormData();
                         formData.set("taskId", detail.task.id);
                         formData.set("file", pendingFile);
-                        const ok = await act(() => uploadTaskAttachmentAction(formData));
+                        const ok = await act(async () => await uploadTaskAttachmentAction(formData));
                         if (ok) {
                           setPendingFile(null);
                           if (fileInputRef.current) fileInputRef.current.value = "";

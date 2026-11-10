@@ -31,15 +31,14 @@ export async function submitSupportMessage(
     return { status: "error", message: "Beberapa isian perlu diperbaiki.", errors };
   }
 
-  db.insert(supportMessages)
+  await db.insert(supportMessages)
     .values({
       id: newId("sup"),
       name,
       email,
       topic,
       message,
-    })
-    .run();
+    });
 
   return {
     status: "ok",

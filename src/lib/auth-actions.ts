@@ -152,7 +152,7 @@ export async function loginAction(_prev: AuthState, formData: FormData): Promise
     return { error: `Terlalu banyak percobaan masuk. Coba lagi dalam ${retryMinutes(limit.retryAfterMs)} menit.` };
   }
 
-  const user = db.select().from(users).where(eq(users.email, email)).get();
+  const user = (await db.select().from(users).where(eq(users.email, email)))[0];
   if (!user || !verifyPassword(parsed.data.password, user.passwordHash)) {
     return { error: "Email atau kata sandi tidak cocok. Periksa ejaan, lalu coba lagi." };
   }
@@ -176,7 +176,7 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
   if (!signupLimit.allowed) {
     return { error: `Terlalu banyak percobaan pendaftaran. Coba lagi dalam ${retryMinutes(signupLimit.retryAfterMs)} menit.` };
   }
-  const exists = db.select({ id: users.id }).from(users).where(eq(users.email, email)).get();
+  const exists = (await db.select({ id: users.id }).from(users).where(eq(users.email, email)))[0];
   if (exists) return { error: "Email ini sudah terdaftar. Masuk dengan akun tersebut." };
 
   const orgId = newId("org");
@@ -185,13 +185,13 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
   const baseSlug = slugify(parsed.data.orgName);
   let slug = baseSlug;
   let suffix = 2;
-  while (db.select({ id: organizations.id }).from(organizations).where(eq(organizations.slug, slug)).get()) {
+  while ((await db.select({ id: organizations.id }).from(organizations).where(eq(organizations.slug, slug)))[0]) {
     slug = `${baseSlug}-${suffix++}`;
   }
 
   try {
-    db.transaction((tx) => {
-      tx.insert(organizations)
+    await db.transaction(async (tx) => {
+      await tx.insert(organizations)
         .values({
           id: orgId,
           name: parsed.data.orgName.trim(),
@@ -200,10 +200,9 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
           workStart: "09:00",
           workEnd: "18:00",
           plan: "free",
-        })
-        .run();
+        });
 
-      tx.insert(users)
+      await tx.insert(users)
         .values({
           id: userId,
           name: parsed.data.name.trim(),
@@ -211,14 +210,12 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
           passwordHash: hashPassword(parsed.data.password),
           title: "Pemilik Organisasi",
           avatarColor: "#0f6cbd",
-        })
-        .run();
+        });
 
-      tx.insert(departments)
-        .values({ id: deptId, orgId, name: "Umum", headUserId: userId, color: "#0f6cbd" })
-        .run();
+      await tx.insert(departments)
+        .values({ id: deptId, orgId, name: "Umum", headUserId: userId, color: "#0f6cbd" });
 
-      tx.insert(memberships)
+      await tx.insert(memberships)
         .values({
           id: newId("mem"),
           orgId,
@@ -226,11 +223,10 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
           role: "owner",
           departmentId: deptId,
           status: "active",
-        })
-        .run();
+        });
 
       for (const key of ["owner", "admin", "manager", "leader", "staff", "guest"]) {
-        tx.insert(roles)
+        await tx.insert(roles)
           .values({
             id: newId("role"),
             orgId,
@@ -238,12 +234,11 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
             name: ROLE_LABELS[key],
             permissions: JSON.stringify(DEFAULT_ROLE_PERMISSIONS[key]),
             system: true,
-          })
-          .run();
+          });
       }
 
       const projectId = newId("prj");
-      tx.insert(projects)
+      await tx.insert(projects)
         .values({
           id: projectId,
           orgId,
@@ -259,17 +254,15 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
           startDate: todayISO(),
           dueDate: todayISO(),
           progress: 0,
-        })
-        .run();
-      tx.insert(projectMembers).values({ projectId, userId, role: "owner" }).run();
+        });
+      await tx.insert(projectMembers).values({ projectId, userId, role: "owner" });
 
       const statusIds: Record<string, string> = {};
       for (const [position, name] of ["Backlog", "To Do", "In Progress", "In Review", "Done"].entries()) {
         const id = newId("pst");
         statusIds[name] = id;
-        tx.insert(projectStatuses)
-          .values({ id, projectId, name, position, category: name === "Done" ? "done" : "open" })
-          .run();
+        await tx.insert(projectStatuses)
+          .values({ id, projectId, name, position, category: name === "Done" ? "done" : "open" });
       }
 
       const starterTasks = [
@@ -278,7 +271,7 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
         ["Coba papan Kanban", "Pindahkan tugas ini ke In Progress, lalu ke Done untuk melihat progres proyek berubah.", "In Progress", "low"],
       ] as const;
       for (const [index, [title, description, status, priority]] of starterTasks.entries()) {
-        tx.insert(tasks)
+        await tx.insert(tasks)
           .values({
             id: newId("tsk"),
             orgId,
@@ -291,33 +284,30 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
             assigneeId: userId,
             reporterId: userId,
             dueDate: todayISO(),
-          })
-          .run();
+          });
       }
 
       const conversationId = newId("cnv");
-      tx.insert(conversations)
+      await tx.insert(conversations)
         .values({
           id: conversationId,
           orgId,
           kind: "channel",
           name: "umum",
           description: "Pengumuman dan percakapan lintas tim",
-        })
-        .run();
-      tx.insert(conversationMembers).values({ conversationId, userId }).run();
-      tx.insert(messages)
+        });
+      await tx.insert(conversationMembers).values({ conversationId, userId });
+      await tx.insert(messages)
         .values({
           id: newId("msg"),
           conversationId,
           authorId: userId,
           body: "Selamat datang di Kullo. Kanal ini untuk seluruh tim. Mulai dengan mengundang anggota di Pengaturan.",
-        })
-        .run();
+        });
 
       for (const template of TEMPLATES) {
         const templateId = newId("tpl");
-        tx.insert(formTemplates)
+        await tx.insert(formTemplates)
           .values({
             id: templateId,
             orgId,
@@ -325,11 +315,10 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
             name: template.name,
             description: template.description,
             category: template.category,
-          })
-          .run();
-        template.fields.forEach((field, index) => {
+          });
+        template.fields.forEach(async (field, index) => {
           const [label, type, required, options] = field;
-          tx.insert(formFields)
+          await tx.insert(formFields)
             .values({
               id: newId("fld"),
               templateId,
@@ -338,12 +327,11 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
               required,
               options: options ? JSON.stringify(options) : null,
               position: index,
-            })
-            .run();
+            });
         });
       }
 
-      tx.insert(activity)
+      await tx.insert(activity)
         .values({
           id: newId("act"),
           orgId,
@@ -352,10 +340,9 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
           entityId: orgId,
           verb: "membuat organisasi",
           meta: parsed.data.orgName.trim(),
-        })
-        .run();
+        });
 
-      tx.insert(notifications)
+      await tx.insert(notifications)
         .values({
           id: newId("ntf"),
           orgId,
@@ -364,8 +351,7 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
           title: "Selamat datang di Kullo",
           body: "Tiga tugas contoh sudah disiapkan. Mulai dari mengundang anggota tim.",
           href: "/app/dashboard",
-        })
-        .run();
+        });
     });
   } catch {
     return { error: "Organisasi gagal dibuat. Coba lagi dengan nama organisasi lain." };

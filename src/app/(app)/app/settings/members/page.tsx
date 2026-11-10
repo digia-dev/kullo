@@ -8,8 +8,8 @@ export const metadata: Metadata = { title: "Anggota" };
 
 export default async function MembersSettingsPage() {
   const ctx = await requireApp();
-  const people = getPeople(ctx.org.id);
-  const departments = getDepartments(ctx.org.id);
+  const people = await getPeople(ctx.org.id);
+  const departments = await getDepartments(ctx.org.id);
   return (
     <MembersManager
       members={people.map((person) => ({

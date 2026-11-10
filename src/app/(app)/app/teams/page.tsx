@@ -10,8 +10,8 @@ export const metadata: Metadata = { title: "Tim" };
 
 export default async function TeamsPage() {
   const ctx = await requireApp();
-  const people = getPeople(ctx.org.id);
-  const departments = getDepartments(ctx.org.id);
+  const people = await getPeople(ctx.org.id);
+  const departments = await getDepartments(ctx.org.id);
   const active = people.filter((person) => person.status === "active").length;
   const pending = people.filter((person) => person.status === "invited" || person.status === "pending").length;
 

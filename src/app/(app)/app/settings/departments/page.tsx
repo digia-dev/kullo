@@ -8,8 +8,8 @@ export const metadata: Metadata = { title: "Departemen" };
 
 export default async function DepartmentsSettingsPage() {
   const ctx = await requireApp();
-  const departments = getDepartments(ctx.org.id);
-  const people = getPeople(ctx.org.id);
+  const departments = await getDepartments(ctx.org.id);
+  const people = await getPeople(ctx.org.id);
   return (
     <DepartmentManager
       departments={departments.map((dept) => ({ id: dept.id, name: dept.name, color: dept.color, headUserId: dept.headUserId, headName: dept.headName, members: dept.members, openTasks: dept.openTasks, projects: dept.projects }))}

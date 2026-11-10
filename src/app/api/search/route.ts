@@ -14,5 +14,5 @@ export async function GET(request: Request) {
     );
   }
   const q = new URL(request.url).searchParams.get("q") ?? "";
-  return NextResponse.json({ results: getSearchResults(ctx, q) });
+  return NextResponse.json({ results: await getSearchResults(ctx, q) });
 }

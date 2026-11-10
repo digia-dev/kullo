@@ -11,12 +11,12 @@ the specification in `docs/specs/KULLO.md`.
 | --- | --- | --- |
 | Framework | Next.js 16 App Router, React 19, TypeScript strict | Server components keep tenant-scoped queries on the server; server actions remove a hand-written REST layer for the MVP. |
 | Styling | Hand-authored CSS on the token layer (`globals.css`) + Tailwind v4 reset | Precise reproduction of the measured 54px header, 565px hero, 308px cards; no utility soup in the product. |
-| Data | SQLite + Drizzle ORM, WAL, foreign keys on | Zero external services for a deployable demo; swap the driver for Postgres later without changing the schema shape. |
+| Data | Supabase Postgres + Drizzle ORM (`postgres-js`, transaction pooler, `prepare: false`) | Serverless-friendly hosted database; schema, FK and indexes are portable Postgres. |
 | Auth | Opaque session token, SHA-256 hash at rest, HttpOnly SameSite=Lax cookie, 7 days | No JWT secret to leak; revocable server-side. |
 | Passwords | scrypt with random salt, timing-safe comparison | Node built-in, no native dependency. |
 | Mutations | Server actions, zod validation, RBAC assertion, audit row | Every write is tenant-checked server-side, never only hidden in the UI. |
 | Search | `GET /api/search` scoped by organisation, debounced command palette | Small, cache-free, indexed by org. |
-| Files | Metadata + generated version rows; storage adapter interface documented | No fabricated binaries; local disk in dev, S3 adapter for production. |
+| Files | Supabase Storage (private bucket) via `src/lib/storage.ts`; local disk fallback when credentials are absent | No fabricated binaries; signed server-side download; dev and e2e run without cloud keys. |
 | Charts | Server-computed aggregates, inline SVG | Real rows only; no chart library weight. |
 
 ## Routes
@@ -68,7 +68,7 @@ state is client-side over the current route, deep-linked with `?task=`.
   labelled rather than faked.
 - **Timezones.** All dates are stored as ISO with the organisation timezone
   (Asia/Jakarta) used for display and for "today".
-- **Concurrency.** SQLite serialises writes; unique constraints catch duplicate
+- **Concurrency.** Postgres handles concurrent writes; unique constraints catch duplicate
   codes and double decisions. The UI surfaces the resulting error.
 - **Realtime.** Chat is request/response, not WebSocket, in this build; the
   schema and polling point are documented for a later socket adapter.

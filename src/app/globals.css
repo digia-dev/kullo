@@ -318,10 +318,32 @@ svg {
 
 .masthead-inner {
   height: var(--header);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+.masthead-left {
   display: flex;
   align-items: center;
-  gap: 28px;
+  justify-self: start;
+  min-width: 0;
+  gap: 8px;
 }
+.masthead-center {
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  min-width: 0;
+}
+.masthead-right {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  min-width: 0;
+  gap: 8px;
+}
+.masthead-right .utility { margin-left: 0; }
 
 .brand {
   display: inline-flex;
@@ -2620,7 +2642,9 @@ svg {
   display: inline-flex;
 }
 
-@media (max-width: 767px) {
+.site-nav-drawer { display: none; }
+
+@media (max-width: 1199px) {
   .masthead .nav-mobile {
     display: inline-grid;
   }
@@ -2633,11 +2657,16 @@ svg {
     gap: 10px;
   }
   .masthead-inner .brand {
-    margin-right: auto;
+    margin-right: 0;
   }
+  .masthead-left { justify-self: start; }
+  .masthead-right { gap: 2px; }
+  .masthead-right .utility { display: none; }
+  .site-header-action { width: 40px; height: 40px; }
   .nav-desktop-label {
     display: none;
   }
+  .site-nav-drawer { display: block; }
 }
 
 /* Keep hero copy legible over the artwork */

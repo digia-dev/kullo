@@ -16,7 +16,7 @@ function parseDate(value: string) {
 export default async function ProjectTimelinePage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requireApp();
   const { id } = await params;
-  const bundle = getProjectBundle(ctx.org.id, id);
+  const bundle = await getProjectBundle(ctx.org.id, id);
   if (!bundle) notFound();
   const tasks = bundle.tasks.filter((task) => task.dueDate || task.startDate);
   const dates = tasks.flatMap((task) => [task.startDate, task.dueDate].filter(Boolean) as string[]);

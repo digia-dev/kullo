@@ -26,15 +26,14 @@ export async function submitContact(_prev: ContactState, formData: FormData): Pr
     return { ok: false, message: parsed.error.issues[0]?.message ?? "Periksa kembali isian Anda." };
   }
 
-  db.insert(supportMessages)
+  await db.insert(supportMessages)
     .values({
       id: newId("sup"),
       name: parsed.data.name,
       email: parsed.data.email,
       topic: parsed.data.topic,
       message: parsed.data.message,
-    })
-    .run();
+    });
 
   return {
     ok: true,

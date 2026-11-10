@@ -11,8 +11,8 @@ type SearchParams = Promise<{ new?: string }>;
 export default async function RequestsPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireApp();
   const params = await searchParams;
-  const templates = getRequestTemplates(ctx.org.id);
-  const requests = getRequests(ctx.org.id);
+  const templates = await getRequestTemplates(ctx.org.id);
+  const requests = await getRequests(ctx.org.id);
 
   return (
     <>

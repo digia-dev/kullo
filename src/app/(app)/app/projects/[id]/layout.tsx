@@ -16,7 +16,7 @@ export default async function ProjectLayout({
 }) {
   const ctx = await requireApp();
   const { id } = await params;
-  const bundle = getProjectBundle(ctx.org.id, id);
+  const bundle = await getProjectBundle(ctx.org.id, id);
   if (!bundle) notFound();
   const { project } = bundle;
   const status = projectStatus(project.status);

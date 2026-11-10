@@ -24,9 +24,9 @@ const STATUS_OPTIONS = [
 export default async function ProjectsPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireApp();
   const params = await searchParams;
-  const people = getPeople(ctx.org.id);
-  const departments = getDepartments(ctx.org.id);
-  const all = getProjects(ctx.org.id, { includeArchived: params.archived === "1" });
+  const people = await getPeople(ctx.org.id);
+  const departments = await getDepartments(ctx.org.id);
+  const all = await getProjects(ctx.org.id, { includeArchived: params.archived === "1" });
   const q = (params.q ?? "").toLowerCase();
   const headerList = await headers();
   const userAgent = headerList.get("user-agent") ?? "";

@@ -9,8 +9,8 @@ export const metadata: Metadata = { title: "Kalender" };
 
 export default async function CalendarPage() {
   const ctx = await requireApp();
-  const events = getEvents(ctx.org.id);
-  const projects = getProjectOptions(ctx.org.id);
+  const events = await getEvents(ctx.org.id);
+  const projects = await getProjectOptions(ctx.org.id);
 
   const meetings = events.filter((event) => event.kind === "meeting").length;
   const deadlines = events.filter((event) => event.kind === "deadline").length;

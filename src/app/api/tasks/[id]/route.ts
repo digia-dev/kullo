@@ -8,7 +8,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   if (!ctx) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const editable = can(ctx, "task.edit");
-  const detail = getTaskDetail(ctx.org.id, id, editable);
+  const detail = await getTaskDetail(ctx.org.id, id, editable);
   if (!detail) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ ...detail, currentUserId: ctx.user.id });
 }

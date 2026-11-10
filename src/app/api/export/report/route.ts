@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   if (!can(ctx, "report.view")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const url = new URL(request.url);
-  const reports = getReports(ctx.org.id, {
+  const reports = await getReports(ctx.org.id, {
     departmentId: url.searchParams.get("departmentId") || undefined,
     projectId: url.searchParams.get("projectId") || undefined,
     from: url.searchParams.get("from") || undefined,

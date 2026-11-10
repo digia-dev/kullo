@@ -10,9 +10,9 @@ type SearchParams = Promise<{ c?: string; new?: string }>;
 export default async function ChatPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireApp();
   const { c, new: startNew } = await searchParams;
-  const { list, active, messages } = getConversation(ctx, c);
-  const projects = getProjectOptions(ctx.org.id);
-  const people = getPeople(ctx.org.id);
+  const { list, active, messages } = await getConversation(ctx, c);
+  const projects = await getProjectOptions(ctx.org.id);
+  const people = await getPeople(ctx.org.id);
 
   return (
     <ChatClient

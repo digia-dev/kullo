@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Role & izin" };
 
 export default async function RolesSettingsPage() {
   const ctx = await requireApp();
-  const roles = getRoleMatrix(ctx.org.id);
+  const roles = await getRoleMatrix(ctx.org.id);
   return (
     <RolesMatrix
       roles={roles.map((role) => ({ id: role.id, key: role.key, name: role.name, permissions: role.permissions }))}

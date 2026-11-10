@@ -14,14 +14,13 @@ const SESSION_DAYS = 7;
 export async function createSession(userId: string) {
   const token = crypto.randomBytes(32).toString("base64url");
   const expires = new Date(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000);
-  db.insert(sessions)
+  await db.insert(sessions)
     .values({
       id: crypto.randomUUID(),
       userId,
       tokenHash: hashToken(token),
       expiresAt: expires.toISOString(),
-    })
-    .run();
+    });
   const jar = await cookies();
   const requestHeaders = await headers();
   const forwardedProto = requestHeaders.get("x-forwarded-proto")?.split(",")[0]?.trim();
@@ -39,7 +38,7 @@ export async function destroySession() {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (token) {
-    db.delete(sessions).where(eq(sessions.tokenHash, hashToken(token))).run();
+    await db.delete(sessions).where(eq(sessions.tokenHash, hashToken(token)));
   }
   jar.delete(COOKIE);
 }
@@ -48,15 +47,14 @@ export async function getSessionUser() {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (!token) return null;
-  const row = db
+  const row = (await db
     .select({
       user: users,
       sessionId: sessions.id,
     })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
-    .where(and(eq(sessions.tokenHash, hashToken(token)), gt(sessions.expiresAt, new Date().toISOString())))
-    .get();
+    .where(and(eq(sessions.tokenHash, hashToken(token)), gt(sessions.expiresAt, new Date().toISOString()))))[0];
   return row?.user ?? null;
 }
 
@@ -64,19 +62,24 @@ export type AppContext = {
   user: typeof users.$inferSelect;
   membership: typeof memberships.$inferSelect;
   org: typeof organizations.$inferSelect;
+  /** Permissions for the member's role, loaded once per request. */
+  permissions: readonly string[];
 };
 
 export async function getAppContext(): Promise<AppContext | null> {
   const user = await getSessionUser();
   if (!user) return null;
-  const row = db
-    .select({ membership: memberships, org: organizations })
-    .from(memberships)
-    .innerJoin(organizations, eq(organizations.id, memberships.orgId))
-    .where(and(eq(memberships.userId, user.id), eq(memberships.status, "active")))
-    .get();
+  const row = (
+    await db
+      .select({ membership: memberships, org: organizations })
+      .from(memberships)
+      .innerJoin(organizations, eq(organizations.id, memberships.orgId))
+      .where(and(eq(memberships.userId, user.id), eq(memberships.status, "active")))
+  )[0];
   if (!row) return null;
-  return { user, membership: row.membership, org: row.org };
+  const { getRolePermissions } = await import("./rbac");
+  const permissions = await getRolePermissions(row.org.id, row.membership.role);
+  return { user, membership: row.membership, org: row.org, permissions };
 }
 
 export async function requireApp(): Promise<AppContext> {

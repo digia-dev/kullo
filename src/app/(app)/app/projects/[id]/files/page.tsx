@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "File proyek" };
 export default async function ProjectFilesPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requireApp();
   const { id } = await params;
-  const bundle = getProjectBundle(ctx.org.id, id);
+  const bundle = await getProjectBundle(ctx.org.id, id);
   if (!bundle) notFound();
   const docs = bundle.documents;
 

@@ -1,45 +1,38 @@
-import fs from "node:fs";
-import path from "node:path";
-import Database from "better-sqlite3";
+/**
+ * Kullo backups are handled by Supabase: the project takes daily automated
+ * backups (Point-in-Time Recovery on paid plans). This script verifies that the
+ * database is reachable and reports table counts, so a deploy can check the
+ * connection string without touching production data.
+ *
+ * Usage: npm run db:backup:check
+ */
+import "dotenv/config";
+import postgres from "postgres";
 
-const checkOnly = process.argv.includes("--check");
-const source = process.env.DATABASE_PATH || path.join(process.cwd(), "data", "kullo.db");
-const backupDir = process.env.BACKUP_DIR || path.join(process.cwd(), "data", "backups");
-
-if (!fs.existsSync(source)) {
-  console.error(`Database tidak ditemukan: ${source}`);
+const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+if (!connectionString) {
+  console.error("DIRECT_URL atau DATABASE_URL belum diatur.");
   process.exit(1);
 }
 
-fs.mkdirSync(backupDir, { recursive: true });
-const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-const target = path.join(backupDir, `kullo-${stamp}.db`);
+const client = postgres(connectionString, {
+  max: 1,
+  prepare: false,
+  ssl: process.env.DATABASE_SSL === "false" ? false : "require",
+});
 
-const db = new Database(source, { readonly: true });
 try {
-  await db.backup(target);
+  const rows = await client`
+    select table_name
+    from information_schema.tables
+    where table_schema = 'public' and table_type = 'BASE TABLE'
+    order by table_name
+  `;
+  console.log(`Database terhubung. ${rows.length} tabel publik.`);
+  console.log(rows.map((row) => row.table_name).join(", "));
+} catch (error) {
+  console.error("Database tidak dapat diakses:", error instanceof Error ? error.message : error);
+  process.exitCode = 1;
 } finally {
-  db.close();
-}
-
-if (checkOnly) {
-  const copy = new Database(target, { readonly: true });
-  try {
-    const integrity = copy.pragma("integrity_check", { simple: true });
-    const tables = copy.prepare("select count(*) as count from sqlite_master where type = 'table'").get().count;
-    const sourceDb = new Database(source, { readonly: true });
-    const sourceTables = sourceDb
-      .prepare("select count(*) as count from sqlite_master where type = 'table'")
-      .get().count;
-    sourceDb.close();
-    if (integrity !== "ok" || tables !== sourceTables) {
-      console.error(`Backup gagal diverifikasi: integrity=${integrity}, tables=${tables}/${sourceTables}`);
-      process.exit(1);
-    }
-    console.log(`Backup terverifikasi: ${target} (${tables} tabel, integrity ok)`);
-  } finally {
-    copy.close();
-  }
-} else {
-  console.log(`Backup dibuat: ${target}`);
+  await client.end();
 }

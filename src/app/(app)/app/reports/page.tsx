@@ -14,9 +14,9 @@ type SearchParams = Promise<{ department?: string; project?: string; from?: stri
 export default async function ReportsPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireApp();
   const params = await searchParams;
-  const departments = getDepartments(ctx.org.id);
-  const projects = getProjectOptions(ctx.org.id);
-  const reports = getReports(ctx.org.id, {
+  const departments = await getDepartments(ctx.org.id);
+  const projects = await getProjectOptions(ctx.org.id);
+  const reports = await getReports(ctx.org.id, {
     departmentId: params.department,
     projectId: params.project,
     from: params.from,

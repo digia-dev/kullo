@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Overview proyek" };
 export default async function ProjectOverviewPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requireApp();
   const { id } = await params;
-  const bundle = getProjectBundle(ctx.org.id, id);
+  const bundle = await getProjectBundle(ctx.org.id, id);
   if (!bundle) notFound();
   const { project, tasks, statuses, milestones, members, activity, documents } = bundle;
   const done = tasks.filter((task) => task.done).length;

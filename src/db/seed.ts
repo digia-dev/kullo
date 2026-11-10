@@ -1,3 +1,4 @@
+import "./load-env";
 import { addDays, format } from "date-fns";
 import { db } from "./client";
 import {
@@ -52,46 +53,46 @@ function at(date: string, time: string) {
   return `${date}T${time}:00+07:00`;
 }
 
-export function seed() {
-  db.delete(subscriptions).run();
-  db.delete(plans).run();
-  db.delete(activity).run();
-  db.delete(notifications).run();
-  db.delete(messageReactions).run();
-  db.delete(messages).run();
-  db.delete(conversationMembers).run();
-  db.delete(conversations).run();
-  db.delete(approvalSteps).run();
-  db.delete(requests).run();
-  db.delete(formFields).run();
-  db.delete(formTemplates).run();
-  db.delete(eventParticipants).run();
-  db.delete(events).run();
-  db.delete(documentVersions).run();
-  db.delete(documents).run();
-  db.delete(folders).run();
-  db.delete(attachments).run();
-  db.delete(checklistItems).run();
-  db.delete(checklists).run();
-  db.delete(comments).run();
-  db.delete(taskLabelLinks).run();
-  db.delete(taskLabels).run();
-  db.delete(taskCollaborators).run();
-  db.delete(tasks).run();
-  db.delete(milestones).run();
-  db.delete(projectStatuses).run();
-  db.delete(projectMembers).run();
-  db.delete(projects).run();
-  db.delete(roles).run();
-  db.delete(memberships).run();
-  db.delete(departments).run();
-  db.delete(users).run();
-  db.delete(organizations).run();
+export async function seed() {
+  await db.delete(subscriptions);
+  await db.delete(plans);
+  await db.delete(activity);
+  await db.delete(notifications);
+  await db.delete(messageReactions);
+  await db.delete(messages);
+  await db.delete(conversationMembers);
+  await db.delete(conversations);
+  await db.delete(approvalSteps);
+  await db.delete(requests);
+  await db.delete(formFields);
+  await db.delete(formTemplates);
+  await db.delete(eventParticipants);
+  await db.delete(events);
+  await db.delete(documentVersions);
+  await db.delete(documents);
+  await db.delete(folders);
+  await db.delete(attachments);
+  await db.delete(checklistItems);
+  await db.delete(checklists);
+  await db.delete(comments);
+  await db.delete(taskLabelLinks);
+  await db.delete(taskLabels);
+  await db.delete(taskCollaborators);
+  await db.delete(tasks);
+  await db.delete(milestones);
+  await db.delete(projectStatuses);
+  await db.delete(projectMembers);
+  await db.delete(projects);
+  await db.delete(roles);
+  await db.delete(memberships);
+  await db.delete(departments);
+  await db.delete(users);
+  await db.delete(organizations);
 
   const passwordHash = hashPassword("kullo123");
   const orgId = "org_nusantara";
 
-  db.insert(organizations)
+  await db.insert(organizations)
     .values({
       id: orgId,
       name: "Nusantara Digital",
@@ -101,8 +102,7 @@ export function seed() {
       workStart: "09:00",
       workEnd: "18:00",
       plan: "business",
-    })
-    .run();
+    });
 
   const people = [
     ["usr_alya", "Alya Prameswari", "alya@nusantara.id", "Chief Executive Officer", "0812-1100-2211", "#0f6cbd"],
@@ -116,7 +116,7 @@ export function seed() {
   ] as const;
 
   for (const [id, name, email, title, phone, color] of people) {
-    db.insert(users).values({ id, name, email, passwordHash, title, phone, avatarColor: color }).run();
+    await db.insert(users).values({ id, name, email, passwordHash, title, phone, avatarColor: color });
   }
 
   const depts = [
@@ -127,7 +127,7 @@ export function seed() {
     ["dep_finance", "Finance", "usr_fajar", "#8a6d00"],
   ] as const;
   for (const [id, name, head, color] of depts) {
-    db.insert(departments).values({ id, orgId, name, headUserId: head, color }).run();
+    await db.insert(departments).values({ id, orgId, name, headUserId: head, color });
   }
 
   const members = [
@@ -141,13 +141,12 @@ export function seed() {
     ["mem_dimas", "usr_dimas", "guest", "dep_marketing", "usr_maya"],
   ] as const;
   for (const [id, userId, role, departmentId, managerId] of members) {
-    db.insert(memberships)
-      .values({ id, orgId, userId, role, departmentId, managerId, status: "active" })
-      .run();
+    await db.insert(memberships)
+      .values({ id, orgId, userId, role, departmentId, managerId, status: "active" });
   }
 
   for (const key of ["owner", "admin", "manager", "leader", "staff", "guest"]) {
-    db.insert(roles)
+    await db.insert(roles)
       .values({
         id: `role_${key}`,
         orgId,
@@ -155,8 +154,7 @@ export function seed() {
         name: ROLE_LABELS[key],
         permissions: JSON.stringify(DEFAULT_ROLE_PERMISSIONS[key]),
         system: true,
-      })
-      .run();
+      });
   }
 
   const projectRows = [
@@ -258,7 +256,7 @@ export function seed() {
   ];
 
   for (const p of projectRows) {
-    db.insert(projects)
+    await db.insert(projects)
       .values({
         id: p.id,
         orgId,
@@ -273,10 +271,9 @@ export function seed() {
         startDate: p.startDate,
         dueDate: p.dueDate,
         progress: p.progress,
-      })
-      .run();
+      });
     for (const userId of p.members) {
-      db.insert(projectMembers).values({ projectId: p.id, userId, role: userId === p.managerId ? "manager" : "member" }).run();
+      await db.insert(projectMembers).values({ projectId: p.id, userId, role: userId === p.managerId ? "manager" : "member" });
     }
     const statuses = [
       ["backlog", "Backlog", "open"],
@@ -285,10 +282,9 @@ export function seed() {
       ["review", "In Review", "review"],
       ["done", "Done", "done"],
     ] as const;
-    statuses.forEach(([slug, name, category], index) => {
-      db.insert(projectStatuses)
-        .values({ id: `st_${p.id}_${slug}`, projectId: p.id, name, position: index, category })
-        .run();
+    statuses.forEach(async ([slug, name, category], index) => {
+      await db.insert(projectStatuses)
+        .values({ id: `st_${p.id}_${slug}`, projectId: p.id, name, position: index, category });
     });
   }
 
@@ -299,10 +295,9 @@ export function seed() {
     ["prj_crm", "Data lama bersih", day(40)],
     ["prj_portal", "Serah terima klien", day(-9)],
   ] as const;
-  milestoneRows.forEach(([projectId, name, dueDate], index) => {
-    db.insert(milestones)
-      .values({ id: `ms_${index + 1}`, projectId, name, dueDate, done: index === 4, position: index })
-      .run();
+  milestoneRows.forEach(async ([projectId, name, dueDate], index) => {
+    await db.insert(milestones)
+      .values({ id: `ms_${index + 1}`, projectId, name, dueDate, done: index === 4, position: index });
   });
 
   const labelRows = [
@@ -313,7 +308,7 @@ export function seed() {
     ["lbl_research", "research", "#107c10"],
   ] as const;
   for (const [id, name, color] of labelRows) {
-    db.insert(taskLabels).values({ id, orgId, name, color }).run();
+    await db.insert(taskLabels).values({ id, orgId, name, color });
   }
 
   type TaskRow = {
@@ -368,9 +363,9 @@ export function seed() {
     done: "done",
   };
 
-  taskRows.forEach((t, index) => {
+  taskRows.forEach(async (t, index) => {
     const statusSlug = statusMap[t.status] ?? "todo";
-    db.insert(tasks)
+    await db.insert(tasks)
       .values({
         id: t.id,
         orgId,
@@ -387,39 +382,37 @@ export function seed() {
         estimateHours: t.estimate ?? null,
         createdAt: hoursAgo(200 - index * 5),
         updatedAt: hoursAgo(index + 1),
-      })
-      .run();
+      });
     if (t.assignee) {
-      db.insert(taskCollaborators).values({ taskId: t.id, userId: t.assignee }).run();
+      await db.insert(taskCollaborators).values({ taskId: t.id, userId: t.assignee });
     }
     for (const userId of t.collaborators ?? []) {
-      db.insert(taskCollaborators).values({ taskId: t.id, userId }).run();
+      await db.insert(taskCollaborators).values({ taskId: t.id, userId });
     }
     for (const labelId of t.labels ?? []) {
-      db.insert(taskLabelLinks).values({ taskId: t.id, labelId }).run();
+      await db.insert(taskLabelLinks).values({ taskId: t.id, labelId });
     }
   });
 
-  const cl = (id: string, taskId: string, items: Array<[string, boolean]>) => {
-    db.insert(checklists).values({ id, taskId }).run();
-    items.forEach(([text, done], position) => {
-      db.insert(checklistItems)
-        .values({ id: `${id}_${position}`, checklistId: id, text, done, position })
-        .run();
+  const cl = async (id: string, taskId: string, items: Array<[string, boolean]>) => {
+    await db.insert(checklists).values({ id, taskId });
+    items.forEach(async ([text, done], position) => {
+      await db.insert(checklistItems)
+        .values({ id: `${id}_${position}`, checklistId: id, text, done, position });
     });
   };
-  cl("chk_01", "tsk_01", [
+  await cl("chk_01", "tsk_01", [
     ["Form register + buat organisasi", true],
     ["Undangan anggota dengan peran", false],
     ["Proyek pertama otomatis dibuat", false],
     ["Toast dan empty state diperiksa", false],
   ]);
-  cl("chk_03", "tsk_03", [
+  await cl("chk_03", "tsk_03", [
     ["Query tugas memakai org_id", true],
     ["Dokumen dan pesan dicek", false],
     ["Uji dua organisasi paralel", false],
   ]);
-  cl("chk_09", "tsk_09", [
+  await cl("chk_09", "tsk_09", [
     ["Dua belas slot terisi", true],
     ["Cerita pelanggan (yang sudah setuju)", false],
     ["Aset visual siap", false],
@@ -429,7 +422,7 @@ export function seed() {
     ["cmt_01", "tsk_01", "usr_alya", "Untuk onboarding, tahan dulu fitur undangan massal. Satu per satu lebih jelas untuk beta.", 30],
     ["cmt_02", "tsk_01", "usr_rizky", "@Alya Prameswari setuju. Saya sudah pasang validasi email dan peran di server, bukan hanya di form.", 26],
     ["cmt_03", "tsk_01", "usr_budi", "Empty state untuk anggota baru sudah saya rapikan. Screenshot ada di dokumen proyek.", 20],
-    ["cmt_04", "tsk_02", "usr_rizky", "Halaman harga pakai label â€œHubungi kamiâ€ untuk Pro dan Business, karena harga belum ditetapkan.", 18],
+    ["cmt_04", "tsk_02", "usr_rizky", "Halaman harga pakai label \"Hubungi kami\" untuk Pro dan Business, karena harga belum ditetapkan.", 18],
     ["cmt_05", "tsk_02", "usr_maya", "Copy-nya sudah saya baca. Tolong jangan tambahkan angka pengguna atau testimoni yang belum ada.", 12],
     ["cmt_06", "tsk_09", "usr_nadia", "Slot 8 dan 12 masih kosong. Saya butuh konfirmasi topik webinar sebelum mengisi.", 8],
     ["cmt_07", "tsk_09", "usr_maya", "Isi dengan panduan 5 menit dan alur persetujuan. Dua-duanya sudah bisa dipakai di produk.", 5],
@@ -437,16 +430,15 @@ export function seed() {
     ["cmt_09", "tsk_23", "usr_alya", "Handbook versi baru harus mencantumkan jam kerja dan kanal bantuan yang benar.", 3],
   ] as const;
   for (const [id, taskId, authorId, body, hours] of commentRows) {
-    db.insert(comments).values({ id, taskId, authorId, body, createdAt: hoursAgo(hours) }).run();
+    await db.insert(comments).values({ id, taskId, authorId, body, createdAt: hoursAgo(hours) });
   }
 
-  db.insert(attachments)
+  await db.insert(attachments)
     .values([
       { id: "att_01", orgId, taskId: "tsk_01", name: "onboarding-flow.pdf", kind: "pdf", size: 420_000 },
       { id: "att_02", orgId, taskId: "tsk_02", name: "harga-desktop.png", kind: "png", size: 780_000 },
       { id: "att_03", orgId, taskId: "tsk_10", name: "studi-kasus-brief.docx", kind: "docx", size: 96_000 },
-    ])
-    .run();
+    ]);
 
   const convRows = [
     ["cnv_umum", "channel", "umum", "Pengumuman dan percakapan lintas tim", null, null],
@@ -455,7 +447,7 @@ export function seed() {
     ["cnv_dm_am", "dm", "Alya Prameswari", "Percakapan langsung", null, null],
   ] as const;
   for (const [id, kind, name, description, projectId, departmentId] of convRows) {
-    db.insert(conversations).values({ id, orgId, kind, name, description, projectId, departmentId }).run();
+    await db.insert(conversations).values({ id, orgId, kind, name, description, projectId, departmentId });
   }
 
   const membershipsFor: Record<string, string[]> = {
@@ -466,7 +458,7 @@ export function seed() {
   };
   for (const [conversationId, userIds] of Object.entries(membershipsFor)) {
     for (const userId of userIds) {
-      db.insert(conversationMembers).values({ conversationId, userId }).run();
+      await db.insert(conversationMembers).values({ conversationId, userId });
     }
   }
 
@@ -484,18 +476,18 @@ export function seed() {
     ["msg_11", "cnv_marketing", "usr_maya", "Webinar kita butuh tanggal final. Usulan: 26 November, jam 14.00 WIB.", 12],
     ["msg_12", "cnv_marketing", "usr_nadia", "Bisa. Saya siapkan halaman pendaftaran dan tiga email pengingat?", 11],
     ["msg_13", "cnv_marketing", "usr_dimas", "Untuk aset mitra, saya kirim versi transparan sore ini.", 9],
-    ["msg_14", "cnv_dm_am", "usr_maya", "Alya, untuk cuti Nadia tanggal 20â€“22, saya sudah review. Saya teruskan ke People & Ops.", 6],
+    ["msg_14", "cnv_dm_am", "usr_maya", "Alya, untuk cuti Nadia tanggal 20–22, saya sudah review. Saya teruskan ke People & Ops.", 6],
     ["msg_15", "cnv_dm_am", "usr_alya", "Terima kasih. Pastikan handover konten November tercatat di tugasnya.", 5],
   ] as const;
   for (const [id, conversationId, authorId, body, hours] of msgRows) {
-    db.insert(messages).values({ id, conversationId, authorId, body, createdAt: hoursAgo(hours) }).run();
+    await db.insert(messages).values({ id, conversationId, authorId, body, createdAt: hoursAgo(hours) });
   }
-  db.insert(messageReactions).values([
+  await db.insert(messageReactions).values([
     { messageId: "msg_01", userId: "usr_maya", emoji: "ðŸ‘" },
     { messageId: "msg_01", userId: "usr_rizky", emoji: "ðŸ‘" },
     { messageId: "msg_03", userId: "usr_budi", emoji: "ðŸ‘€" },
     { messageId: "msg_10", userId: "usr_alya", emoji: "ðŸŽ‰" },
-  ]).run();
+  ]);
 
   const folderRows = [
     ["fld_company", "Company", "company", null],
@@ -505,23 +497,22 @@ export function seed() {
     ["fld_people", "People & Ops", "department", "dep_people"],
   ] as const;
   for (const [id, name, scope, departmentId] of folderRows) {
-    db.insert(folders).values({ id, orgId, name, scope, departmentId }).run();
+    await db.insert(folders).values({ id, orgId, name, scope, departmentId });
   }
 
   const docRows = [
     ["doc_handbook", "Company Handbook 2026.pdf", "pdf", 2_420_000, 3, "usr_alya", "company", "fld_company", null],
     ["doc_brand", "Brand Guidelines.pdf", "pdf", 8_100_000, 2, "usr_maya", "company", "fld_marketing", null],
-    ["doc_brief", "Kampanye Q4 â€” Brief.docx", "docx", 640_000, 1, "usr_maya", "project", "fld_marketing", "prj_campaign"],
-    ["doc_spec", "Kullo 1.0 â€” Product Spec.pdf", "pdf", 1_800_000, 2, "usr_rizky", "project", "fld_tech", "prj_kullo"],
+    ["doc_brief", "Kampanye Q4 — Brief.docx", "docx", 640_000, 1, "usr_maya", "project", "fld_marketing", "prj_campaign"],
+    ["doc_spec", "Kullo 1.0 — Product Spec.pdf", "pdf", 1_800_000, 2, "usr_rizky", "project", "fld_tech", "prj_kullo"],
     ["doc_arch", "Arsitektur Data v2.md", "md", 84_000, 2, "usr_rizky", "department", "fld_tech", null],
-    ["doc_budget", "Anggaran 2027 â€” Draft.xlsx", "xlsx", 420_000, 1, "usr_fajar", "company", "fld_finance", null],
+    ["doc_budget", "Anggaran 2027 — Draft.xlsx", "xlsx", 420_000, 1, "usr_fajar", "company", "fld_finance", null],
     ["doc_onboard", "Template Onboarding.pptx", "pptx", 5_200_000, 1, "usr_alya", "department", "fld_people", null],
     ["doc_leave", "Rekap Cuti 2026.csv", "csv", 96_000, 1, "usr_alya", "company", "fld_people", null],
   ] as const;
   for (const [id, name, kind, size, version, ownerId, visibility, folderId, projectId] of docRows) {
-    db.insert(documents)
-      .values({ id, orgId, name, kind, size, version, ownerId, visibility, folderId, projectId, createdAt: hoursAgo(300) })
-      .run();
+    await db.insert(documents)
+      .values({ id, orgId, name, kind, size, version, ownerId, visibility, folderId, projectId, createdAt: hoursAgo(300) });
   }
   const versionRows = [
     ["dv_1", "doc_handbook", 1, "Versi awal 2026", 240],
@@ -531,9 +522,8 @@ export function seed() {
     ["dv_5", "doc_spec", 2, "Persetujuan beta", 60],
   ] as const;
   for (const [id, documentId, version, note, hours] of versionRows) {
-    db.insert(documentVersions)
-      .values({ id, documentId, version, note, authorId: "usr_alya", createdAt: hoursAgo(hours) })
-      .run();
+    await db.insert(documentVersions)
+      .values({ id, documentId, version, note, authorId: "usr_alya", createdAt: hoursAgo(hours) });
   }
 
   const eventRows = [
@@ -547,7 +537,7 @@ export function seed() {
     ["evt_08", "Orientasi karyawan baru", "company", day(12), "09:00", "12:00", "Ruang Flores", "prj_onboarding", "usr_alya"],
   ] as const;
   for (const [id, title, kind, date, start, end, location, projectId, createdBy] of eventRows) {
-    db.insert(events)
+    await db.insert(events)
       .values({
         id,
         orgId,
@@ -559,8 +549,7 @@ export function seed() {
         location,
         projectId,
         createdBy,
-      })
-      .run();
+      });
   }
   const participants: Array<[string, string]> = [
     ["evt_01", "usr_alya"], ["evt_01", "usr_rizky"], ["evt_01", "usr_budi"], ["evt_01", "usr_nadia"],
@@ -571,7 +560,7 @@ export function seed() {
     ["evt_08", "usr_alya"], ["evt_08", "usr_maya"],
   ];
   for (const [eventId, userId] of participants) {
-    db.insert(eventParticipants).values({ eventId, userId }).run();
+    await db.insert(eventParticipants).values({ eventId, userId });
   }
 
   const templates = [
@@ -611,10 +600,10 @@ export function seed() {
     ]],
   ] as const;
   for (const [id, key, name, description, category, fields] of templates) {
-    db.insert(formTemplates).values({ id, orgId, key, name, description, category }).run();
-    fields.forEach((field, index) => {
+    await db.insert(formTemplates).values({ id, orgId, key, name, description, category });
+    fields.forEach(async (field, index) => {
       const [label, type, required, options] = field;
-      db.insert(formFields)
+      await db.insert(formFields)
         .values({
           id: `${id}_f${index}`,
           templateId: id,
@@ -623,20 +612,19 @@ export function seed() {
           required,
           options: options ? JSON.stringify(options) : null,
           position: index,
-        })
-        .run();
+        });
     });
   }
 
   const reqRows = [
-    ["req_01", "tpl_cuti", "usr_nadia", "Cuti tahunan â€” 20â€“22 November", null, JSON.stringify({ "Jenis cuti": "Cuti tahunan", "Tanggal mulai": day(12), "Tanggal selesai": day(14), Alasan: "Acara keluarga di Yogyakarta." }), "pending", 1, 20],
+    ["req_01", "tpl_cuti", "usr_nadia", "Cuti tahunan — 20–22 November", null, JSON.stringify({ "Jenis cuti": "Cuti tahunan", "Tanggal mulai": day(12), "Tanggal selesai": day(14), Alasan: "Acara keluarga di Yogyakarta." }), "pending", 1, 20],
     ["req_02", "tpl_reimb", "usr_budi", "Penggantian biaya transport klien", 850_000, JSON.stringify({ "Tanggal transaksi": day(-3), Kategori: "Perjalanan", "Jumlah (IDR)": 850000, Deskripsi: "Transport ke kantor klien Bandung, dua perjalanan." }), "pending", 2, 26],
     ["req_03", "tpl_beli", "usr_maya", "Pembelian laptop desain", 18_500_000, JSON.stringify({ Item: "Laptop 32GB RAM", "Jumlah (IDR)": 18500000, Vendor: "Mitra Teknologi", Urgensi: "Sedang", Justifikasi: "Penggantian perangkat tim desain yang sudah 5 tahun." }), "approved", 1, 72],
     ["req_04", "tpl_trip", "usr_sinta", "Perjalanan dinas Surabaya", 4_200_000, JSON.stringify({ Tujuan: "Surabaya", "Tanggal berangkat": day(18), "Durasi (hari)": 2, "Estimasi biaya (IDR)": 4200000 }), "revision", 1, 50],
     ["req_05", "tpl_it", "usr_nadia", "Akses ke folder brand", null, JSON.stringify({ Kategori: "Akses", Deskripsi: "Butuh akses edit ke folder Brand Guidelines untuk memperbarui aset kampanye.", Prioritas: "Sedang" }), "submitted", 1, 9],
   ] as const;
   for (const [id, templateId, requesterId, title, amount, data, status, currentStep, hours] of reqRows) {
-    db.insert(requests)
+    await db.insert(requests)
       .values({
         id,
         orgId,
@@ -649,11 +637,10 @@ export function seed() {
         currentStep,
         createdAt: hoursAgo(hours),
         updatedAt: hoursAgo(Math.max(hours - 4, 1)),
-      })
-      .run();
+      });
   }
 
-  db.insert(approvalSteps)
+  await db.insert(approvalSteps)
     .values([
       { id: "aps_01", requestId: "req_01", position: 1, approverId: "usr_maya", status: "pending" },
       { id: "aps_02", requestId: "req_02", position: 1, approverId: "usr_rizky", status: "approved", note: "Bukti sesuai.", decidedAt: hoursAgo(20) },
@@ -661,20 +648,17 @@ export function seed() {
       { id: "aps_04", requestId: "req_03", position: 1, approverId: "usr_alya", status: "approved", note: "Disetujui, anggaran perangkat tersedia.", decidedAt: hoursAgo(48) },
       { id: "aps_05", requestId: "req_04", position: 1, approverId: "usr_alya", status: "revision", note: "Lampirkan rincian biaya hotel dan transport.", decidedAt: hoursAgo(30) },
       { id: "aps_06", requestId: "req_05", position: 1, approverId: "usr_rizky", status: "pending" },
-    ])
-    .run();
+    ]);
 
-  db.insert(plans)
+  await db.insert(plans)
     .values([
       { id: "plan_free", key: "free", name: "Free", memberLimit: 5, projectLimit: 3, features: JSON.stringify(["1 organisasi", "5 anggota", "3 proyek", "Kanban dan list", "Chat dasar"]) },
       { id: "plan_pro", key: "pro", name: "Pro", memberLimit: 25, projectLimit: null, features: JSON.stringify(["1 organisasi", "25 anggota", "Proyek tanpa batas", "Chat penuh", "Laporan lanjutan", "Persetujuan lanjutan"]) },
       { id: "plan_business", key: "business", name: "Business", memberLimit: null, projectLimit: null, features: JSON.stringify(["Organisasi tanpa batas", "Anggota sesuai kebutuhan", "Proyek tanpa batas", "Dukungan prioritas", "Kontrol izin lanjutan"]) },
-    ])
-    .run();
+    ]);
 
-  db.insert(subscriptions)
-    .values({ id: "sub_01", orgId, planId: "plan_business", status: "active", renewsAt: day(52) })
-    .run();
+  await db.insert(subscriptions)
+    .values({ id: "sub_01", orgId, planId: "plan_business", status: "active", renewsAt: day(52) });
 
   const activities = [
     ["act_01", "usr_nadia", "task", "tsk_09", "mengubah status", "Kalender konten November â†’ In Progress", 3],
@@ -689,9 +673,8 @@ export function seed() {
     ["act_10", "usr_budi", "task", "tsk_05", "membuat tugas", "Audit aksesibilitas sidebar", 34],
   ] as const;
   for (const [id, actorId, entityType, entityId, verb, meta, hours] of activities) {
-    db.insert(activity)
-      .values({ id, orgId, actorId, entityType, entityId, verb, meta, createdAt: hoursAgo(hours) })
-      .run();
+    await db.insert(activity)
+      .values({ id, orgId, actorId, entityType, entityId, verb, meta, createdAt: hoursAgo(hours) });
   }
 
   const notificationRows = [
@@ -705,12 +688,14 @@ export function seed() {
     ["ntf_08", "usr_fajar", "approval", "Penggantian biaya di level 2", "Penggantian biaya Budi Santoso menunggu keputusan Anda.", "/app/approvals", 20],
   ] as const;
   for (const [id, userId, kind, title, body, href, hours] of notificationRows) {
-    db.insert(notifications)
-      .values({ id, orgId, userId, kind, title, body, href, createdAt: hoursAgo(hours), readAt: hours > 18 ? hoursAgo(hours - 1) : null })
-      .run();
+    await db.insert(notifications)
+      .values({ id, orgId, userId, kind, title, body, href, createdAt: hoursAgo(hours), readAt: hours > 18 ? hoursAgo(hours - 1) : null });
   }
 
   console.log("Seed complete: Nusantara Digital, 8 members, 6 projects, 25 tasks.");
 }
 
-seed();
+seed().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

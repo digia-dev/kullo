@@ -43,7 +43,7 @@ export function InviteAcceptForm({ token, isNew, email }: { token: string; isNew
       </label>
       {state.error && <p className="error-text" role="alert" style={{ margin: 0 }}>{state.error}</p>}
       <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
-        {pending ? "Bergabungâ€¦" : "Bergabung ke organisasi"} <ArrowRight size={16} />
+        {pending ? "Bergabung…" : "Bergabung ke organisasi"} <ArrowRight size={16} />
       </button>
       <p className="help" style={{ margin: 0, textAlign: "center" }}>
         Sudah masuk? <Link href="/app/dashboard" className="textlink">Buka ruang kerja</Link>

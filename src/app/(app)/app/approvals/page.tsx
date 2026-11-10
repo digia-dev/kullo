@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Persetujuan" };
 
 export default async function ApprovalsPage() {
   const ctx = await requireApp();
-  const { pending, history } = getApprovalInbox(ctx);
+  const { pending, history } = await getApprovalInbox(ctx);
   const map = (request: (typeof pending)[number]) => ({
     id: request.id,
     title: request.title,

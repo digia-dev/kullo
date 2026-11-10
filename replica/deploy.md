@@ -1,14 +1,14 @@
 # Deploy checklist & steps: Kullo
 
-Date: 2026-11-08  Commit: none (workspace is not a git repo)  Go from user: **not yet — waiting at the deploy gate**
+Date: 2026-11-10  Commit: none  Go from user: **not yet — waiting at the deploy gate**
 
 ## Preflight (all must pass)
 
-- [x] e2e suite green: **40/40** (`npm test`)
-- [x] no open S1 or S2 bugs (visual pass at 1440 + 390; mobile hero contrast fixed)
+- [x] e2e suite green: **43/43** (`npm test`) against PostgreSQL
+- [x] no open S1 or S2 bugs
 - [x] parity: all must-haves done (55/55), feature score **100.0**
 - [x] rebrand sweep clean (0 product-scope hits; `replica/sweep-report.txt`)
-- [x] production build passes (`npm run build`, 47 routes)
+- [x] production build passes (`npm run check`, 47 routes)
 - [x] contrast AA on tokens (0 failures)
 - [x] favicon, titles, OG, app icon are Kullo's own (no third-party marks)
 - [ ] privacy policy and terms reviewed by the user — pages exist (`/privasi`, `/ketentuan`), content is draft
@@ -16,86 +16,90 @@ Date: 2026-11-08  Commit: none (workspace is not a git repo)  Go from user: **no
 - [x] pricing honest: "Hubungi kami", no invented figures
 - [x] no fabricated reviews, metrics, or screenshots
 
-## Production (before go-live)
+## Architecture (current)
 
-- [ ] separate production database (`DATABASE_PATH` → a file on persistent storage; run `npm run db:setup` once)
-- [ ] env vars set (names match `.env.example` - only `DATABASE_PATH` is needed; `KULLO_SHOW_DEMO=1` only for a public demo build)
-- [ ] HTTPS via reverse proxy; session cookie is `secure` in production
-- [ ] backups: schedule a copy of the SQLite file (it is a single file — `sqlite3 .backup` or filesystem snapshot)
-- [ ] no payment/OAuth/email processors in scope — nothing to configure
+| Layer | Service |
+|---|---|
+| Hosting | Vercel (Next.js 16, Node runtime) |
+| Database | Supabase Postgres (transaction pooler for runtime, direct connection for migrations) |
+| Files | Supabase Storage, private bucket `kullo-files` |
+| Auth | Email + password, DB-backed sessions in Postgres (no OAuth) |
+| Health | `/api/health` checks the database connection |
+
+Schema lives in `src/db/schema.ts` (Drizzle `pg-core`). Migrations are in `drizzle/`
+(PostgreSQL dialect). The previous SQLite migrations are archived in
+`drizzle-sqlite/` and are not used anymore.
+
+## Environment variables (Vercel → Project → Settings → Environment Variables)
+
+```text
+DATABASE_URL=postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres
+DIRECT_URL=postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres
+NEXT_PUBLIC_SUPABASE_URL=https://<ref>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>      # server only, never NEXT_PUBLIC_
+SUPABASE_STORAGE_BUCKET=kullo-files
+KULLO_SHOW_DEMO=1                                  # optional public demo account
+```
+
+`DATABASE_SSL` is only for local Postgres without TLS (`false`). Leave it unset in production.
+
+## Supabase setup (already applied to project `iwpnhnglffjrcdpeecqh`)
+
+- 42 tables, foreign keys and indexes applied (matches `drizzle/0000_stiff_rattler.sql`).
+- Row Level Security enabled on all public tables. The app connects as the Postgres
+  owner role, so RLS does not block it; the public anon/authenticated API routes are closed.
+- Private Storage bucket `kullo-files` (50 MB object limit), no public access.
+
+If a fresh Supabase project is ever needed:
+
+```bash
+# with DIRECT_URL pointing at the new project
+npm run db:migrate      # apply drizzle/ migrations
+npm run db:seed         # demo data (Nusantara Digital)
+# then create the private bucket kullo-files in Storage, or:
+# insert into storage.buckets (id,name,public) values ('kullo-files','kullo-files',false);
+```
+
+## Vercel deploy steps
+
+1. Import the repo into Vercel (framework preset: Next.js).
+2. Add every variable above to **Production** and **Preview**.
+3. Deploy. The build runs `next build` only; it does not touch the database.
+4. After the first deploy, seed the production database **once** from a machine with
+   `DIRECT_URL` set to the production project:
+   ```bash
+   npm run db:migrate
+   npm run db:seed
+   ```
+   Seeding wipes existing rows — never run it on a database that already holds real data.
+5. Open `/api/health` and confirm `{"ok":true,"database":"up","storage":"supabase"}`.
+6. Sign in with the demo account only if `KULLO_SHOW_DEMO=1`; otherwise register a real
+   account from `/daftar`.
 
 ## Domain
 
-- [ ] A @ → host IP
-- [ ] CNAME www → canonical host (or apex redirect)
-- [ ] canonical host chosen, the other 301s
-- [ ] HTTPS valid (ACME via proxy)
+- [ ] A/CNAME the domain to Vercel
+- [ ] set the canonical host, 301 the other
+- [ ] Vercel issues HTTPS automatically; the session cookie turns `secure` behind HTTPS
 
 ## Watch
 
-- [ ] error tracking (e.g. Sentry or a log drain)
+- [ ] error tracking (e.g. Sentry or Vercel log drain)
 - [ ] uptime check on `/api/health`
-- [ ] analytics (privacy-friendly; no third-party tags currently)
-- [ ] core flow F01–F08 done on the live site, desktop and phone
+- [ ] Supabase daily backups / PITR (paid plan)
+- [ ] Storage usage and egress in the Supabase dashboard
+- [ ] core flow F01–F08 on the live site, desktop and phone
 
-## Deploy steps (node host, recommended)
+## Rollback
 
-The app is a standard Next.js server with a file-based SQLite database — it needs a **persistent disk**, so serverless without a volume is not suitable.
+Vercel keeps every deployment: promote the previous one. For data, restore a
+Supabase backup. Migrations are forward-only; restore the matching database
+snapshot with matching code.
 
-```bash
-# 1. On the host (Ubuntu/Debian example)
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt-get install -y nodejs git
-sudo mkdir -p /var/www/kullo && sudo chown $USER /var/www/kullo
+## Known limits
 
-# 2. Ship the code (rsync / git push / CI artifact)
-rsync -a --exclude node_modules --exclude .next --exclude data ./ user@host:/var/www/kullo/
-ssh user@host
-cd /var/www/kullo
-
-# 3. Backup the database BEFORE any migration
-npm run db:backup              # tulis ke data/backups (BACKUP_DIR untuk lokasi lain)
-npm run db:backup:check        # buat backup baru + uji integrity dan jumlah tabel
-# Untuk restore drill: buka salinan di path sementara, jangan timpa DB live.
-
-# 4. Install, set up database, build
-cp .env.example .env          # set DATABASE_PATH=/var/www/kullo/data/kullo.db
-npm ci
-npm run db:migrate            # NOT db:setup on an existing database (seed wipes data)
-npm run build
-
-# 4. Run under systemd
-sudo tee /etc/systemd/system/kullo.service >/dev/null <<'EOF'
-[Unit]
-Description=Kullo
-After=network.target
-[Service]
-WorkingDirectory=/var/www/kullo
-ExecStart=/usr/bin/npx next start -p 3005
-Restart=always
-Environment=NODE_ENV=production
-Environment=DATABASE_PATH=/var/www/kullo/data/kullo.db
-# Optional, demo builds only:
-# Environment=KULLO_SHOW_DEMO=1
-[Install]
-WantedBy=multi-user.target
-EOF
-sudo systemctl enable --now kullo
-
-# 5. Reverse proxy (nginx/caddy) :443 → 127.0.0.1:3005, TLS certificate
-#    IMPORTANT: forward X-Forwarded-Proto https so the session cookie gets Secure
-#    proxy_set_header X-Forwarded-Proto $scheme;
-# 6. Verify
-curl -s https://yourdomain/api/health   # {"ok":true,"service":"kullo",...}
-npm test                                # run e2e against the live host (set baseURL)
-```
-
-### Alternatives
-
-- **Docker**: multi-stage build (`node:22-alpine`, `npm ci && npm run build`), volume-mount `/app/data`, `CMD ["npx","next","start","-p","3005"]`.
-- **PaaS with volumes** (Fly.io/Railway/Render): deploy as a Node web service, attach a disk at `DATABASE_PATH`, release command `npm run db:setup`.
-- **Vercel**: not suitable as-is — needs a persistent SQLite file (use a hosted Postgres + swap the Drizzle driver instead, which is a code change).
-
-### Rollback
-
-Keep the previous `.next` + `data/kullo.db` copy; restore both and restart the service (schema migrations are forward-only — restore the matching DB snapshot with matching code).
+- Server Action uploads pass through the Vercel function, so bodies above ~4.5 MB
+  fail. Files are otherwise stored in Supabase Storage with signed access.
+- Email delivery (invite links, password reset) is not configured; invite links are
+  copied from the UI.
+- No OAuth by owner decision.

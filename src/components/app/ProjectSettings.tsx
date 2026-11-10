@@ -111,9 +111,9 @@ export function ProjectSettings({
     <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.35fr) minmax(280px, .7fr)", gap: 16, alignItems: "start" }} className="dash-grid">
       <form
         ref={formRef}
-        onSubmit={(event) => {
+        onSubmit={async (event) => {
           event.preventDefault();
-          void save();
+          void await save();
         }}
         className="panel"
         style={{ padding: 18, display: "grid", gap: 14 }}
@@ -213,16 +213,16 @@ export function ProjectSettings({
                   disabled={!canEdit || pending}
                   aria-label={`Nama tahap ${status.name}`}
                   style={{ height: 32, fontSize: 12, flex: "1 1 auto", minWidth: 0 }}
-                  onKeyDown={(event) => {
+                  onKeyDown={async (event) => {
                     if (event.key === "Enter") {
                       event.preventDefault();
                       const value = event.currentTarget.value.trim();
-                      if (value && value !== status.name) void statusAction(() => updateStatusAction(status.id, { name: value }), "Nama tahap diperbarui");
+                      if (value && value !== status.name) void await statusAction(async () => await updateStatusAction(status.id, { name: value }), "Nama tahap diperbarui");
                     }
                   }}
-                  onBlur={(event) => {
+                  onBlur={async (event) => {
                     const value = event.currentTarget.value.trim();
-                    if (value && value !== status.name) void statusAction(() => updateStatusAction(status.id, { name: value }), "Nama tahap diperbarui");
+                    if (value && value !== status.name) void await statusAction(async () => await updateStatusAction(status.id, { name: value }), "Nama tahap diperbarui");
                   }}
                 />
                 <select
@@ -230,7 +230,7 @@ export function ProjectSettings({
                   value={status.category}
                   disabled={!canEdit || pending}
                   aria-label={`Kategori ${status.name}`}
-                  onChange={(event) => void statusAction(() => updateStatusAction(status.id, { category: event.target.value }), "Kategori tahap diperbarui")}
+                  onChange={async (event) => void await statusAction(async () => await updateStatusAction(status.id, { category: event.target.value }), "Kategori tahap diperbarui")}
                   style={{ height: 32, fontSize: 11.5, width: 104, flex: "none" }}
                 >
                   {STATUS_CATEGORIES.map(([key, label]) => (
@@ -246,7 +246,7 @@ export function ProjectSettings({
                       aria-label={`Naikkan ${status.name}`}
                       title="Naikkan"
                       disabled={pending || index === 0}
-                      onClick={() => void statusAction(() => reorderStatusAction(status.id, -1), "Urutan tahap diperbarui")}
+                      onClick={async () => void await statusAction(async () => await reorderStatusAction(status.id, -1), "Urutan tahap diperbarui")}
                       style={{ width: 28, height: 28, flex: "none" }}
                     >
                       <ChevronUp size={14} />
@@ -257,7 +257,7 @@ export function ProjectSettings({
                       aria-label={`Turunkan ${status.name}`}
                       title="Turunkan"
                       disabled={pending || index === statuses.length - 1}
-                      onClick={() => void statusAction(() => reorderStatusAction(status.id, 1), "Urutan tahap diperbarui")}
+                      onClick={async () => void await statusAction(async () => await reorderStatusAction(status.id, 1), "Urutan tahap diperbarui")}
                       style={{ width: 28, height: 28, flex: "none" }}
                     >
                       <ChevronDown size={14} />
@@ -289,13 +289,13 @@ export function ProjectSettings({
                   value={newStatus}
                   disabled={pending}
                   onChange={(event) => setNewStatus(event.target.value)}
-                  onKeyDown={(event) => {
+                  onKeyDown={async (event) => {
                     if (event.key === "Enter") {
                       event.preventDefault();
-                      void (async () => {
+                      void await (async () => {
                         const value = newStatus.trim();
                         if (!value) return;
-                        const ok = await statusAction(() => createStatusAction(project.id, value), "Tahap ditambahkan");
+                        const ok = await statusAction(async () => await createStatusAction(project.id, value), "Tahap ditambahkan");
                         if (ok) setNewStatus("");
                       })();
                     }
@@ -309,7 +309,7 @@ export function ProjectSettings({
                   onClick={async () => {
                     const value = newStatus.trim();
                     if (!value) return;
-                    const ok = await statusAction(() => createStatusAction(project.id, value), "Tahap ditambahkan");
+                    const ok = await statusAction(async () => await createStatusAction(project.id, value), "Tahap ditambahkan");
                     if (ok) setNewStatus("");
                   }}
                 >

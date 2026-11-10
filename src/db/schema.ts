@@ -1,16 +1,17 @@
 ﻿import { sql } from "drizzle-orm";
 import {
+  boolean,
   index,
   integer,
+  pgTable,
   primaryKey,
-  sqliteTable,
   text,
   uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+} from "drizzle-orm/pg-core";
 
-const now = sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`;
+const now = sql`to_char(now() at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`;
 
-export const organizations = sqliteTable("organizations", {
+export const organizations = pgTable("organizations", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
@@ -22,7 +23,7 @@ export const organizations = sqliteTable("organizations", {
   createdAt: text("created_at").notNull().default(now),
 });
 
-export const users = sqliteTable("users", {
+export const users = pgTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -34,7 +35,7 @@ export const users = sqliteTable("users", {
   createdAt: text("created_at").notNull().default(now),
 });
 
-export const departments = sqliteTable(
+export const departments = pgTable(
   "departments",
   {
     id: text("id").primaryKey(),
@@ -47,7 +48,7 @@ export const departments = sqliteTable(
   (t) => [uniqueIndex("departments_org_name").on(t.orgId, t.name)],
 );
 
-export const memberships = sqliteTable(
+export const memberships = pgTable(
   "memberships",
   {
     id: text("id").primaryKey(),
@@ -68,7 +69,7 @@ export const memberships = sqliteTable(
   ],
 );
 
-export const roles = sqliteTable(
+export const roles = pgTable(
   "roles",
   {
     id: text("id").primaryKey(),
@@ -77,12 +78,12 @@ export const roles = sqliteTable(
     name: text("name").notNull(),
     description: text("description"),
     permissions: text("permissions").notNull().default("{}"),
-    system: integer("system", { mode: "boolean" }).notNull().default(true),
+    system: boolean("system").notNull().default(true),
   },
   (t) => [uniqueIndex("roles_org_key").on(t.orgId, t.key)],
 );
 
-export const projects = sqliteTable(
+export const projects = pgTable(
   "projects",
   {
     id: text("id").primaryKey(),
@@ -107,7 +108,7 @@ export const projects = sqliteTable(
   ],
 );
 
-export const projectMembers = sqliteTable(
+export const projectMembers = pgTable(
   "project_members",
   {
     projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
@@ -117,7 +118,7 @@ export const projectMembers = sqliteTable(
   (t) => [primaryKey({ columns: [t.projectId, t.userId] })],
 );
 
-export const projectStatuses = sqliteTable(
+export const projectStatuses = pgTable(
   "project_statuses",
   {
     id: text("id").primaryKey(),
@@ -129,20 +130,20 @@ export const projectStatuses = sqliteTable(
   (t) => [index("project_statuses_project").on(t.projectId, t.position)],
 );
 
-export const milestones = sqliteTable(
+export const milestones = pgTable(
   "milestones",
   {
     id: text("id").primaryKey(),
     projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     dueDate: text("due_date"),
-    done: integer("done", { mode: "boolean" }).notNull().default(false),
+    done: boolean("done").notNull().default(false),
     position: integer("position").notNull().default(0),
   },
   (t) => [index("milestones_project").on(t.projectId)],
 );
 
-export const tasks = sqliteTable(
+export const tasks = pgTable(
   "tasks",
   {
     id: text("id").primaryKey(),
@@ -171,7 +172,7 @@ export const tasks = sqliteTable(
   ],
 );
 
-export const taskCollaborators = sqliteTable(
+export const taskCollaborators = pgTable(
   "task_collaborators",
   {
     taskId: text("task_id").notNull().references(() => tasks.id, { onDelete: "cascade" }),
@@ -180,7 +181,7 @@ export const taskCollaborators = sqliteTable(
   (t) => [primaryKey({ columns: [t.taskId, t.userId] })],
 );
 
-export const taskLabels = sqliteTable(
+export const taskLabels = pgTable(
   "task_labels",
   {
     id: text("id").primaryKey(),
@@ -191,7 +192,7 @@ export const taskLabels = sqliteTable(
   (t) => [uniqueIndex("task_labels_org_name").on(t.orgId, t.name)],
 );
 
-export const taskLabelLinks = sqliteTable(
+export const taskLabelLinks = pgTable(
   "task_label_links",
   {
     taskId: text("task_id").notNull().references(() => tasks.id, { onDelete: "cascade" }),
@@ -200,7 +201,7 @@ export const taskLabelLinks = sqliteTable(
   (t) => [primaryKey({ columns: [t.taskId, t.labelId] })],
 );
 
-export const checklists = sqliteTable(
+export const checklists = pgTable(
   "checklists",
   {
     id: text("id").primaryKey(),
@@ -211,19 +212,19 @@ export const checklists = sqliteTable(
   (t) => [index("checklists_task").on(t.taskId)],
 );
 
-export const checklistItems = sqliteTable(
+export const checklistItems = pgTable(
   "checklist_items",
   {
     id: text("id").primaryKey(),
     checklistId: text("checklist_id").notNull().references(() => checklists.id, { onDelete: "cascade" }),
     text: text("text").notNull(),
-    done: integer("done", { mode: "boolean" }).notNull().default(false),
+    done: boolean("done").notNull().default(false),
     position: integer("position").notNull().default(0),
   },
   (t) => [index("checklist_items_checklist").on(t.checklistId)],
 );
 
-export const comments = sqliteTable(
+export const comments = pgTable(
   "comments",
   {
     id: text("id").primaryKey(),
@@ -237,7 +238,7 @@ export const comments = sqliteTable(
   (t) => [index("comments_task").on(t.taskId, t.createdAt)],
 );
 
-export const commentAttachments = sqliteTable(
+export const commentAttachments = pgTable(
   "comment_attachments",
   {
     commentId: text("comment_id").notNull().references(() => comments.id, { onDelete: "cascade" }),
@@ -246,7 +247,7 @@ export const commentAttachments = sqliteTable(
   (t) => [primaryKey({ columns: [t.commentId, t.documentId] })],
 );
 
-export const attachments = sqliteTable(
+export const attachments = pgTable(
   "attachments",
   {
     id: text("id").primaryKey(),
@@ -261,7 +262,7 @@ export const attachments = sqliteTable(
   (t) => [index("attachments_task").on(t.taskId)],
 );
 
-export const timeLogs = sqliteTable(
+export const timeLogs = pgTable(
   "time_logs",
   {
     id: text("id").primaryKey(),
@@ -275,7 +276,7 @@ export const timeLogs = sqliteTable(
   (t) => [index("time_logs_task").on(t.taskId)],
 );
 
-export const taskDependencies = sqliteTable(
+export const taskDependencies = pgTable(
   "task_dependencies",
   {
     taskId: text("task_id").notNull().references(() => tasks.id, { onDelete: "cascade" }),
@@ -284,7 +285,7 @@ export const taskDependencies = sqliteTable(
   (t) => [primaryKey({ columns: [t.taskId, t.dependsOnId] })],
 );
 
-export const conversations = sqliteTable(
+export const conversations = pgTable(
   "conversations",
   {
     id: text("id").primaryKey(),
@@ -300,7 +301,7 @@ export const conversations = sqliteTable(
   (t) => [index("conversations_org").on(t.orgId)],
 );
 
-export const conversationMembers = sqliteTable(
+export const conversationMembers = pgTable(
   "conversation_members",
   {
     conversationId: text("conversation_id").notNull().references(() => conversations.id, { onDelete: "cascade" }),
@@ -311,7 +312,7 @@ export const conversationMembers = sqliteTable(
   (t) => [primaryKey({ columns: [t.conversationId, t.userId] })],
 );
 
-export const messages = sqliteTable(
+export const messages = pgTable(
   "messages",
   {
     id: text("id").primaryKey(),
@@ -324,7 +325,7 @@ export const messages = sqliteTable(
   (t) => [index("messages_conversation").on(t.conversationId, t.createdAt)],
 );
 
-export const messageAttachments = sqliteTable(
+export const messageAttachments = pgTable(
   "message_attachments",
   {
     messageId: text("message_id").notNull().references(() => messages.id, { onDelete: "cascade" }),
@@ -333,7 +334,7 @@ export const messageAttachments = sqliteTable(
   (t) => [primaryKey({ columns: [t.messageId, t.documentId] })],
 );
 
-export const messageReactions = sqliteTable(
+export const messageReactions = pgTable(
   "message_reactions",
   {
     messageId: text("message_id").notNull().references(() => messages.id, { onDelete: "cascade" }),
@@ -343,7 +344,7 @@ export const messageReactions = sqliteTable(
   (t) => [primaryKey({ columns: [t.messageId, t.userId, t.emoji] })],
 );
 
-export const notifications = sqliteTable(
+export const notifications = pgTable(
   "notifications",
   {
     id: text("id").primaryKey(),
@@ -359,7 +360,7 @@ export const notifications = sqliteTable(
   (t) => [index("notifications_user").on(t.userId, t.createdAt)],
 );
 
-export const activity = sqliteTable(
+export const activity = pgTable(
   "activity",
   {
     id: text("id").primaryKey(),
@@ -374,7 +375,7 @@ export const activity = sqliteTable(
   (t) => [index("activity_org").on(t.orgId, t.createdAt), index("activity_entity").on(t.entityType, t.entityId)],
 );
 
-export const folders = sqliteTable(
+export const folders = pgTable(
   "folders",
   {
     id: text("id").primaryKey(),
@@ -389,7 +390,7 @@ export const folders = sqliteTable(
   (t) => [index("folders_org").on(t.orgId)],
 );
 
-export const documents = sqliteTable(
+export const documents = pgTable(
   "documents",
   {
     id: text("id").primaryKey(),
@@ -404,15 +405,15 @@ export const documents = sqliteTable(
     projectId: text("project_id").references(() => projects.id, { onDelete: "set null" }),
     departmentId: text("department_id").references(() => departments.id, { onDelete: "set null" }),
     storageKey: text("storage_key"),
-    isStarred: integer("is_starred", { mode: "boolean" }).notNull().default(false),
-    isTrashed: integer("is_trashed", { mode: "boolean" }).notNull().default(false),
+    isStarred: boolean("is_starred").notNull().default(false),
+    isTrashed: boolean("is_trashed").notNull().default(false),
     deletedAt: text("deleted_at"),
     createdAt: text("created_at").notNull().default(now),
   },
   (t) => [index("documents_org").on(t.orgId), index("documents_folder").on(t.folderId)],
 );
 
-export const documentVersions = sqliteTable(
+export const documentVersions = pgTable(
   "document_versions",
   {
     id: text("id").primaryKey(),
@@ -429,7 +430,7 @@ export const documentVersions = sqliteTable(
   (t) => [index("document_versions_doc").on(t.documentId)],
 );
 
-export const documentPermissions = sqliteTable(
+export const documentPermissions = pgTable(
   "document_permissions",
   {
     id: text("id").primaryKey(),
@@ -442,7 +443,7 @@ export const documentPermissions = sqliteTable(
   (t) => [uniqueIndex("document_permissions_doc_user").on(t.documentId, t.userId)],
 );
 
-export const events = sqliteTable(
+export const events = pgTable(
   "events",
   {
     id: text("id").primaryKey(),
@@ -452,7 +453,7 @@ export const events = sqliteTable(
     kind: text("kind").notNull().default("meeting"),
     startsAt: text("starts_at").notNull(),
     endsAt: text("ends_at").notNull(),
-    allDay: integer("all_day", { mode: "boolean" }).notNull().default(false),
+    allDay: boolean("all_day").notNull().default(false),
     location: text("location"),
     projectId: text("project_id").references(() => projects.id, { onDelete: "set null" }),
     createdBy: text("created_by").references(() => users.id, { onDelete: "set null" }),
@@ -461,7 +462,7 @@ export const events = sqliteTable(
   (t) => [index("events_org_start").on(t.orgId, t.startsAt)],
 );
 
-export const eventParticipants = sqliteTable(
+export const eventParticipants = pgTable(
   "event_participants",
   {
     eventId: text("event_id").notNull().references(() => events.id, { onDelete: "cascade" }),
@@ -471,7 +472,7 @@ export const eventParticipants = sqliteTable(
   (t) => [primaryKey({ columns: [t.eventId, t.userId] })],
 );
 
-export const formTemplates = sqliteTable(
+export const formTemplates = pgTable(
   "form_templates",
   {
     id: text("id").primaryKey(),
@@ -480,27 +481,27 @@ export const formTemplates = sqliteTable(
     name: text("name").notNull(),
     description: text("description"),
     category: text("category").notNull().default("general"),
-    active: integer("active", { mode: "boolean" }).notNull().default(true),
+    active: boolean("active").notNull().default(true),
     createdAt: text("created_at").notNull().default(now),
   },
   (t) => [uniqueIndex("form_templates_org_key").on(t.orgId, t.key)],
 );
 
-export const formFields = sqliteTable(
+export const formFields = pgTable(
   "form_fields",
   {
     id: text("id").primaryKey(),
     templateId: text("template_id").notNull().references(() => formTemplates.id, { onDelete: "cascade" }),
     label: text("label").notNull(),
     type: text("type").notNull().default("text"),
-    required: integer("required", { mode: "boolean" }).notNull().default(false),
+    required: boolean("required").notNull().default(false),
     options: text("options"),
     position: integer("position").notNull().default(0),
   },
   (t) => [index("form_fields_template").on(t.templateId, t.position)],
 );
 
-export const requests = sqliteTable(
+export const requests = pgTable(
   "requests",
   {
     id: text("id").primaryKey(),
@@ -518,7 +519,7 @@ export const requests = sqliteTable(
   (t) => [index("requests_org").on(t.orgId, t.status)],
 );
 
-export const approvalSteps = sqliteTable(
+export const approvalSteps = pgTable(
   "approval_steps",
   {
     id: text("id").primaryKey(),
@@ -532,7 +533,7 @@ export const approvalSteps = sqliteTable(
   (t) => [index("approval_steps_request").on(t.requestId, t.position)],
 );
 
-export const plans = sqliteTable("plans", {
+export const plans = pgTable("plans", {
   id: text("id").primaryKey(),
   key: text("key").notNull().unique(),
   name: text("name").notNull(),
@@ -541,7 +542,7 @@ export const plans = sqliteTable("plans", {
   features: text("features").notNull().default("[]"),
 });
 
-export const subscriptions = sqliteTable("subscriptions", {
+export const subscriptions = pgTable("subscriptions", {
   id: text("id").primaryKey(),
   orgId: text("org_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
   planId: text("plan_id").references(() => plans.id, { onDelete: "set null" }),
@@ -550,7 +551,7 @@ export const subscriptions = sqliteTable("subscriptions", {
   createdAt: text("created_at").notNull().default(now),
 });
 
-export const auditLog = sqliteTable(
+export const auditLog = pgTable(
   "audit_log",
   {
     id: text("id").primaryKey(),
@@ -564,7 +565,7 @@ export const auditLog = sqliteTable(
   (t) => [index("audit_org").on(t.orgId, t.at)],
 );
 
-export const supportMessages = sqliteTable("support_messages", {
+export const supportMessages = pgTable("support_messages", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull(),
@@ -573,7 +574,7 @@ export const supportMessages = sqliteTable("support_messages", {
   createdAt: text("created_at").notNull().default(now),
 });
 
-export const sessions = sqliteTable(
+export const sessions = pgTable(
   "sessions",
   {
     id: text("id").primaryKey(),

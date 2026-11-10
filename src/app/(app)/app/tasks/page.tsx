@@ -10,10 +10,10 @@ type SearchParams = Promise<{ view?: string }>;
 export default async function TasksPage({ searchParams }: { searchParams: SearchParams }) {
   const ctx = await requireApp();
   const { view } = await searchParams;
-  const tasks = getTaskRows(ctx.org.id);
-  const people = getPeople(ctx.org.id);
-  const projects = getProjectOptions(ctx.org.id);
-  const statuses = getStatuses(ctx.org.id);
+  const tasks = await getTaskRows(ctx.org.id);
+  const people = await getPeople(ctx.org.id);
+  const projects = await getProjectOptions(ctx.org.id);
+  const statuses = await getStatuses(ctx.org.id);
 
   return (
     <>
