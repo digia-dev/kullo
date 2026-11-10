@@ -27,3 +27,5 @@ replica/screens/adhoc/
 
 # third-party reference captures (appearance study only, not ours to publish)
 replica/screens/source-*
+
+.vercel
