@@ -14,7 +14,9 @@
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
     "db:setup": "npm run db:migrate && npm run db:seed",
-    "db:reset": "tsx src/db/reset.ts"
+    "db:reset": "tsx src/db/reset.ts",
+    "db:backup": "node scripts/backup-db.mjs",
+    "db:backup:check": "node scripts/backup-db.mjs --check"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",

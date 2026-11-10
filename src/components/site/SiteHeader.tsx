@@ -1,18 +1,23 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
+  BarChart3,
+  Briefcase,
   ChevronDown,
   ChevronRight,
+  ClipboardCheck,
+  Code2,
   Menu,
   Search,
   X,
 } from "lucide-react";
 import { KulloLogo } from "./KulloMark";
+import { ModuleIcon } from "./ModuleIcon";
 import { MENU_COLUMNS, PRIMARY_NAV } from "@/content/site";
-import { MODULES } from "@/content/modules";
+import { MODULES, moduleBySlug } from "@/content/modules";
 import { GUIDES } from "@/content/guides";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +36,20 @@ const SITE_INDEX: IndexItem[] = [
   { label: "Masuk ke Kullo", href: "/masuk", group: "Akun" },
   { label: "Buat akun", href: "/daftar", group: "Akun" },
 ];
+
+const SOLUTION_ICONS: Record<string, typeof Code2> = {
+  "/solusi#produk": Code2,
+  "/solusi#agensi": Briefcase,
+  "/solusi#operasional": ClipboardCheck,
+  "/solusi#manajemen": BarChart3,
+};
+
+const SOLUTION_COPY: Record<string, string> = {
+  "/solusi#produk": "Backlog, rilis, keputusan",
+  "/solusi#agensi": "Klien, brief, revisi",
+  "/solusi#operasional": "Cuti, pembelian, persetujuan",
+  "/solusi#manajemen": "Beban kerja, laporan",
+};
 
 function SiteSearch({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState("");
@@ -63,7 +82,7 @@ function SiteSearch({ open, onClose }: { open: boolean; onClose: () => void }) {
           ref={inputRef}
           autoFocus
           className="palette-input"
-          placeholder="Cari modul, halaman, atau panduan…"
+          placeholder="Cari modul, halaman, atau panduanâ€¦"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
@@ -85,7 +104,7 @@ function SiteSearch({ open, onClose }: { open: boolean; onClose: () => void }) {
         <div style={{ maxHeight: 360, overflowY: "auto", padding: 8 }}>
           {results.length === 0 ? (
             <p className="help" style={{ padding: 16, margin: 0 }}>
-              Tidak ada hasil untuk “{query}”. Coba kata lain seperti “tugas”, “persetujuan”, atau “harga”.
+              Tidak ada hasil untuk â€œ{query}â€. Coba kata lain seperti â€œtugasâ€, â€œpersetujuanâ€, atau â€œhargaâ€.
             </p>
           ) : (
             results.map((item, index) => (
@@ -118,8 +137,8 @@ function SiteSearch({ open, onClose }: { open: boolean; onClose: () => void }) {
             borderTop: "1px solid var(--border)",
           }}
         >
-          <span className="kbd">↑</span>
-          <span className="kbd">↓</span>
+          <span className="kbd">â†‘</span>
+          <span className="kbd">â†“</span>
           <span className="help">navigasi</span>
           <span className="kbd">Enter</span>
           <span className="help">buka</span>
@@ -208,11 +227,75 @@ export function SiteHeader() {
                 type="button"
                 className="utility-btn nav-desktop"
                 aria-expanded={menuOpen}
-                aria-haspopup="menu"
+                aria-controls="feature-menu"
                 onClick={() => setMenuPath(menuOpen ? null : pathname)}
               >
-                Semua Kullo <ChevronDown size={14} aria-hidden />
+                Lihat fitur <ChevronDown size={14} aria-hidden />
               </button>
+
+              {menuOpen && (
+                <div className="feature-menu-wrap">
+                  <div
+                    className="feature-menu-backdrop"
+                    aria-hidden="true"
+                    onClick={() => setMenuPath(null)}
+                  />
+                  <div
+                    id="feature-menu"
+                    className="feature-menu"
+                    role="navigation"
+                    aria-label="Fitur Kullo"
+                  >
+                    <div className="feature-menu-head">
+                      <div>
+                        <strong>Fitur Kullo</strong>
+                        <span className="help">Pilih modul untuk melihat cara kerjanya.</span>
+                      </div>
+                      <Link href="/produk" className="textlink" onClick={() => setMenuPath(null)}>
+                        Lihat semua modul <ChevronRight size={14} />
+                      </Link>
+                    </div>
+
+                    <div className="feature-menu-grid">
+                      {MENU_COLUMNS.map((column) => (
+                        <div className="feature-group" key={column.title}>
+                          <p>{column.title}</p>
+                          {column.links.map((link) => {
+                            const feature = link.href.startsWith("/produk/")
+                              ? moduleBySlug(link.href.replace("/produk/", ""))
+                              : null;
+                            const SolutionIcon = SOLUTION_ICONS[link.href];
+                            return (
+                              <Link
+                                key={link.href}
+                                href={link.href}
+                                className="feature-link"
+                                onClick={() => setMenuPath(null)}
+                              >
+                                <span className="feature-icon" aria-hidden>
+                                  {feature ? <ModuleIcon name={feature.icon} size={15} /> : SolutionIcon ? <SolutionIcon size={15} /> : null}
+                                </span>
+                                <span style={{ minWidth: 0 }}>
+                                  <strong>{link.label}</strong>
+                                  <span className="help">
+                                    {feature?.tagline ?? SOLUTION_COPY[link.href] ?? "Solusi per peran"}
+                                  </span>
+                                </span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="feature-menu-foot">
+                      <Link href="/harga" onClick={() => setMenuPath(null)}>Bandingkan paket</Link>
+                      <Link href="/sumber-daya/panduan-5-menit" onClick={() => setMenuPath(null)}>Panduan 5 menit</Link>
+                      <Link href="/solusi" onClick={() => setMenuPath(null)}>Solusi per peran</Link>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <button
               type="button"
@@ -234,67 +317,6 @@ export function SiteHeader() {
           </div>
         </div>
 
-        {menuOpen && (
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              top: "100%",
-              background: "var(--bg)",
-              borderTop: "1px solid var(--border)",
-              borderBottom: "1px solid var(--border)",
-              boxShadow: "var(--shadow-hover)",
-            }}
-          >
-            <div
-              className="shell"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr)) auto",
-                gap: 32,
-                padding: "28px 0 32px",
-              }}
-            >
-              {MENU_COLUMNS.map((column) => (
-                <div key={column.title}>
-                  <p className="eyebrow" style={{ marginBottom: 10, color: "var(--text-muted)" }}>
-                    {column.title}
-                  </p>
-                  <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 4 }}>
-                    {column.links.map((link) => (
-                      <li key={link.href}>
-                        <Link href={link.href} className="market-link" onClick={() => setMenuPath(null)}>
-                          {link.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-              <div
-                style={{
-                  maxWidth: 300,
-                  background: "var(--accent-soft)",
-                  border: "1px solid color-mix(in srgb, var(--accent) 18%, var(--border))",
-                  borderRadius: 12,
-                  padding: 20,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                }}
-              >
-                <strong style={{ fontSize: 15 }}>Semua dalam satu portal</strong>
-                <p className="help" style={{ fontSize: 13 }}>
-                  Dua belas modul berbagi data yang sama: tugas, proyek, orang, dokumen, dan persetujuan.
-                </p>
-                <Link href="/sumber-daya/panduan-5-menit" className="textlink" onClick={() => setMenuPath(null)}>
-                  Panduan 5 menit <ChevronRight size={14} />
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
       </header>
 
       {drawerOpen && (
@@ -390,8 +412,8 @@ export function SiteHeader() {
             style={{
               height: 6,
               background:
-                "linear-gradient(90deg,#365fd1,#7a3d9e,#b0345b,#18794e,#f5a524)",
-              opacity: 0.85,
+                "linear-gradient(90deg, var(--m-blue), var(--m-violet), var(--m-rose), var(--m-green), var(--m-amber))",
+              opacity: 0.9,
             }}
           />
         </div>

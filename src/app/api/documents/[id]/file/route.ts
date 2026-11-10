@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { db } from "@/db/client";
-import { documents } from "@/db/schema";
+import { documents, documentVersions } from "@/db/schema";
 import { getAppContext } from "@/lib/auth";
 
 const TYPES: Record<string, string> = {
@@ -29,18 +29,37 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const doc = db.select().from(documents).where(eq(documents.id, id)).get();
   if (!doc || doc.orgId !== ctx.org.id) return new Response("Not found", { status: 404 });
-  if (!doc.storageKey) {
+
+  const url = new URL(request.url);
+  const versionId = url.searchParams.get("version");
+  let storageKey = doc.storageKey;
+  let kind = doc.kind;
+  let name = doc.name;
+
+  if (versionId) {
+    const version = db
+      .select()
+      .from(documentVersions)
+      .where(and(eq(documentVersions.id, versionId), eq(documentVersions.documentId, id)))
+      .get();
+    if (!version?.storageKey) return new Response("Versi tidak memiliki berkas.", { status: 404 });
+    storageKey = version.storageKey;
+    kind = version.kind ?? doc.kind;
+    name = version.name ?? doc.name;
+  }
+
+  if (!storageKey) {
     return new Response("File ini adalah metadata contoh dan tidak memiliki berkas tersimpan.", { status: 404 });
   }
-  const absolute = path.join(process.cwd(), "data", "uploads", doc.storageKey);
+
+  const absolute = path.join(process.cwd(), "data", "uploads", storageKey);
   try {
     const data = await fs.readFile(absolute);
-    const url = new URL(request.url);
     const disposition = url.searchParams.get("download") === "1" ? "attachment" : "inline";
     return new Response(new Uint8Array(data), {
       headers: {
-        "Content-Type": TYPES[doc.kind] ?? "application/octet-stream",
-        "Content-Disposition": `${disposition}; filename="${encodeURIComponent(doc.name)}"`,
+        "Content-Type": TYPES[kind] ?? "application/octet-stream",
+        "Content-Disposition": `${disposition}; filename="${encodeURIComponent(name)}"`,
         "Cache-Control": "private, no-store",
       },
     });

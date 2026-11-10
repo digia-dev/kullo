@@ -19,7 +19,7 @@ Date: 2026-11-08  Commit: none (workspace is not a git repo)  Go from user: **no
 ## Production (before go-live)
 
 - [ ] separate production database (`DATABASE_PATH` → a file on persistent storage; run `npm run db:setup` once)
-- [ ] env vars set (names match `.env.example` — only `DATABASE_PATH` is needed)
+- [ ] env vars set (names match `.env.example` - only `DATABASE_PATH` is needed; `KULLO_SHOW_DEMO=1` only for a public demo build)
 - [ ] HTTPS via reverse proxy; session cookie is `secure` in production
 - [ ] backups: schedule a copy of the SQLite file (it is a single file — `sqlite3 .backup` or filesystem snapshot)
 - [ ] no payment/OAuth/email processors in scope — nothing to configure
@@ -53,10 +53,15 @@ rsync -a --exclude node_modules --exclude .next --exclude data ./ user@host:/var
 ssh user@host
 cd /var/www/kullo
 
-# 3. Install, set up database, build
+# 3. Backup the database BEFORE any migration
+npm run db:backup              # tulis ke data/backups (BACKUP_DIR untuk lokasi lain)
+npm run db:backup:check        # buat backup baru + uji integrity dan jumlah tabel
+# Untuk restore drill: buka salinan di path sementara, jangan timpa DB live.
+
+# 4. Install, set up database, build
 cp .env.example .env          # set DATABASE_PATH=/var/www/kullo/data/kullo.db
 npm ci
-npm run db:setup              # migrate + seed (skip seed on a real org)
+npm run db:migrate            # NOT db:setup on an existing database (seed wipes data)
 npm run build
 
 # 4. Run under systemd
@@ -70,12 +75,16 @@ ExecStart=/usr/bin/npx next start -p 3005
 Restart=always
 Environment=NODE_ENV=production
 Environment=DATABASE_PATH=/var/www/kullo/data/kullo.db
+# Optional, demo builds only:
+# Environment=KULLO_SHOW_DEMO=1
 [Install]
 WantedBy=multi-user.target
 EOF
 sudo systemctl enable --now kullo
 
 # 5. Reverse proxy (nginx/caddy) :443 → 127.0.0.1:3005, TLS certificate
+#    IMPORTANT: forward X-Forwarded-Proto https so the session cookie gets Secure
+#    proxy_set_header X-Forwarded-Proto $scheme;
 # 6. Verify
 curl -s https://yourdomain/api/health   # {"ok":true,"service":"kullo",...}
 npm test                                # run e2e against the live host (set baseURL)

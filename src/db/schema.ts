@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+﻿import { sql } from "drizzle-orm";
 import {
   index,
   integer,
@@ -29,7 +29,8 @@ export const users = sqliteTable("users", {
   passwordHash: text("password_hash").notNull(),
   title: text("title"),
   phone: text("phone"),
-  avatarColor: text("avatar_color").notNull().default("#365fd1"),
+  avatarColor: text("avatar_color").notNull().default("#0f6cbd"),
+  avatarKey: text("avatar_key"),
   createdAt: text("created_at").notNull().default(now),
 });
 
@@ -40,7 +41,7 @@ export const departments = sqliteTable(
     orgId: text("org_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     headUserId: text("head_user_id").references(() => users.id, { onDelete: "set null" }),
-    color: text("color").notNull().default("#365fd1"),
+    color: text("color").notNull().default("#0f6cbd"),
     createdAt: text("created_at").notNull().default(now),
   },
   (t) => [uniqueIndex("departments_org_name").on(t.orgId, t.name)],
@@ -159,6 +160,7 @@ export const tasks = sqliteTable(
     dueDate: text("due_date"),
     estimateHours: integer("estimate_hours"),
     archivedAt: text("archived_at"),
+    completedAt: text("completed_at"),
     createdAt: text("created_at").notNull().default(now),
     updatedAt: text("updated_at").notNull().default(now),
   },
@@ -184,7 +186,7 @@ export const taskLabels = sqliteTable(
     id: text("id").primaryKey(),
     orgId: text("org_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
-    color: text("color").notNull().default("#365fd1"),
+    color: text("color").notNull().default("#0f6cbd"),
   },
   (t) => [uniqueIndex("task_labels_org_name").on(t.orgId, t.name)],
 );
@@ -235,6 +237,15 @@ export const comments = sqliteTable(
   (t) => [index("comments_task").on(t.taskId, t.createdAt)],
 );
 
+export const commentAttachments = sqliteTable(
+  "comment_attachments",
+  {
+    commentId: text("comment_id").notNull().references(() => comments.id, { onDelete: "cascade" }),
+    documentId: text("document_id").notNull().references(() => documents.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.commentId, t.documentId] })],
+);
+
 export const attachments = sqliteTable(
   "attachments",
   {
@@ -281,6 +292,7 @@ export const conversations = sqliteTable(
     kind: text("kind").notNull().default("channel"),
     name: text("name").notNull(),
     description: text("description"),
+    icon: text("icon"),
     projectId: text("project_id").references(() => projects.id, { onDelete: "set null" }),
     departmentId: text("department_id").references(() => departments.id, { onDelete: "set null" }),
     createdAt: text("created_at").notNull().default(now),
@@ -294,6 +306,7 @@ export const conversationMembers = sqliteTable(
     conversationId: text("conversation_id").notNull().references(() => conversations.id, { onDelete: "cascade" }),
     userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     lastReadAt: text("last_read_at"),
+    role: text("role").notNull().default("member"),
   },
   (t) => [primaryKey({ columns: [t.conversationId, t.userId] })],
 );
@@ -309,6 +322,15 @@ export const messages = sqliteTable(
     createdAt: text("created_at").notNull().default(now),
   },
   (t) => [index("messages_conversation").on(t.conversationId, t.createdAt)],
+);
+
+export const messageAttachments = sqliteTable(
+  "message_attachments",
+  {
+    messageId: text("message_id").notNull().references(() => messages.id, { onDelete: "cascade" }),
+    documentId: text("document_id").notNull().references(() => documents.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.messageId, t.documentId] })],
 );
 
 export const messageReactions = sqliteTable(
@@ -382,6 +404,9 @@ export const documents = sqliteTable(
     projectId: text("project_id").references(() => projects.id, { onDelete: "set null" }),
     departmentId: text("department_id").references(() => departments.id, { onDelete: "set null" }),
     storageKey: text("storage_key"),
+    isStarred: integer("is_starred", { mode: "boolean" }).notNull().default(false),
+    isTrashed: integer("is_trashed", { mode: "boolean" }).notNull().default(false),
+    deletedAt: text("deleted_at"),
     createdAt: text("created_at").notNull().default(now),
   },
   (t) => [index("documents_org").on(t.orgId), index("documents_folder").on(t.folderId)],
@@ -394,10 +419,27 @@ export const documentVersions = sqliteTable(
     documentId: text("document_id").notNull().references(() => documents.id, { onDelete: "cascade" }),
     version: integer("version").notNull(),
     note: text("note"),
+    name: text("name"),
+    kind: text("kind"),
+    size: integer("size"),
+    storageKey: text("storage_key"),
     authorId: text("author_id").references(() => users.id, { onDelete: "set null" }),
     createdAt: text("created_at").notNull().default(now),
   },
   (t) => [index("document_versions_doc").on(t.documentId)],
+);
+
+export const documentPermissions = sqliteTable(
+  "document_permissions",
+  {
+    id: text("id").primaryKey(),
+    documentId: text("document_id").notNull().references(() => documents.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    role: text("role").notNull().default("viewer"),
+    grantedBy: text("granted_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: text("created_at").notNull().default(now),
+  },
+  (t) => [uniqueIndex("document_permissions_doc_user").on(t.documentId, t.userId)],
 );
 
 export const events = sqliteTable(

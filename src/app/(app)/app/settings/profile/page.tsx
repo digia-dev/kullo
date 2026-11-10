@@ -11,9 +11,10 @@ export default async function ProfileSettingsPage() {
   const person = getPeople(ctx.org.id).find((row) => row.id === ctx.user.id);
   return (
     <ProfileClient
-      user={{ name: ctx.user.name, email: ctx.user.email, title: ctx.user.title, phone: ctx.user.phone, avatarColor: ctx.user.avatarColor, createdAt: ctx.user.createdAt }}
+      user={{ id: ctx.user.id, name: ctx.user.name, email: ctx.user.email, title: ctx.user.title, phone: ctx.user.phone, avatarColor: ctx.user.avatarColor, avatarKey: ctx.user.avatarKey, createdAt: ctx.user.createdAt }}
       role={ROLE_LABELS[ctx.membership.role] ?? ctx.membership.role}
       departmentName={person?.departmentName ?? null}
+      initialHasAvatar={Boolean(ctx.user.avatarKey)}
     />
   );
 }

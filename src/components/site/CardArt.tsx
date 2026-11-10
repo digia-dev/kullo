@@ -1,12 +1,12 @@
 export type CardVariant = "board" | "chat" | "docs" | "approvals" | "calendar" | "report";
 
 const TINTS: Record<CardVariant, { from: string; to: string; accent: string }> = {
-  board: { from: "#eef2fe", to: "#dfe7fb", accent: "#365fd1" },
-  chat: { from: "#f4effa", to: "#e6dcf6", accent: "#7a3d9e" },
-  docs: { from: "#edf7f2", to: "#d9eee4", accent: "#18794e" },
-  approvals: { from: "#fdf6ea", to: "#f8ead0", accent: "#8a5a10" },
-  calendar: { from: "#eef2fe", to: "#e6ecfb", accent: "#365fd1" },
-  report: { from: "#eef4fb", to: "#dce9f6", accent: "#0f6f7a" },
+  board: { from: "#ebf3fc", to: "#dcebfa", accent: "#0f6cbd" },
+  chat: { from: "#f4f0fa", to: "#e9dff5", accent: "#8764b8" },
+  docs: { from: "#e7f6e4", to: "#d2efce", accent: "#107c10" },
+  approvals: { from: "#fff4ce", to: "#fde9a6", accent: "#8a6d00" },
+  calendar: { from: "#fff1e8", to: "#ffe0cc", accent: "#ca5010" },
+  report: { from: "#e5f1fb", to: "#d0e5f7", accent: "#038387" },
 };
 
 export function CardArt({ variant, label }: { variant: CardVariant; label: string }) {
@@ -48,7 +48,7 @@ export function CardArt({ variant, label }: { variant: CardVariant; label: strin
                   <rect width="88" height="38" rx="8" fill="#ffffff" stroke="#e4e8f2" />
                   <rect x="9" y="9" width="54" height="6" rx="3" fill="#4b5470" />
                   <rect x="9" y="21" width="34" height="5" rx="2.5" fill="#a3aabc" />
-                  <circle cx="74" cy="26" r="7" fill={col === 1 ? "#18794e" : tint.accent} opacity="0.85" />
+                  <circle cx="74" cy="26" r="7" fill={col === 1 ? "#107c10" : tint.accent} opacity="0.85" />
                 </g>
               ))}
             </g>
@@ -130,7 +130,7 @@ export function CardArt({ variant, label }: { variant: CardVariant; label: strin
             <rect x="50" y="28" width="92" height="7" rx="3.5" fill="#a3aabc" />
             <g transform="translate(232 13)">
               <rect width="86" height="20" rx="10" fill="#e9f7f0" />
-              <text x="43" y="14" textAnchor="middle" fontSize="10" fontWeight="700" fill="#18794e">
+              <text x="43" y="14" textAnchor="middle" fontSize="10" fontWeight="700" fill="#107c10">
                 Disetujui
               </text>
             </g>
@@ -225,12 +225,12 @@ export function BannerArt() {
         </filter>
       </defs>
       <rect width="720" height="460" fill="url(#bnBg)" />
-      <circle cx="612" cy="76" r="140" fill="#7d97f2" opacity="0.22" />
-      <circle cx="96" cy="404" r="118" fill="#f5a524" opacity="0.16" />
+      <circle cx="612" cy="76" r="140" fill="#479ef5" opacity="0.22" />
+      <circle cx="96" cy="404" r="118" fill="#ffb900" opacity="0.16" />
 
       <g filter="url(#bnShadow)" transform="translate(70 74) rotate(-4)">
         <rect width="330" height="214" rx="16" fill="url(#bnGlass)" />
-        <rect x="20" y="20" width="118" height="10" rx="5" fill="#365fd1" />
+        <rect x="20" y="20" width="118" height="10" rx="5" fill="#0f6cbd" />
         {[0, 1, 2].map((col) => (
           <g key={col} transform={`translate(${20 + col * 100} 48)`}>
             <rect width="88" height="146" rx="10" fill="#f1f3f9" />
@@ -248,7 +248,7 @@ export function BannerArt() {
         <rect x="20" y="18" width="92" height="9" rx="4.5" fill="#1b1b1a" opacity="0.82" />
         <g transform="translate(20 44)">
           {[70, 96, 58, 110, 88].map((value, index) => (
-            <rect key={index} x={index * 48} y={72 - value} width="26" height={value} rx="6" fill={index === 3 ? "#365fd1" : "#dbe4f6"} />
+            <rect key={index} x={index * 48} y={72 - value} width="26" height={value} rx="6" fill={index === 3 ? "#0f6cbd" : "#dbe4f6"} />
           ))}
           <rect x="0" y="74" width="232" height="1.5" fill="#e2e8f4" />
         </g>
@@ -261,7 +261,7 @@ export function BannerArt() {
         {[0, 1].map((row) => (
           <g key={row} transform={`translate(20 ${44 + row * 54})`}>
             <rect width="260" height="44" rx="10" fill={row === 0 ? "#e9f7f0" : "#fdf4e3"} />
-            <circle cx="24" cy="22" r="12" fill={row === 0 ? "#18794e" : "#f5a524"} />
+            <circle cx="24" cy="22" r="12" fill={row === 0 ? "#107c10" : "#ffb900"} />
             <rect x="48" y="14" width="120" height="7" rx="3.5" fill="#4b5470" opacity="0.85" />
             <rect x="48" y="27" width="84" height="6" rx="3" fill="#7b839b" />
             <rect x="196" y="14" width="50" height="18" rx="9" fill="#ffffff" opacity="0.9" />
@@ -271,7 +271,7 @@ export function BannerArt() {
 
       <g transform="translate(486 214)">
         <rect width="150" height="38" rx="19" fill="#ffffff" opacity="0.96" />
-        <circle cx="22" cy="19" r="7" fill="#18794e" />
+        <circle cx="22" cy="19" r="7" fill="#107c10" />
         <rect x="38" y="16" width="92" height="6" rx="3" fill="#4b5470" />
       </g>
     </svg>

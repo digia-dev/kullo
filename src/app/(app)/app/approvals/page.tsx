@@ -3,7 +3,6 @@ import { requireApp } from "@/lib/auth";
 import { getApprovalInbox } from "@/lib/data";
 import { can } from "@/lib/rbac";
 import { ApprovalsClient } from "@/components/app/ApprovalsClient";
-import { PageHeader } from "@/components/app/ui";
 
 export const metadata: Metadata = { title: "Persetujuan" };
 
@@ -27,11 +26,7 @@ export default async function ApprovalsPage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="Kotak masuk keputusan"
-        title="Persetujuan"
-        subtitle={`${pending.length} permintaan menunggu keputusan Anda · ${history.length} dalam riwayat Anda`}
-      />
+      <h1 className="sr-only">Persetujuan</h1>
       <ApprovalsClient pending={pending.map(map)} history={history.map(map)} currentUserId={ctx.user.id} canDecide={can(ctx, "approval.decide")} />
     </>
   );

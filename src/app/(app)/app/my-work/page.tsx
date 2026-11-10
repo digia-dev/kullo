@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
-import { Plus } from "lucide-react";
-import Link from "next/link";
+import { CalendarDays, Columns3, List } from "lucide-react";
 import { requireApp } from "@/lib/auth";
 import { getPeople, getProjectOptions, getStatuses, getTaskRows } from "@/lib/data";
 import { TaskExplorer } from "@/components/app/TaskExplorer";
-import { PageHeader } from "@/components/app/ui";
-import { todayISO } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "My Work" };
+
+const VIEW_OPTIONS = [
+  { key: "list", label: "List", Icon: List },
+  { key: "board", label: "Board", Icon: Columns3 },
+  { key: "calendar", label: "Kalender", Icon: CalendarDays },
+] as const;
 
 type SearchParams = Promise<{ scope?: string; view?: string }>;
 
@@ -18,21 +21,11 @@ export default async function MyWorkPage({ searchParams }: { searchParams: Searc
   const people = getPeople(ctx.org.id);
   const projects = getProjectOptions(ctx.org.id);
   const statuses = getStatuses(ctx.org.id);
-  const mine = tasks.filter((task) => task.assigneeId === ctx.user.id && !task.done);
+  const activeView = VIEW_OPTIONS.some((item) => item.key === view) ? view : "list";
 
   return (
     <>
-      <PageHeader
-        eyebrow="Ruang kerja pribadi"
-        title="My Work"
-        subtitle={`${mine.length} tugas terbuka untuk Anda · ${mine.filter((task) => task.dueDate === todayISO()).length} jatuh tempo hari ini`}
-        actions={
-          <>
-            <Link href="/app/tasks" className="btn btn-outline btn-sm">Semua tugas</Link>
-            <Link href="/app/my-work?new=task" className="btn btn-primary btn-sm"><Plus size={15} /> Tugas baru</Link>
-          </>
-        }
-      />
+      <h1 className="sr-only">My Work</h1>
       <TaskExplorer
         mode="my"
         tasks={tasks}
@@ -41,7 +34,7 @@ export default async function MyWorkPage({ searchParams }: { searchParams: Searc
         statuses={statuses}
         currentUserId={ctx.user.id}
         initialScope={scope ?? "assigned"}
-        initialView={view ?? "list"}
+        initialView={activeView}
       />
     </>
   );

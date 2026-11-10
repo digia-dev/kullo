@@ -56,7 +56,7 @@ export default async function ProjectTimelinePage({ params }: { params: Promise<
                 return (
                   <div key={task.id} className="gantt-row">
                     <Link href={`/app/tasks?task=${task.id}`} style={{ display: "flex", gap: 7, alignItems: "center", minWidth: 0 }}>
-                      {task.assigneeName && <Avatar name={task.assigneeName} color={task.assigneeColor} size={21} />}
+                      {task.assigneeName && <Avatar name={task.assigneeName} color={task.assigneeColor} size={21} personId={task.assigneeId ?? undefined} />}
                       <span style={{ minWidth: 0 }}>
                         <span style={{ display: "block", fontSize: 12, fontWeight: 550, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</span>
                         <span style={{ display: "flex", gap: 5, alignItems: "center", marginTop: 1 }}>

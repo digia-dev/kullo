@@ -3,7 +3,7 @@ import { requireApp } from "@/lib/auth";
 import { can } from "@/lib/rbac";
 import { getDocuments, getProjectOptions } from "@/lib/data";
 import { formatBytes, formatNumber } from "@/lib/utils";
-import { PageHeader, StatCard } from "@/components/app/ui";
+import { StatCard } from "@/components/app/ui";
 import { DocumentsClient } from "@/components/app/DocumentsClient";
 
 export const metadata: Metadata = { title: "Dokumen" };
@@ -21,11 +21,7 @@ export default async function DocumentsPage({ searchParams }: { searchParams: Se
 
   return (
     <>
-      <PageHeader
-        eyebrow="Pengetahuan"
-        title="Dokumen"
-        subtitle={`${documents.length} berkas · ${folders.length} folder · ${formatBytes(totalSize)} terpakai · ${versions} riwayat versi`}
-      />
+      <h1 className="sr-only">Dokumen</h1>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 16 }}>
         <StatCard label="Berkas" value={formatNumber(documents.length)} hint="Seluruh organisasi" />

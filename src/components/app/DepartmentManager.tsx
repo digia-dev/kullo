@@ -111,7 +111,7 @@ export function DepartmentManager({
                 {people.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}
               </select>
             </label>
-            <label className="field"><span className="label">Warna penanda</span><input className="input" type="color" name="color" defaultValue="#365fd1" style={{ height: 36, padding: 3 }} /></label>
+            <label className="field"><span className="label">Warna penanda</span><input className="input" type="color" name="color" defaultValue="#0f6cbd" style={{ height: 36, padding: 3 }} /></label>
             <button type="submit" className="btn btn-primary btn-sm" disabled={pending}>{pending ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Buat departemen</button>
           </form>
         )}

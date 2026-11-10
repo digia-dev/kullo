@@ -6,7 +6,7 @@ import { PRINCIPLES, ROADMAP } from "@/content/guides";
 export const metadata: Metadata = {
   title: "Tentang Kullo",
   description:
-    "Siapa yang membangun Kullo, prinsip desainnya, dan peta jalan empat fase dari ruang kerja inti sampai otomatisasi.",
+    "Alasan Kullo dibuat, prinsip desain yang dipakai, dan peta jalan empat fase.",
 };
 
 export default function TentangPage() {
@@ -14,8 +14,8 @@ export default function TentangPage() {
     <>
       <PageHero
         eyebrow="Tentang Kullo"
-        title="Satu ruang kerja, dibangun dengan hati-hati"
-        lede="Kullo dibuat untuk tim yang lelah membuka dua belas aplikasi hanya untuk satu pekerjaan. Kami memilih fokus: manajemen pekerjaan yang jujur, bukan daftar fitur yang panjang."
+        title="Ruang kerja untuk tim yang lelah berpindah aplikasi."
+        lede="Kullo dibangun untuk satu pekerjaan: menyatukan rencana, pelaksanaan, dan keputusan tim dalam satu basis data. Kami tidak menambah modul yang belum bisa dipakai."
         actions={[{ label: "Jelajahi produk", href: "/produk" }, { label: "Buat akun", href: "/daftar", variant: "outline" }]}
         tone="ink"
       />
@@ -25,11 +25,11 @@ export default function TentangPage() {
           {[
             {
               title: "Masalahnya sederhana",
-              body: "Pekerjaan tersebar di percakapan, spreadsheet, dan surel. Yang hilang bukan fitur, melainkan satu tempat yang semua orang percaya sebagai sumber kebenaran.",
+              body: "Pekerjaan tersebar di percakapan, spreadsheet, dan surel. Yang hilang bukan fitur, melainkan satu tempat yang dipakai semua orang untuk melihat status dan keputusan terbaru.",
             },
             {
               title: "Pendekatannya",
-              body: "Dua belas modul berbagi satu basis data dan satu set izin. Progres dihitung dari status tugas, bukan angka yang diketik manual.",
+              body: "Dua belas modul memakai satu basis data dan satu set izin. Progres dihitung dari status tugas, bukan angka yang diketik manual.",
             },
             {
               title: "Batasannya",
@@ -61,7 +61,7 @@ export default function TentangPage() {
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <div>
-                  <h3 style={{ fontSize: 16, margin: "0 0 4px", fontWeight: 650 }}>{principle.title}</h3>
+                  <h3 style={{ fontSize: 16, margin: "0 0 4px", fontWeight: 750 }}>{principle.title}</h3>
                   <p className="market-card-copy" style={{ margin: 0 }}>
                     {principle.body}
                   </p>
@@ -76,7 +76,7 @@ export default function TentangPage() {
         <div className="shell">
           <SectionHeading
             title="Peta jalan"
-            lede="Fase 1 sampai 3 sudah berjalan di aplikasi ini. Fase 4 masih rencana — kami tidak menampilkannya sebagai fitur yang tersedia."
+            lede="Fase 1 sampai 3 sudah berjalan di aplikasi ini. Fase 4 masih rencana. Kami tidak menampilkannya sebagai fitur yang tersedia."
           />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20, alignItems: "stretch" }}>
             {ROADMAP.map((phase) => (
@@ -103,7 +103,7 @@ export default function TentangPage() {
                       {phase.status}
                     </span>
                   </div>
-                  <h3 style={{ fontSize: 17, margin: 0, fontWeight: 650 }}>{phase.title}</h3>
+                  <h3 style={{ fontSize: 17, margin: 0, fontWeight: 750 }}>{phase.title}</h3>
                   <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 7 }}>
                     {phase.items.map((item) => (
                       <li key={item} style={{ fontSize: 14, color: "var(--text-muted)", display: "flex", gap: 8 }}>
@@ -119,8 +119,8 @@ export default function TentangPage() {
             ))}
           </div>
           <p className="help" style={{ marginTop: 18, maxWidth: "70ch" }}>
-            AI, otomatisasi alur kerja, integrasi eksternal, dan notifikasi email serta push masih berstatus
-            peta jalan. Harga paket berbayar juga belum ditetapkan.
+            Asisten AI, otomatisasi alur kerja, integrasi eksternal, dan notifikasi email serta push masih
+            berstatus peta jalan. Harga paket berbayar juga belum ditetapkan.
           </p>
         </div>
       </section>
@@ -144,7 +144,7 @@ export default function TentangPage() {
               Coba sendiri, bukan dari brosur
             </h2>
             <p style={{ margin: 0, color: "var(--text-muted)", fontSize: 15 }}>
-              Paket Free berisi 5 anggota dan 3 proyek. Cukup untuk menilai apakah Kullo cocok dengan cara
+              Paket Gratis berisi 5 anggota dan 3 proyek. Cukup untuk menilai apakah Kullo cocok dengan cara
               tim Anda bekerja.
             </p>
           </div>
@@ -153,7 +153,7 @@ export default function TentangPage() {
               Buat akun gratis
             </Link>
             <Link href="/dukungan#hubungi" className="btn btn-outline btn-lg">
-              Bicara dengan kami
+              Bicara dengan tim
             </Link>
           </div>
         </div>

@@ -4,19 +4,26 @@ out
 data/*.db
 data/*.db-*
 data/uploads
+data/backups/
 .env
-.env.local
+.env.*
+!.env.example
 *.tsbuildinfo
 next-env.d.ts
 .playwright-mcp
+*.sqlite
+*.sqlite-*
+*.db-journal
 
 # local artifacts — never commit
 check-output.txt
 check.log
 lint-report.txt
+test-output.txt
 test-results/
 playwright-report/
 .tmp-inspect-sessions.mjs
+replica/screens/adhoc/
 
 # third-party reference captures (appearance study only, not ours to publish)
 replica/screens/source-*

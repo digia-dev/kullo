@@ -3,7 +3,7 @@
 Scope: A Kullo marketing site that reuses the layout system, section order and
 interaction patterns observed on `https://www.microsoft.com/id-id`, with every
 piece of content, branding and imagery replaced by Kullo. Behind it, a
-clean-room rebuild of the Kullo work-management product defined in `KULLO.md`.
+clean-room rebuild of the Kullo work-management product defined in `docs/specs/KULLO.md`.
 For: Kullo's founders and the teams they sell to (Indonesian startups, agencies,
 multi-department companies).
 Date: 8 November 2026
@@ -13,7 +13,7 @@ Date: 8 November 2026
 | # | source | URL | notes |
 | --- | --- | --- | --- |
 | 1 | Microsoft Indonesia homepage | https://www.microsoft.com/id-id | Appearance reference only: promo bar, header, hero carousel, quick links, 4-up cards, split feature banner, "Untuk bisnis" band, footer, mobile menu. Captured at 1440 and 390. |
-| 2 | Kullo PRD v1.0 | `KULLO.md` (local, supplied by user) | Product truth: 12 modules, roles, RBAC, data entities, workflows, plans, MVP phases, visual direction. |
+| 2 | Kullo PRD v1.0 | `docs/specs/KULLO.md` (local, supplied by user) | Product truth: 12 modules, roles, RBAC, data entities, workflows, plans, MVP phases, visual direction. |
 | 3 | Microsoft Indonesia navigation | https://www.microsoft.com/id-id | Menu inventory: Microsoft 365, Azure, Copilot, XBOX, Dukungan; utility menu, search, account. Mobile drawer with accordions. |
 | 4 | Kullo references (PRD §22) | https://www.kolabo.id/ , https://linear.app/ , https://www.notion.so/ , https://slack.com/ , https://clickup.com/ | Category context only. No assets, copy, code or private APIs are taken from them. |
 

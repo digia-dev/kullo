@@ -43,6 +43,8 @@ test.describe("health", () => {
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body.service).toBe("kullo");
+    expect(res.headers()["x-content-type-options"]).toBe("nosniff");
+    expect(res.headers()["x-frame-options"]).toBe("DENY");
   });
 });
 
@@ -60,10 +62,40 @@ test.describe("marketing pages", () => {
     await expect(page.locator(".market-h1").first()).toBeVisible();
   });
 
-  test("pricing page asks to contact instead of listing prices", async ({ page }) => {
+  test("pricing page is honest about undisclosed prices", async ({ page }) => {
     await page.goto("/harga");
-    await expect(page.getByText(/hubungi kami/i).first()).toBeVisible();
+    await expect(page.getByText(/belum ditetapkan/i).first()).toBeVisible();
+    await expect(page.getByText(/hubungi tim/i).first()).toBeVisible();
     await expect(page.getByText(/Rp\s?\d/i)).toHaveCount(0);
+  });
+
+  test("auth pages render without marketing chrome", async ({ page }) => {
+    await page.goto("/masuk");
+    await expect(page.locator(".masthead")).toHaveCount(0);
+    await expect(page.locator(".footer")).toHaveCount(0);
+    await expect(page.locator("h1")).toBeVisible();
+  });
+
+  test("header feature menu shows every module", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Lihat fitur" }).click();
+    await expect(page.locator(".feature-menu")).toBeVisible();
+    await expect(page.locator(".feature-link")).toHaveCount(16);
+    await expect(page.locator(".feature-icon svg")).toHaveCount(16);
+  });
+
+  test("home device stage is visible on desktop and phone", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".device-stage")).toBeVisible();
+    await expect(page.locator(".macbook")).toBeVisible();
+    await expect(page.locator(".phone-mock")).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload();
+    await expect(page.locator(".macbook")).toBeVisible();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    );
+    expect(overflow).toBe(false);
   });
 
   test("hero CTA leads to sign up", async ({ page }) => {

@@ -35,18 +35,18 @@ const SLIDES: Slide[] = [
   {
     id: "workspace",
     theme: "dark",
-    title: "Satu ruang kerja. Semua alur kerja.",
+    title: "Proyek, tugas, dan persetujuan dalam satu ruang kerja.",
     body:
-      "Kullo menyatukan orang, pekerjaan, proyek, dokumen, chat, dan persetujuan. Semua tahu apa yang harus dikerjakan, dan apa yang sedang terjadi.",
-    cta: { label: "Coba Kullo gratis", href: "/daftar" },
+      "Kullo menyatukan orang, pekerjaan, dokumen, dan chat. Saat status tugas berubah, papan, kalender, dan laporan membaca perubahan yang sama.",
+    cta: { label: "Coba gratis", href: "/daftar" },
     art: WorkspaceArt,
   },
   {
     id: "approvals",
     theme: "light",
-    title: "Dari pengajuan sampai keputusan, tanpa berpindah aplikasi",
+    title: "Pengajuan cuti dan pembelian selesai di satu alur.",
     body:
-      "Permintaan cuti, reimbursement, dan pembelian melewati aturan persetujuan Anda sendiri. Setiap keputusan tercatat lengkap: siapa, kapan, dengan catatan apa.",
+      "Formulir, approver, dan riwayat keputusan tersimpan di tempat yang sama. Anda tidak perlu mencari persetujuan di tumpukan email.",
     cta: { label: "Lihat alur persetujuan", href: "/produk/approvals" },
     art: ApprovalArt,
   },
@@ -112,13 +112,13 @@ export function HeroCarousel() {
           <div className="hero-slide-copy">
             <h1
               className="market-h1"
-              style={{ color: dark ? "#f4fafd" : "#0e1726", marginBottom: 16 }}
+              style={{ color: dark ? "var(--on-accent)" : "var(--text)", marginBottom: 16 }}
             >
               {slide.title}
             </h1>
             <p
               style={{
-                color: dark ? "rgba(244,250,253,.86)" : "#2c3648",
+                color: dark ? "color-mix(in srgb, var(--on-accent) 86%, transparent)" : "var(--text-muted)",
                 fontSize: 16,
                 lineHeight: 1.6,
                 maxWidth: 560,

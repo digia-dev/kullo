@@ -1,5 +1,5 @@
 import { and, eq, gt } from "drizzle-orm";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import crypto from "node:crypto";
 import { db } from "@/db/client";
@@ -23,10 +23,13 @@ export async function createSession(userId: string) {
     })
     .run();
   const jar = await cookies();
+  const requestHeaders = await headers();
+  const forwardedProto = requestHeaders.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const secure = forwardedProto === "https" || requestHeaders.get("x-forwarded-ssl") === "on";
   jar.set(COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure,
     path: "/",
     expires,
   });

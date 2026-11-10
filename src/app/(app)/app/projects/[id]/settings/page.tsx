@@ -32,6 +32,13 @@ export default async function ProjectSettingsPage({ params }: { params: Promise<
       departments={departments.map((dept) => ({ id: dept.id, name: dept.name }))}
       people={people.map((person) => ({ id: person.id, name: person.name, avatarColor: person.avatarColor, title: person.title }))}
       members={bundle.members.map((person) => ({ id: person.id, name: person.name, avatarColor: person.avatarColor, title: person.title, role: person.role }))}
+      statuses={bundle.statuses.map((status) => ({
+        id: status.id,
+        name: status.name,
+        position: status.position,
+        category: status.category,
+        taskCount: bundle.tasks.filter((task) => task.statusId === status.id).length,
+      }))}
       canEdit={can(ctx, "project.edit")}
     />
   );

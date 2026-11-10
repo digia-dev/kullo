@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -13,10 +13,14 @@ import {
   CircleCheck,
   FileText,
   FolderKanban,
+  Grid3x3,
+  Home,
   LayoutDashboard,
   LogOut,
   Menu,
   MessageSquare,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   Search,
   Settings,
@@ -27,11 +31,13 @@ import { KulloMark } from "@/components/site/KulloMark";
 import { CommandPalette } from "./CommandPalette";
 import { QuickCreateHost } from "./QuickCreate";
 import { TaskDrawerHost } from "./TaskDrawerHost";
+import { Toaster } from "./Toaster";
 import { Avatar } from "./ui";
+import { ConnectionStatus } from "./ConnectionStatus";
 import { relativeTime } from "@/lib/utils";
 import { markAllNotificationsReadAction, markNotificationReadAction, signOutAction } from "@/app/(app)/actions";
 
-type ShellUser = { id: string; name: string; email: string; title: string | null; avatarColor: string };
+type ShellUser = { id: string; name: string; email: string; title: string | null; avatarColor: string; avatarKey: string | null };
 type ShellOrg = { id: string; name: string; slug: string; plan: string };
 type ShellNotification = {
   id: string;
@@ -73,6 +79,13 @@ const NAV = [
   },
 ];
 
+const MOBILE_TABS = [
+  { label: "Beranda", href: "/app/dashboard", icon: Home },
+  { label: "My Work", href: "/app/my-work", icon: CheckSquare },
+  { label: "Proyek", href: "/app/projects", icon: FolderKanban },
+  { label: "Chat", href: "/app/chat", icon: MessageSquare },
+];
+
 const PAGE_LABELS: Array<[string, string]> = [
   ["/app/dashboard", "Dashboard"],
   ["/app/my-work", "My Work"],
@@ -108,15 +121,51 @@ export function AppShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [notifFilter, setNotifFilter] = useState<"all" | "unread">("all");
   const [userOpen, setUserOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [sheetDrag, setSheetDrag] = useState(0);
+  const sheetDragStart = useRef<number | null>(null);
+  const sheetDragValue = useRef(0);
+
+  useEffect(() => {
+    try {
+      setCollapsed(window.localStorage.getItem("kullo:sidebar") === "collapsed");
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
+
+  const toggleCollapsed = () => {
+    setCollapsed((value) => {
+      const next = !value;
+      try {
+        window.localStorage.setItem("kullo:sidebar", next ? "collapsed" : "expanded");
+      } catch {
+        /* storage unavailable */
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     setSidebarOpen(false);
     setNotifOpen(false);
     setUserOpen(false);
     setQuickOpen(false);
+    setMoreOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [moreOpen]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -128,6 +177,7 @@ export function AppShell({
         setNotifOpen(false);
         setUserOpen(false);
         setQuickOpen(false);
+        setMoreOpen(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -135,12 +185,14 @@ export function AppShell({
   }, []);
 
   const pageLabel = PAGE_LABELS.find(([prefix]) => pathname.startsWith(prefix))?.[1] ?? "Workspace";
+  const inChat = pathname.startsWith("/app/chat");
   const unread = notifications.filter((item) => !item.readAt).length;
+  const visibleNotifications = notifFilter === "unread" ? notifications.filter((item) => !item.readAt) : notifications;
 
   return (
-    <div className="app-body">
-      <div className="app-shell">
-        {sidebarOpen && <div className="app-drawer-backdrop lg:hidden" onClick={() => setSidebarOpen(false)} aria-hidden />}
+    <div className={`app-body ${inChat ? "chat-view" : ""}`}>
+      <div className={`app-shell ${collapsed ? "collapsed" : ""}`}>
+        {sidebarOpen && <div className="app-drawer-backdrop" onClick={() => setSidebarOpen(false)} aria-hidden />}
         <aside className={`app-sidebar ${sidebarOpen ? "open" : ""}`} aria-label="Navigasi aplikasi">
           <div className="sidebar-brand">
             <Link href="/app/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
@@ -148,7 +200,16 @@ export function AppShell({
               <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.04em" }}>Kullo</span>
             </Link>
             <span className="badge" style={{ marginLeft: "auto", fontSize: 10 }}>{org.plan}</span>
-            <button type="button" className="icon-btn lg:hidden" aria-label="Tutup navigasi" onClick={() => setSidebarOpen(false)}>
+            <button
+              type="button"
+              className="icon-btn sidebar-collapse"
+              aria-label={collapsed ? "Tampilkan sidebar" : "Sembunyikan sidebar"}
+              title={collapsed ? "Tampilkan sidebar" : "Sembunyikan sidebar"}
+              onClick={toggleCollapsed}
+            >
+              {collapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
+            </button>
+            <button type="button" className="icon-btn sidebar-close" aria-label="Tutup navigasi" onClick={() => setSidebarOpen(false)}>
               <X size={17} />
             </button>
           </div>
@@ -173,9 +234,11 @@ export function AppShell({
                   const count = item.countKey === "myWork" ? counts.myWork : item.countKey === "approvals" ? counts.approvals : 0;
                   const Icon = item.icon;
                   return (
-                    <Link key={item.href} href={item.href} className={`nav-item ${active ? "active" : ""}`} aria-current={active ? "page" : undefined}>
-                      <Icon aria-hidden />
-                      {item.label}
+                    <Link key={item.href} href={item.href} className={`nav-item ${active ? "active" : ""}`} aria-current={active ? "page" : undefined} title={item.label}>
+                      <span className="nav-icon" aria-hidden>
+                        <Icon />
+                      </span>
+                      <span className="nav-label">{item.label}</span>
                       {count > 0 && <span className="nav-count">{count}</span>}
                     </Link>
                   );
@@ -186,7 +249,7 @@ export function AppShell({
 
           <div className="sidebar-foot">
             <div style={{ display: "flex", gap: 8, alignItems: "center", padding: "2px 4px" }}>
-              <Avatar name={user.name} color={user.avatarColor} size={30} />
+              <Avatar name={user.name} color={user.avatarColor} size={30} personId={user.id} version={user.avatarKey} />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <p style={{ margin: 0, fontSize: 12.5, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</p>
                 <p style={{ margin: 0, fontSize: 10.5, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.title ?? user.email}</p>
@@ -205,11 +268,12 @@ export function AppShell({
             <button type="button" className="icon-btn app-mobile-bar" aria-label="Buka navigasi" onClick={() => setSidebarOpen(true)}>
               <Menu size={19} />
             </button>
-            <div style={{ minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 650, lineHeight: 1.3 }}>
-                {org.name}
-              </p>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 650, lineHeight: 1.3 }}>{pageLabel}</p>
+            <div className="app-mobile-brand">
+              <KulloMark size={24} />
+              <span>{pageLabel}</span>
+            </div>
+            <div className="topbar-crumb" style={{ minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, lineHeight: 1.3 }}>{pageLabel}</p>
             </div>
 
             <div className="topbar-spacer" />
@@ -220,13 +284,16 @@ export function AppShell({
               <span className="kbd" style={{ marginLeft: "auto" }}>Ctrl K</span>
             </button>
 
-            <div style={{ position: "relative" }}>
+            <ConnectionStatus />
+
+            <div className="topbar-quick" style={{ position: "relative" }}>
               <button type="button" className="icon-btn" aria-label="Aksi cepat" aria-expanded={quickOpen} onClick={() => { setQuickOpen((value) => !value); setNotifOpen(false); setUserOpen(false); }}>
                 <Plus size={18} />
               </button>
               {quickOpen && (
                 <div className="popover" style={{ width: 210 }} role="menu">
                   {[
+                    ["Chat baru", "/app/chat?new=1"],
                     ["Tugas baru", "/app/dashboard?new=task"],
                     ["Proyek baru", "/app/projects?new=project"],
                     ["Agenda baru", "/app/calendar?new=event"],
@@ -247,6 +314,8 @@ export function AppShell({
               )}
             </div>
 
+
+
             <div style={{ position: "relative" }}>
               <button
                 type="button"
@@ -260,7 +329,7 @@ export function AppShell({
               </button>
               {notifOpen && (
                 <div className="popover" role="dialog" aria-label="Notifikasi">
-                  <div className="popover-head">
+                  <div className="popover-head" style={{ flexWrap: "wrap", rowGap: 6 }}>
                     <span>Notifikasi</span>
                     {unread > 0 && <span className="badge badge-accent">{unread}</span>}
                     {unread > 0 && (
@@ -276,12 +345,32 @@ export function AppShell({
                         Tandai semua dibaca
                       </button>
                     )}
+                    <div style={{ display: "inline-flex", gap: 2, width: "100%" }}>
+                      <button
+                        type="button"
+                        className={`btn btn-sm ${notifFilter === "all" ? "btn-outline" : "btn-ghost"}`}
+                        aria-pressed={notifFilter === "all"}
+                        onClick={() => setNotifFilter("all")}
+                      >
+                        Semua
+                      </button>
+                      <button
+                        type="button"
+                        className={`btn btn-sm ${notifFilter === "unread" ? "btn-outline" : "btn-ghost"}`}
+                        aria-pressed={notifFilter === "unread"}
+                        onClick={() => setNotifFilter("unread")}
+                      >
+                        Belum dibaca
+                      </button>
+                    </div>
                   </div>
                   <div className="popover-list">
-                    {notifications.length === 0 ? (
-                      <p className="help" style={{ padding: 16, margin: 0 }}>Belum ada notifikasi.</p>
+                    {visibleNotifications.length === 0 ? (
+                      <p className="help" style={{ padding: 16, margin: 0 }}>
+                        {notifFilter === "unread" ? "Tidak ada notifikasi yang belum dibaca." : "Belum ada notifikasi."}
+                      </p>
                     ) : (
-                      notifications.map((item) => (
+                      visibleNotifications.map((item) => (
                         <button
                           key={item.id}
                           type="button"
@@ -293,7 +382,7 @@ export function AppShell({
                             router.refresh();
                           }}
                         >
-                          {!item.readAt && <span className="notif-dot" />}
+                          {!item.readAt && <span className="notif-dot" data-kind={item.kind} />}
                           <span style={{ minWidth: 0, flex: 1, marginLeft: item.readAt ? 16 : 0 }}>
                             <span style={{ display: "block", fontWeight: 600, fontSize: 12.5 }}>{item.title}</span>
                             {item.body && <span style={{ display: "block", color: "var(--text-muted)", fontSize: 11.5, lineHeight: 1.45, marginTop: 1 }}>{item.body}</span>}
@@ -312,7 +401,7 @@ export function AppShell({
               )}
             </div>
 
-            <div style={{ position: "relative" }}>
+            <div className="topbar-avatar" style={{ position: "relative" }}>
               <button
                 type="button"
                 className="icon-btn"
@@ -321,7 +410,7 @@ export function AppShell({
                 onClick={() => { setUserOpen((value) => !value); setNotifOpen(false); setQuickOpen(false); }}
                 style={{ width: 36 }}
               >
-                <Avatar name={user.name} color={user.avatarColor} size={28} />
+                <Avatar name={user.name} color={user.avatarColor} size={28} personId={user.id} version={user.avatarKey} />
               </button>
               {userOpen && (
                 <div className="popover" style={{ width: 240 }} role="menu">
@@ -353,6 +442,98 @@ export function AppShell({
         </div>
       </div>
 
+      <nav className="app-tabbar" aria-label="Navigasi utama seluler">
+        {MOBILE_TABS.map((tab) => {
+          const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`);
+          const Icon = tab.icon;
+          return (
+            <Link key={tab.href} href={tab.href} className={`app-tab ${active ? "active" : ""}`} aria-current={active ? "page" : undefined}>
+              <Icon aria-hidden />
+              <span>{tab.label}</span>
+            </Link>
+          );
+        })}
+        <button type="button" className={`app-tab ${moreOpen ? "active" : ""}`} onClick={() => setMoreOpen(true)} aria-label="Menu lainnya" aria-haspopup="dialog" aria-expanded={moreOpen}>
+          <Grid3x3 aria-hidden />
+          <span>Lainnya</span>
+        </button>
+      </nav>
+
+      {moreOpen && (
+        <>
+          <div className="app-sheet-backdrop" onClick={() => setMoreOpen(false)} aria-hidden />
+          <section
+            className="app-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu aplikasi"
+            style={sheetDrag > 0 ? { transform: `translateY(${sheetDrag}px)`, transition: "none", animation: "none" } : undefined}
+          >
+            <div
+              className="app-sheet-grab"
+              onPointerDown={(event) => {
+                sheetDragStart.current = event.clientY;
+                try {
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                } catch {
+                  /* pointer capture optional */
+                }
+              }}
+              onPointerMove={(event) => {
+                if (sheetDragStart.current == null) return;
+                const delta = Math.max(0, event.clientY - sheetDragStart.current);
+                sheetDragValue.current = delta;
+                setSheetDrag(delta);
+              }}
+              onPointerUp={() => {
+                if (sheetDragValue.current > 90) setMoreOpen(false);
+                sheetDragStart.current = null;
+                sheetDragValue.current = 0;
+                setSheetDrag(0);
+              }}
+              onPointerCancel={() => {
+                sheetDragStart.current = null;
+                sheetDragValue.current = 0;
+                setSheetDrag(0);
+              }}
+            >
+              <span className="app-sheet-handle" aria-hidden />
+            </div>
+            <div className="app-sheet-head">
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <p className="app-sheet-eyebrow">{org.name}</p>
+                <h2 className="app-sheet-title">Menu</h2>
+              </div>
+              <button type="button" className="icon-btn" aria-label="Tutup menu" onClick={() => setMoreOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <div className="app-sheet-grid">
+              {NAV.flatMap((group) => group.items).map((item) => {
+                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const count = item.countKey === "myWork" ? counts.myWork : item.countKey === "approvals" ? counts.approvals : 0;
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`app-sheet-tile ${active ? "active" : ""}`}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setMoreOpen(false)}
+                  >
+                    <span className="app-sheet-icon" aria-hidden>
+                      <Icon size={19} />
+                      {count > 0 && <span className="app-sheet-count">{count}</span>}
+                    </span>
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        </>
+      )}
+
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <Suspense fallback={null}>
         <TaskDrawerHost />
@@ -360,6 +541,7 @@ export function AppShell({
       <Suspense fallback={null}>
         <QuickCreateHost />
       </Suspense>
+      <Toaster />
     </div>
   );
 }

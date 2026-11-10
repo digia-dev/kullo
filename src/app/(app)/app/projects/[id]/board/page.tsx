@@ -13,10 +13,6 @@ export default async function ProjectBoardPage({ params }: { params: Promise<{ i
   if (!bundle) notFound();
   return (
     <>
-      <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
-        <h2 style={{ margin: 0, fontSize: 15 }}>Papan Kanban</h2>
-        <span className="help">Seret kartu antar kolom, atau gunakan pilihan status di kartu untuk layar sentuh.</span>
-      </div>
       <TaskExplorer
         mode="all"
         tasks={bundle.tasks}

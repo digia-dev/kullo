@@ -5,7 +5,7 @@
 One Next.js application for the marketing site and the product. The marketing
 pages reproduce the *layout system* observed on microsoft.com/id-id with Kullo
 content, Kullo brand and original artwork. The product is a clean-room build of
-the specification in `KULLO.md`.
+the specification in `docs/specs/KULLO.md`.
 
 | Layer | Choice | Why |
 | --- | --- | --- |

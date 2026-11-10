@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, CornerDownLeft, Loader2, Search } from "lucide-react";
+import { EntityBadge } from "./ui";
 
 type Result = { id: string; type: string; title: string; subtitle: string; href: string };
 
@@ -128,7 +129,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
               onClick={() => go(item.href)}
               style={{ width: "100%", border: 0, background: "none", cursor: "pointer", textAlign: "left" }}
             >
-              <span className="badge" style={{ minWidth: 66, justifyContent: "center" }}>{item.type}</span>
+              <span style={{ minWidth: 66, display: "inline-flex", justifyContent: "center" }}><EntityBadge type={item.type} /></span>
               <span style={{ minWidth: 0 }}>
                 <span style={{ display: "block", fontWeight: 550, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {item.title}

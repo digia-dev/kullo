@@ -93,7 +93,7 @@ export function ApprovalsClient({
               const current = request.steps.find((step) => step.position === request.currentStep);
               return (
                 <button key={request.id} type="button" className="task-row" onClick={() => { setSelected(request); setNote(""); setError(""); }} style={{ gridTemplateColumns: "34px minmax(0,1fr) auto auto" }}>
-                  <Avatar name={request.requesterName} color={request.requesterColor} size={27} />
+                  <Avatar name={request.requesterName} color={request.requesterColor} size={27} personId={request.requesterId} />
                   <span style={{ minWidth: 0 }}>
                     <span className="task-title">{request.title}</span>
                     <span className="task-meta">
@@ -114,7 +114,7 @@ export function ApprovalsClient({
         <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
           <div className="modal" role="dialog" aria-modal="true" aria-label={selected.title}>
             <div className="modal-head">
-              <Avatar name={selected.requesterName} color={selected.requesterColor} size={30} />
+              <Avatar name={selected.requesterName} color={selected.requesterColor} size={30} personId={selected.requesterId} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h2 style={{ margin: 0, fontSize: 16 }}>{selected.title}</h2>
                 <p style={{ margin: 0, fontSize: 11.5, color: "var(--text-muted)" }}>{selected.requesterName} · {selected.templateName} · {formatDate(selected.createdAt)}</p>
@@ -135,12 +135,12 @@ export function ApprovalsClient({
               <div>
                 <p style={{ margin: "0 0 7px", fontSize: 11, textTransform: "uppercase", letterSpacing: ".08em", color: "var(--text-muted)" }}>Alur persetujuan</p>
                 {selected.steps.map((step) => (
-                  <div key={step.id} style={{ display: "flex", gap: 8, padding: "5px 0 5px 9px", borderLeft: `2px solid ${step.status === "approved" ? "var(--success)" : step.status === "rejected" ? "var(--danger)" : step.status === "pending" ? "var(--accent)" : "var(--border)"}`, marginLeft: 3 }}>
+                  <div key={step.id} style={{ display: "flex", gap: 8, padding: "5px 0 5px 9px", borderLeft: `2px solid ${step.status === "approved" ? "var(--success)" : step.status === "rejected" ? "var(--danger)" : step.status === "revision" ? "var(--marker-orange)" : step.status === "pending" ? "var(--accent)" : "var(--border)"}`, marginLeft: 3 }}>
                     <div style={{ flex: 1 }}>
                       <p style={{ margin: 0, fontSize: 12.5 }}><strong>Tahap {step.position}</strong> · {step.approverName}{step.approverId === currentUserId ? " (Anda)" : ""}</p>
                       <p style={{ margin: 0, fontSize: 11, color: "var(--text-muted)" }}>{step.status === "pending" ? "Menunggu keputusan" : `${step.status} · ${step.decidedAt ? formatDate(step.decidedAt) : ""}`}{step.note ? ` — ${step.note}` : ""}</p>
                     </div>
-                    <span className={`badge ${step.status === "approved" ? "badge-success" : step.status === "rejected" ? "badge-danger" : step.status === "revision" ? "badge-warning" : "badge-accent"}`}>{step.status}</span>
+                    <span className={`badge ${step.status === "approved" ? "badge-success" : step.status === "rejected" ? "badge-danger" : step.status === "revision" ? "badge-orange" : "badge-accent"}`}>{step.status}</span>
                   </div>
                 ))}
               </div>

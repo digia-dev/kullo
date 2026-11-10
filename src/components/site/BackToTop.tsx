@@ -31,13 +31,13 @@ export function BackToTop() {
         height: 42,
         padding: "0 18px",
         borderRadius: 999,
-        background: "#15151d",
-        color: "#ffffff",
+        background: "var(--ink)",
+        color: "var(--on-accent)",
         border: 0,
         fontSize: 14,
         fontWeight: 600,
         cursor: "pointer",
-        boxShadow: "0 12px 30px rgba(21,21,29,.28)",
+        boxShadow: "var(--shadow-pop)",
       }}
     >
       Kembali ke atas <ArrowUp size={16} />

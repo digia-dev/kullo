@@ -7,9 +7,9 @@ import { MODULE_GROUPS, MODULES } from "@/content/modules";
 import { CardArt } from "@/components/site/CardArt";
 
 export const metadata: Metadata = {
-  title: "Produk — dua belas modul dalam satu portal",
+  title: "Produk: 12 modul dalam satu portal",
   description:
-    "Kenali dua belas modul Kullo: dashboard, my work, proyek, tugas, tim, chat, kalender, dokumen, permintaan, persetujuan, laporan, dan pengaturan.",
+    "Kenali 12 modul Kullo: Dashboard, My Work, Proyek, Tugas, Tim, Chat, Kalender, Dokumen, Permintaan, Persetujuan, Laporan, dan Pengaturan.",
 };
 
 export default function ProdukPage() {
@@ -18,7 +18,7 @@ export default function ProdukPage() {
       <PageHero
         eyebrow="Produk"
         title="Dua belas modul, satu basis data"
-        lede="Setiap modul membaca orang, proyek, tugas, dan dokumen yang sama. Izin diatur sekali, dipakai di mana-mana."
+        lede="Setiap modul membaca orang, proyek, tugas, dan dokumen yang sama. Izin diatur sekali, lalu dipakai di semua modul."
         actions={[{ label: "Coba gratis", href: "/daftar" }, { label: "Lihat harga", href: "/harga", variant: "outline" }]}
       />
 
@@ -33,38 +33,43 @@ export default function ProdukPage() {
               alignItems: "stretch",
             }}
           >
-            {MODULES.filter((module) => module.group === group).map((module) => (
+            {MODULES.filter((module) => module.group === group).map((module) => {
+              return (
               <article key={module.slug} className="market-card">
                 <div className="market-card-body" style={{ gap: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 2 }}>
                     <span
                       aria-hidden
                       style={{
-                        width: 34,
-                        height: 34,
-                        borderRadius: 9,
+                        width: 32,
+                        height: 32,
+                        borderRadius: 4,
                         background: "var(--accent-soft)",
                         color: "var(--accent)",
                         display: "grid",
                         placeItems: "center",
+                        flex: "none",
                       }}
                     >
                       <ModuleIcon name={module.icon} size={18} />
                     </span>
-                    <span className="badge badge-accent">{module.number}</span>
-                    <h3 className="market-card-title" style={{ fontSize: 18, marginLeft: "auto" }}>
+                    <h3 className="market-card-title" style={{ fontSize: 16, margin: 0 }}>
                       {module.name}
                     </h3>
+                    <span className="badge" style={{ marginLeft: "auto" }}>
+                      {module.number}
+                    </span>
                   </div>
                   <p className="market-card-copy" style={{ flex: 1 }}>
                     {module.summary}
                   </p>
                   <Link href={`/produk/${module.slug}`} className="textlink">
-                    Pelajari {module.name.toLowerCase()} <ArrowRight size={15} />
+                    Lihat {module.name} <ArrowRight size={15} />
                   </Link>
                 </div>
               </article>
-            ))}
+              );
+            })}
           </div>
         </section>
       ))}
@@ -75,7 +80,7 @@ export default function ProdukPage() {
             id="cara-kerja"
             eyebrow="Cara kerja"
             title="Modulnya terhubung karena orang dan proyeknya sama"
-            lede="Satu tugas dibuat di proyek, muncul di My Work, dijadwalkan di kalender, dibahas di chat, dan dihitung di laporan — tanpa disalin."
+            lede="Satu tugas dibuat di proyek, muncul di My Work, dijadwalkan di kalender, dibahas di chat, dan dihitung di laporan. Tidak ada salinan yang perlu diperbarui."
           />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px,1fr))", gap: 20 }}>
             {[
@@ -85,7 +90,7 @@ export default function ProdukPage() {
             ].map((item) => (
               <div key={item.title} className="panel">
                 <div className="panel-body">
-                  <h3 style={{ fontSize: 16, margin: "0 0 8px", fontWeight: 650 }}>{item.title}</h3>
+                  <h3 style={{ fontSize: 16, margin: "0 0 8px", fontWeight: 750 }}>{item.title}</h3>
                   <p className="market-card-copy" style={{ margin: 0 }}>{item.copy}</p>
                 </div>
               </div>
@@ -114,7 +119,7 @@ export default function ProdukPage() {
           </div>
           <div className="split-band-art" style={{ position: "relative" }}>
             <div style={{ position: "absolute", inset: 0 }}>
-              <CardArt variant="board" label="Ilustrasi papan proyek Kullo" />
+              <CardArt variant="board" label="Tampilan papan proyek Kullo di desktop dan ponsel" />
             </div>
           </div>
         </div>

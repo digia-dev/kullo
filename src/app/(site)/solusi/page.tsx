@@ -9,7 +9,7 @@ import { MODULES } from "@/content/modules";
 export const metadata: Metadata = {
   title: "Solusi per peran dan jenis tim",
   description:
-    "Kullo untuk manajer, tim proyek, operasional, kepemimpinan, staf, dan kolaborator eksternal. Satu workspace dengan izin yang berbeda.",
+    "Kullo untuk manajer, tim proyek, operasional, kepemimpinan, staf, dan kolaborator eksternal. Satu ruang kerja dengan izin yang berbeda.",
 };
 
 const ART = ["report", "board", "approvals", "report", "board", "chat"] as const;
@@ -19,7 +19,7 @@ export default function SolusiPage() {
     <>
       <PageHero
         eyebrow="Solusi"
-        title="Setiap peran melihat pekerjaan yang relevan"
+        title="Pekerjaan yang sama, tampilan berbeda untuk tiap peran"
         lede="Kullo tidak membuat enam aplikasi berbeda. Ia menampilkan data yang sama dengan izin dan fokus yang sesuai dengan pekerjaan tiap orang."
         actions={[{ label: "Coba gratis", href: "/daftar" }, { label: "Lihat semua modul", href: "/produk", variant: "outline" }]}
       />
@@ -60,7 +60,7 @@ export default function SolusiPage() {
               </div>
               <div className="split-band-art" style={{ order: index % 2 === 0 ? 1 : 0 }}>
                 <div style={{ position: "absolute", inset: 0 }}>
-                  <CardArt variant={ART[index] ?? "board"} label={`Ilustrasi solusi ${solution.title}`} />
+                  <CardArt variant={ART[index] ?? "board"} label={`Tampilan solusi ${solution.title}`} />
                 </div>
               </div>
             </article>
@@ -78,9 +78,9 @@ export default function SolusiPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px,1fr))", gap: 14 }}>
             {[
               ["Staf", "Membuat tugas", "Tugas muncul di My Work dan notifikasi atasan."],
-              ["Team Leader", "Mengatur board", "Status berubah, progres proyek dihitung ulang."],
-              ["Manager", "Menyetujui", "Keputusan tercatat dengan catatan dan waktu."],
-              ["Owner", "Membaca laporan", "Angka diambil dari tugas dan proyek yang sama."],
+              ["Pemimpin tim", "Mengatur papan", "Status berubah, progres proyek dihitung ulang."],
+              ["Manajer", "Menyetujui", "Keputusan tercatat dengan catatan dan waktu."],
+              ["Pemilik organisasi", "Membaca laporan", "Angka diambil dari tugas dan proyek yang sama."],
             ].map(([role, action, effect], index) => (
               <div key={role} className="panel" style={{ background: "var(--bg)" }}>
                 <div className="panel-body">

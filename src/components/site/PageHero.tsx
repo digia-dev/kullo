@@ -17,13 +17,9 @@ export function PageHero({
   id?: string;
 }) {
   const background =
-    tone === "soft"
-      ? "linear-gradient(180deg, #f5f7ff 0%, #ffffff 100%)"
-      : tone === "ink"
-        ? "linear-gradient(135deg,#151d3c 0%,#223a86 60%,#365fd1 100%)"
-        : "transparent";
-  const ink = tone === "ink" ? "#f4fafd" : "var(--text)";
-  const ledeColor = tone === "ink" ? "rgba(244,250,253,.86)" : "var(--text-muted)";
+    tone === "soft" ? "var(--canvas)" : tone === "ink" ? "var(--accent)" : "transparent";
+  const ink = tone === "ink" ? "#ffffff" : "var(--text)";
+  const ledeColor = tone === "ink" ? "rgba(255, 255, 255, 0.9)" : "var(--text-muted)";
 
   return (
     <section
@@ -36,7 +32,7 @@ export function PageHero({
     >
       <div className="shell">
         {eyebrow && (
-          <p className="eyebrow" style={{ marginBottom: 12, color: tone === "ink" ? "#a9bdfb" : undefined }}>
+          <p className="eyebrow" style={{ marginBottom: 12, color: tone === "ink" ? "rgba(255,255,255,.85)" : undefined }}>
             {eyebrow}
           </p>
         )}

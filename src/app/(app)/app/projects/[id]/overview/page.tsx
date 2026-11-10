@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Circle, FileText, Target, Users } from "lucid
 import { requireApp } from "@/lib/auth";
 import { getProjectBundle } from "@/lib/data";
 import { can } from "@/lib/rbac";
-import { Avatar, StatCard, StatusBadge } from "@/components/app/ui";
+import { Avatar, DueBadge, StatCard, StatusBadge } from "@/components/app/ui";
 import { MilestoneList } from "@/components/app/MilestoneList";
 import { formatBytes, formatDate, priorityOf, relativeTime } from "@/lib/utils";
 
@@ -69,12 +69,12 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
                       <span className="task-meta">
                         KUL-{String(task.number).padStart(3, "0")}
                         <StatusBadge status={task.statusName} category={task.statusCategory} />
-                        <span style={{ color: task.overdue ? "var(--danger)" : undefined }}>{task.dueDate ? formatDate(task.dueDate) : "Tanpa tenggat"}</span>
+                        <DueBadge dueDate={task.dueDate} done={task.done} compact />
                       </span>
                     </span>
                     <span style={{ display: "flex", gap: 4, alignItems: "center" }}>
                       <span className="priority-dot" style={{ background: priorityOf(task.priority).color }} />
-                      {task.assigneeName && <Avatar name={task.assigneeName} color={task.assigneeColor} size={22} />}
+                      {task.assigneeName && <Avatar name={task.assigneeName} color={task.assigneeColor} size={22} personId={task.assigneeId ?? undefined} />}
                     </span>
                   </Link>
                 ))}
@@ -109,7 +109,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
             <div className="panel-body" style={{ display: "grid", gap: 9 }}>
               {members.map((person) => (
                 <div key={person.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <Avatar name={person.name} color={person.avatarColor} size={26} />
+                  <Avatar name={person.name} color={person.avatarColor} size={26} personId={person.id} />
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <p style={{ margin: 0, fontSize: 12, fontWeight: 550, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{person.name}</p>
                     <p style={{ margin: 0, fontSize: 10.5, color: "var(--text-muted)" }}>{person.title ?? "Anggota"}</p>

@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
-import { Plus } from "lucide-react";
-import Link from "next/link";
 import { requireApp } from "@/lib/auth";
 import { getRequestTemplates, getRequests } from "@/lib/data";
 import { can } from "@/lib/rbac";
 import { RequestsClient } from "@/components/app/RequestsClient";
-import { PageHeader } from "@/components/app/ui";
 
 export const metadata: Metadata = { title: "Form & permintaan" };
 
@@ -19,12 +16,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Sea
 
   return (
     <>
-      <PageHeader
-        eyebrow="Pengajuan internal"
-        title="Form & permintaan"
-        subtitle={`${templates.length} template aktif · ${requests.filter((request) => ["pending", "submitted"].includes(request.status)).length} menunggu keputusan · ${requests.filter((request) => request.requesterId === ctx.user.id).length} permintaan Anda`}
-        actions={<Link href="/app/requests?new=1" className="btn btn-primary btn-sm"><Plus size={15} /> Buat permintaan</Link>}
-      />
+      <h1 className="sr-only">Form &amp; permintaan</h1>
       {!can(ctx, "request.create") ? (
         <div className="empty-state">
           <strong style={{ color: "var(--text)" }}>Peran Anda belum memiliki izin mengajukan permintaan</strong>

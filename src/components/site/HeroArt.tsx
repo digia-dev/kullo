@@ -10,15 +10,15 @@ export function WorkspaceArt() {
         <linearGradient id="wsBg" x1="0" y1="0" x2="760" y2="565" gradientUnits="userSpaceOnUse">
           <stop stopColor="#0d1430" />
           <stop offset="0.55" stopColor="#1a2a63" />
-          <stop offset="1" stopColor="#365fd1" />
+          <stop offset="1" stopColor="#0f6cbd" />
         </linearGradient>
         <radialGradient id="wsGlow" cx="0.5" cy="0.5" r="0.5">
-          <stop stopColor="#7d97f2" stopOpacity="0.55" />
-          <stop offset="1" stopColor="#7d97f2" stopOpacity="0" />
+          <stop stopColor="#479ef5" stopOpacity="0.55" />
+          <stop offset="1" stopColor="#479ef5" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="wsWarm" cx="0.5" cy="0.5" r="0.5">
-          <stop stopColor="#f5a524" stopOpacity="0.34" />
-          <stop offset="1" stopColor="#f5a524" stopOpacity="0" />
+          <stop stopColor="#ffb900" stopOpacity="0.34" />
+          <stop offset="1" stopColor="#ffb900" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="wsPanel" x1="0" y1="0" x2="0" y2="1">
           <stop stopColor="#ffffff" />
@@ -40,10 +40,10 @@ export function WorkspaceArt() {
       {/* board panel */}
       <g filter="url(#wsShadow)" transform="translate(236 78) rotate(-6)">
         <rect width="336" height="216" rx="16" fill="url(#wsPanel)" />
-        <rect x="18" y="18" width="16" height="16" rx="5" fill="#365fd1" />
+        <rect x="18" y="18" width="16" height="16" rx="5" fill="#0f6cbd" />
         <rect x="42" y="22" width="118" height="9" rx="4.5" fill="#1b1b1a" opacity="0.82" />
         <rect x="244" y="19" width="74" height="15" rx="7.5" fill="#eef2fe" />
-        <rect x="254" y="24" width="54" height="5" rx="2.5" fill="#365fd1" opacity="0.7" />
+        <rect x="254" y="24" width="54" height="5" rx="2.5" fill="#0f6cbd" opacity="0.7" />
         {[0, 1, 2].map((col) => (
           <g key={col} transform={`translate(${18 + col * 104} 52)`}>
             <rect width="96" height="148" rx="10" fill="#f1f3f9" />
@@ -53,7 +53,7 @@ export function WorkspaceArt() {
                 <rect width="80" height="44" rx="8" fill="#ffffff" stroke="#e4e8f2" />
                 <rect x="8" y="9" width="52" height="6" rx="3" fill="#4b5470" />
                 <rect x="8" y="21" width="34" height="5" rx="2.5" fill="#9aa2ba" />
-                <rect x="8" y="32" width="24" height="5" rx="2.5" fill={col === 1 ? "#18794e" : "#f5a524"} opacity="0.85" />
+                <rect x="8" y="32" width="24" height="5" rx="2.5" fill={col === 1 ? "#107c10" : "#ffb900"} opacity="0.85" />
               </g>
             ))}
             <rect x="8" y="130" width="80" height="10" rx="5" fill="#ffffff" stroke="#d9deec" strokeDasharray="4 4" />
@@ -65,15 +65,15 @@ export function WorkspaceArt() {
       <g filter="url(#wsShadow)" transform="translate(456 288) rotate(7)">
         <rect width="278" height="172" rx="16" fill="#ffffff" />
         <circle cx="30" cy="34" r="13" fill="#eef2fe" />
-        <rect x="30" y="28" width="12" height="12" rx="6" fill="#365fd1" opacity="0.8" />
+        <rect x="30" y="28" width="12" height="12" rx="6" fill="#0f6cbd" opacity="0.8" />
         <rect x="52" y="27" width="132" height="10" rx="5" fill="#1b1b1a" opacity="0.85" />
         <rect x="52" y="43" width="84" height="7" rx="3.5" fill="#a3aabc" />
         <rect x="18" y="70" width="242" height="8" rx="4" fill="#eceff7" />
-        <rect x="18" y="70" width="152" height="8" rx="4" fill="#365fd1" />
+        <rect x="18" y="70" width="152" height="8" rx="4" fill="#0f6cbd" />
         <g>
           {[0, 1, 2].map((row) => (
             <g key={row} transform={`translate(18 ${94 + row * 24})`}>
-              <rect width="14" height="14" rx="4" fill={row < 2 ? "#18794e" : "#ffffff"} stroke={row < 2 ? "#18794e" : "#c9cfdd"} />
+              <rect width="14" height="14" rx="4" fill={row < 2 ? "#107c10" : "#ffffff"} stroke={row < 2 ? "#107c10" : "#c9cfdd"} />
               {row < 2 && <path d="M3.4 7.2l2.6 2.6 5-5.4" stroke="#ffffff" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />}
               <rect x="24" y="3" width={row === 1 ? 148 : 116} height="7" rx="3.5" fill={row < 2 ? "#b7bdcd" : "#5b6379"} />
             </g>
@@ -81,8 +81,8 @@ export function WorkspaceArt() {
         </g>
         <g transform="translate(178 94)">
           <rect width="82" height="26" rx="8" fill="#e9f7f0" />
-          <circle cx="15" cy="13" r="5" fill="#18794e" />
-          <rect x="26" y="10" width="44" height="6" rx="3" fill="#18794e" opacity="0.65" />
+          <circle cx="15" cy="13" r="5" fill="#107c10" />
+          <rect x="26" y="10" width="44" height="6" rx="3" fill="#107c10" opacity="0.65" />
         </g>
       </g>
 
@@ -98,7 +98,7 @@ export function WorkspaceArt() {
         </g>
         <g transform="translate(46 84)">
           <rect width="194" height="34" rx="12" fill="#eef2fe" />
-          <rect x="12" y="10" width="150" height="6" rx="3" fill="#365fd1" opacity="0.75" />
+          <rect x="12" y="10" width="150" height="6" rx="3" fill="#0f6cbd" opacity="0.75" />
           <rect x="12" y="21" width="96" height="6" rx="3" fill="#7c93e4" />
         </g>
       </g>
@@ -106,16 +106,16 @@ export function WorkspaceArt() {
       {/* floating chips */}
       <g transform="translate(574 96)">
         <rect width="118" height="34" rx="17" fill="#ffffff" opacity="0.96" />
-        <circle cx="20" cy="17" r="6" fill="#18794e" />
+        <circle cx="20" cy="17" r="6" fill="#107c10" />
         <rect x="34" y="14" width="66" height="6" rx="3" fill="#4b5470" />
       </g>
       <g transform="translate(120 168)">
         <rect width="132" height="34" rx="17" fill="#ffffff" opacity="0.94" />
-        <circle cx="20" cy="17" r="6" fill="#f5a524" />
+        <circle cx="20" cy="17" r="6" fill="#ffb900" />
         <rect x="34" y="14" width="78" height="6" rx="3" fill="#4b5470" />
       </g>
-      <circle cx="660" cy="440" r="7" fill="#f5a524" opacity="0.9" />
-      <circle cx="122" cy="300" r="5" fill="#7d97f2" opacity="0.9" />
+      <circle cx="660" cy="440" r="7" fill="#ffb900" opacity="0.9" />
+      <circle cx="122" cy="300" r="5" fill="#479ef5" opacity="0.9" />
       <circle cx="612" cy="520" r="4" fill="#ffffff" opacity="0.55" />
     </svg>
   );
@@ -139,7 +139,7 @@ export function ApprovalArt() {
           <feDropShadow dx="0" dy="14" stdDeviation="16" floodColor="#1b2b63" floodOpacity="0.16" />
         </filter>
         <pattern id="apGrid" width="30" height="30" patternUnits="userSpaceOnUse">
-          <path d="M30 0H0v30" fill="none" stroke="#365fd1" strokeOpacity="0.08" strokeWidth="1" />
+          <path d="M30 0H0v30" fill="none" stroke="#0f6cbd" strokeOpacity="0.08" strokeWidth="1" />
         </pattern>
       </defs>
 
@@ -149,7 +149,7 @@ export function ApprovalArt() {
       <path
         d="M176 168 C 300 168, 300 262, 424 262"
         fill="none"
-        stroke="#365fd1"
+        stroke="#0f6cbd"
         strokeOpacity="0.5"
         strokeWidth="3"
         strokeDasharray="8 8"
@@ -157,7 +157,7 @@ export function ApprovalArt() {
       <path
         d="M176 344 C 300 344, 300 262, 424 262"
         fill="none"
-        stroke="#365fd1"
+        stroke="#0f6cbd"
         strokeOpacity="0.5"
         strokeWidth="3"
         strokeDasharray="8 8"
@@ -189,14 +189,14 @@ export function ApprovalArt() {
         <rect x="18" y="18" width="104" height="9" rx="4.5" fill="#1b1b1a" opacity="0.82" />
         <g transform="translate(18 44)">
           <rect width="228" height="40" rx="10" fill="#e9f7f0" />
-          <circle cx="24" cy="20" r="11" fill="#18794e" />
+          <circle cx="24" cy="20" r="11" fill="#107c10" />
           <path d="M19 20l4 4 7-8" stroke="#ffffff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          <rect x="44" y="12" width="122" height="7" rx="3.5" fill="#18794e" opacity="0.75" />
-          <rect x="44" y="24" width="80" height="6" rx="3" fill="#18794e" opacity="0.45" />
+          <rect x="44" y="12" width="122" height="7" rx="3.5" fill="#107c10" opacity="0.75" />
+          <rect x="44" y="24" width="80" height="6" rx="3" fill="#107c10" opacity="0.45" />
         </g>
         <g transform="translate(18 96)">
           <rect width="228" height="40" rx="10" fill="#fdf4e3" />
-          <circle cx="24" cy="20" r="11" fill="#f5a524" />
+          <circle cx="24" cy="20" r="11" fill="#ffb900" />
           <rect x="44" y="12" width="104" height="7" rx="3.5" fill="#8a5a10" opacity="0.75" />
           <rect x="44" y="24" width="64" height="6" rx="3" fill="#8a5a10" opacity="0.45" />
         </g>
@@ -204,7 +204,7 @@ export function ApprovalArt() {
       </g>
 
       <g filter="url(#apShadow)" transform="translate(468 388)">
-        <rect width="220" height="96" rx="16" fill="#365fd1" />
+        <rect width="220" height="96" rx="16" fill="#0f6cbd" />
         <rect x="18" y="22" width="72" height="9" rx="4.5" fill="#ffffff" opacity="0.95" />
         <rect x="18" y="44" width="150" height="7" rx="3.5" fill="#ffffff" opacity="0.7" />
         <rect x="18" y="62" width="108" height="7" rx="3.5" fill="#ffffff" opacity="0.5" />

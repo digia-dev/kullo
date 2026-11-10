@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { ArrowRight, KeyRound, UserRound } from "lucide-react";
-import { acceptInviteAction, type InviteState } from "@/app/(site)/invite-actions";
+import { acceptInviteAction, type InviteState } from "@/lib/invite-actions";
 
 const initial: InviteState = {};
 
@@ -43,10 +43,10 @@ export function InviteAcceptForm({ token, isNew, email }: { token: string; isNew
       </label>
       {state.error && <p className="error-text" role="alert" style={{ margin: 0 }}>{state.error}</p>}
       <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
-        {pending ? "Bergabung…" : "Bergabung ke organisasi"} <ArrowRight size={16} />
+        {pending ? "Bergabungâ€¦" : "Bergabung ke organisasi"} <ArrowRight size={16} />
       </button>
       <p className="help" style={{ margin: 0, textAlign: "center" }}>
-        Sudah masuk? <Link href="/app/dashboard" className="textlink">Buka workspace</Link>
+        Sudah masuk? <Link href="/app/dashboard" className="textlink">Buka ruang kerja</Link>
       </p>
     </form>
   );

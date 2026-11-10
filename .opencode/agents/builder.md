@@ -11,6 +11,27 @@ Before your first action, load the `build` skill with the `skill` tool and
 follow it for the whole run. Its base directory holds `references/`, `scripts/`,
 `templates/` and the `anatomy/` method.
 
+**Design is bound to `DESIGN.md` at the repo root:**
+
+- `DESIGN.md` is the Fluent 2 design system and the source of truth for
+  colour, type, depth, layout and component rules. Read it before any visual
+  change.
+- `MOBILE.md` is the source of truth for mobile layout, navigation and
+  interaction. Read it before changing mobile UI.
+- Tokens live in `src/app/globals.css` (`:root`) and
+  `replica/design/tokens.json` — change both together. Never add a raw hex to a
+  component; extend a token instead (SVG illustration palettes are the only
+  exception, and must use DESIGN.md §2 values).
+- `"Segoe UI"` is used as a system font stack (owner-approved 2026-11-09):
+  never bundle or download Segoe UI files; fall back to system fonts.
+- Avoid gradients, glassmorphism, neon colours, oversized rounded cards and
+  decorative shadows (DESIGN.md §19).
+- After every visual change: run `contrast.py` (0 AA failures) and `sweep.py`,
+  capture 1440 and 390 screenshots, run `npm run check` and `npm test`, then
+  update `replica/build-log.md`.
+- If a request conflicts with `DESIGN.md`, name the conflict and ask before
+  overriding. If the owner overrides, update `DESIGN.md` in the same change.
+
 One command, one continuous pass:
 
 1. Analyse the site and product: sources, screens, flows, data model, feature

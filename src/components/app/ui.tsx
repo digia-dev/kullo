@@ -1,18 +1,48 @@
 import Link from "next/link";
-import { AlertTriangle, ChevronRight, Circle } from "lucide-react";
-import { PRIORITY, initials } from "@/lib/utils";
+import { AlertTriangle, CalendarDays, CheckCircle2, ChevronRight, Circle, Clock3 } from "lucide-react";
+import { initials } from "@/lib/utils";
+import { dueMeta, entityTone, priorityMeta, roleMeta, statusMeta } from "@/lib/markers";
 
 export function Avatar({
   name,
-  color = "#365fd1",
+  color = "var(--accent)",
   size = 28,
   title,
+  personId,
+  version,
 }: {
   name: string;
   color?: string | null;
   size?: number;
   title?: string;
+  personId?: string;
+  version?: string | null;
 }) {
+  if (personId) {
+    const params = new URLSearchParams();
+    if (color && color.startsWith("#")) params.set("color", color);
+    if (version) params.set("v", version);
+    const query = params.toString() ? `?${params.toString()}` : "";
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={`/api/avatar/${personId}${query}`}
+        alt={title ?? name}
+        title={title ?? name}
+        width={size}
+        height={size}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: 999,
+          objectFit: "cover",
+          flex: "none",
+          background: color ?? "var(--accent)",
+          display: "inline-block",
+        }}
+      />
+    );
+  }
   return (
     <span
       title={title ?? name}
@@ -21,8 +51,8 @@ export function Avatar({
         width: size,
         height: size,
         borderRadius: 999,
-        background: color ?? "#365fd1",
-        color: "#fff",
+        background: color ?? "var(--accent)",
+        color: "var(--on-accent)",
         display: "inline-grid",
         placeItems: "center",
         fontSize: Math.max(9, Math.round(size * 0.36)),
@@ -43,7 +73,7 @@ export function AvatarStack({ people, max = 4 }: { people: Array<{ id: string; n
     <span style={{ display: "inline-flex", alignItems: "center" }}>
       {shown.map((person, index) => (
         <span key={person.id} style={{ marginLeft: index === 0 ? 0 : -7, border: "2px solid var(--bg)", borderRadius: 999 }}>
-          <Avatar name={person.name} color={person.avatarColor} size={25} />
+          <Avatar name={person.name} color={person.avatarColor} size={25} personId={person.id} />
         </span>
       ))}
       {people.length > max && (
@@ -56,34 +86,88 @@ export function AvatarStack({ people, max = 4 }: { people: Array<{ id: string; n
 }
 
 export function StatusBadge({ status, category }: { status: string | null; category?: string | null }) {
-  const tone =
-    category === "done"
-      ? "badge-success"
-      : category === "review"
-        ? "badge-warning"
-        : category === "active"
-          ? "badge-accent"
-          : "badge";
-  return <span className={`badge ${tone}`}>{status ?? "Backlog"}</span>;
+  const meta = statusMeta(status, category);
+  return <span className={`badge ${meta.className}`}>{status ?? "Backlog"}</span>;
+}
+
+function priorityColor(tone: string) {
+  if (tone === "danger") return "var(--danger)";
+  if (tone === "orange") return "var(--marker-orange)";
+  if (tone === "accent") return "var(--accent)";
+  return "var(--text-muted)";
 }
 
 export function PriorityDot({ priority, label = true }: { priority: string; label?: boolean }) {
-  const meta = PRIORITY[(priority as keyof typeof PRIORITY) in PRIORITY ? (priority as keyof typeof PRIORITY) : "medium"];
+  const meta = priorityMeta(priority);
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--text-muted)" }}>
-      <span className="priority-dot" style={{ background: meta.color }} />
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--text-muted)" }} title={`Prioritas ${meta.label}`}>
+      <span className="priority-dot" style={{ background: priorityColor(meta.tone) }} />
       {label ? meta.label : null}
     </span>
   );
 }
 
 export function PriorityLabel({ priority }: { priority: string }) {
-  const meta = PRIORITY[(priority as keyof typeof PRIORITY) in PRIORITY ? (priority as keyof typeof PRIORITY) : "medium"];
+  const meta = priorityMeta(priority);
+  const color = priorityColor(meta.tone);
   return (
-    <span style={{ fontSize: 11.5, color: meta.color, fontWeight: 600, display: "inline-flex", gap: 4, alignItems: "center" }}>
-      <Circle size={7} fill={meta.color} strokeWidth={0} /> {meta.label}
+    <span style={{ fontSize: 11.5, color, fontWeight: 600, display: "inline-flex", gap: 4, alignItems: "center" }} title={`Prioritas ${meta.label}`}>
+      <Circle size={7} fill={color} strokeWidth={0} /> {meta.label}
     </span>
   );
+}
+
+/** Due dates are a reminder, so the icon and the words carry the meaning too. */
+export function DueBadge({
+  dueDate,
+  done = false,
+  compact = false,
+}: {
+  dueDate: string | null | undefined;
+  done?: boolean;
+  compact?: boolean;
+}) {
+  const meta = dueMeta(dueDate, done);
+  const Icon =
+    meta.kind === "done"
+      ? CheckCircle2
+      : meta.kind === "overdue"
+        ? AlertTriangle
+        : meta.kind === "today" || meta.kind === "soon"
+          ? Clock3
+          : CalendarDays;
+  return (
+    <span className={meta.className} title={meta.label}>
+      <Icon size={11} aria-hidden />
+      <span>{compact ? meta.shortLabel : meta.label}</span>
+    </span>
+  );
+}
+
+export function MentionText({ body }: { body: string }) {
+  const parts = body.split(/(@[A-Za-zÀ-ÿ]+(?:\s[A-Za-zÀ-ÿ]+)?)/g);
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.startsWith("@") ? (
+          <span key={index} className="mention-tag">
+            {part}
+          </span>
+        ) : (
+          <span key={index}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+export function RoleBadge({ role, label }: { role: string; label?: string }) {
+  const meta = roleMeta(role);
+  return <span className={`badge ${meta.className}`}>{label ?? meta.label}</span>;
+}
+
+export function EntityBadge({ type }: { type: string }) {
+  return <span className={`badge ${entityTone(type)}`}>{type}</span>;
 }
 
 export function EmptyState({
@@ -141,17 +225,17 @@ export function PageHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 18 }}>
+    <div className="page-header" style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 18 }}>
       <div style={{ minWidth: 0 }}>
         {eyebrow && (
-          <p style={{ margin: "0 0 2px", fontSize: 10.5, fontWeight: 650, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+          <p className="page-eyebrow" style={{ margin: "0 0 2px", fontSize: 10.5, fontWeight: 650, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)" }}>
             {eyebrow}
           </p>
         )}
         <h1 className="page-title">{title}</h1>
         {subtitle && <p className="page-sub">{subtitle}</p>}
       </div>
-      {actions && <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>{actions}</div>}
+      {actions && <div className="page-actions" style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>{actions}</div>}
     </div>
   );
 }
@@ -172,10 +256,13 @@ export function StatCard({
   const color =
     tone === "success" ? "var(--success)" : tone === "warning" ? "var(--warning)" : tone === "danger" ? "var(--danger)" : "var(--accent)";
   const body = (
-    <div className="panel" style={{ padding: "14px 16px", height: "100%" }}>
-      <p className="stat-label" style={{ margin: 0 }}>{label}</p>
-      <p className="stat-value" style={{ margin: "3px 0 0", color }}>{value}</p>
-      {hint && <p style={{ margin: "3px 0 0", fontSize: 11.5, color: "var(--text-muted)" }}>{hint}</p>}
+    <div className="panel stat-card" style={{ padding: "14px 16px", height: "100%" }}>
+      <p className="stat-label" style={{ margin: 0 }}>
+        <span aria-hidden style={{ width: 6, height: 6, borderRadius: 999, background: color, display: "inline-block", marginRight: 6, verticalAlign: "middle" }} />
+        {label}
+      </p>
+      <p className="stat-value" style={{ margin: "3px 0 0", color: "var(--text)" }}>{value}</p>
+      {hint && <p className="stat-hint" style={{ margin: "3px 0 0", fontSize: 11.5, color: "var(--text-muted)" }}>{hint}</p>}
     </div>
   );
   return href ? (

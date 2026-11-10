@@ -150,12 +150,12 @@ export function RequestsClient({
               <div>
                 <p style={{ margin: "0 0 7px", fontSize: 11, textTransform: "uppercase", letterSpacing: ".08em", color: "var(--text-muted)" }}>Alur persetujuan</p>
                 {selected.steps.map((step) => (
-                  <div key={step.id} style={{ display: "flex", gap: 8, padding: "5px 0", borderLeft: `2px solid ${step.status === "approved" ? "var(--success)" : step.status === "rejected" ? "var(--danger)" : step.status === "pending" ? "var(--accent)" : "var(--border)"}`, paddingLeft: 9, marginLeft: 3 }}>
+                  <div key={step.id} style={{ display: "flex", gap: 8, padding: "5px 0", borderLeft: `2px solid ${step.status === "approved" ? "var(--success)" : step.status === "rejected" ? "var(--danger)" : step.status === "revision" ? "var(--marker-orange)" : step.status === "pending" ? "var(--accent)" : "var(--border)"}`, paddingLeft: 9, marginLeft: 3 }}>
                     <div style={{ flex: 1 }}>
                       <p style={{ margin: 0, fontSize: 12.5 }}><strong>Tahap {step.position}</strong> · {step.approverName}</p>
                       <p style={{ margin: 0, fontSize: 11, color: "var(--text-muted)" }}>{step.status === "pending" ? "Menunggu keputusan" : `${step.status} · ${step.decidedAt ? formatDate(step.decidedAt) : ""}`}{step.note ? ` — ${step.note}` : ""}</p>
                     </div>
-                    <span className={`badge ${step.status === "approved" ? "badge-success" : step.status === "rejected" ? "badge-danger" : step.status === "revision" ? "badge-warning" : "badge-accent"}`}>{step.status}</span>
+                    <span className={`badge ${step.status === "approved" ? "badge-success" : step.status === "rejected" ? "badge-danger" : step.status === "revision" ? "badge-orange" : "badge-accent"}`}>{step.status}</span>
                   </div>
                 ))}
               </div>

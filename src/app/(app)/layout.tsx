@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <AppShell
-      user={{ id: ctx.user.id, name: ctx.user.name, email: ctx.user.email, title: ctx.user.title, avatarColor: ctx.user.avatarColor }}
+      user={{ id: ctx.user.id, name: ctx.user.name, email: ctx.user.email, title: ctx.user.title, avatarColor: ctx.user.avatarColor, avatarKey: ctx.user.avatarKey }}
       org={{ id: ctx.org.id, name: ctx.org.name, slug: ctx.org.slug, plan: ctx.org.plan }}
       membership={{ role: ctx.membership.role }}
       notifications={notifications.map((item) => ({

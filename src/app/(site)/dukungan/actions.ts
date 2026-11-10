@@ -23,7 +23,7 @@ export async function submitSupportMessage(
 
   const errors: Record<string, string> = {};
   if (name.length < 2) errors.name = "Isi nama Anda.";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Format email belum benar.";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Format email belum lengkap. Contoh: nama@domain.com.";
   if (message.length < 20) errors.message = "Tuliskan minimal 20 karakter agar kami dapat membantu.";
   if (!(TOPICS as readonly string[]).includes(topic)) errors.topic = "Pilih topik yang tersedia.";
 

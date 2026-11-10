@@ -105,14 +105,14 @@ export function seed() {
     .run();
 
   const people = [
-    ["usr_alya", "Alya Prameswari", "alya@nusantara.id", "Chief Executive Officer", "0812-1100-2211", "#365fd1"],
-    ["usr_maya", "Maya Kusuma", "maya@nusantara.id", "Head of Marketing", "0812-1100-2212", "#b0345b"],
-    ["usr_rizky", "Rizky Pratama", "rizky@nusantara.id", "Head of Technology", "0812-1100-2213", "#0f6f7a"],
-    ["usr_sinta", "Sinta Dewi", "sinta@nusantara.id", "Sales Lead", "0812-1100-2214", "#18794e"],
-    ["usr_fajar", "Fajar Nugroho", "fajar@nusantara.id", "Finance Manager", "0812-1100-2215", "#8a5a10"],
-    ["usr_budi", "Budi Santoso", "budi@nusantara.id", "Product Designer", "0812-1100-2216", "#7a3d9e"],
-    ["usr_nadia", "Nadia Rahmawati", "nadia@nusantara.id", "Content Strategist", "0812-1100-2217", "#a1521b"],
-    ["usr_dimas", "Dimas Saputra", "dimas@agencymitra.id", "External Brand Partner", "0812-1100-2218", "#7a5b12"],
+    ["usr_alya", "Alya Prameswari", "alya@nusantara.id", "Chief Executive Officer", "0812-1100-2211", "#0f6cbd"],
+    ["usr_maya", "Maya Kusuma", "maya@nusantara.id", "Head of Marketing", "0812-1100-2212", "#c239b3"],
+    ["usr_rizky", "Rizky Pratama", "rizky@nusantara.id", "Head of Technology", "0812-1100-2213", "#038387"],
+    ["usr_sinta", "Sinta Dewi", "sinta@nusantara.id", "Sales Lead", "0812-1100-2214", "#107c10"],
+    ["usr_fajar", "Fajar Nugroho", "fajar@nusantara.id", "Finance Manager", "0812-1100-2215", "#8a6d00"],
+    ["usr_budi", "Budi Santoso", "budi@nusantara.id", "Product Designer", "0812-1100-2216", "#8764b8"],
+    ["usr_nadia", "Nadia Rahmawati", "nadia@nusantara.id", "Content Strategist", "0812-1100-2217", "#ca5010"],
+    ["usr_dimas", "Dimas Saputra", "dimas@agencymitra.id", "External Brand Partner", "0812-1100-2218", "#498205"],
   ] as const;
 
   for (const [id, name, email, title, phone, color] of people) {
@@ -120,11 +120,11 @@ export function seed() {
   }
 
   const depts = [
-    ["dep_people", "People & Ops", "usr_alya", "#7a3d9e"],
-    ["dep_marketing", "Marketing", "usr_maya", "#b0345b"],
-    ["dep_tech", "Technology", "usr_rizky", "#365fd1"],
-    ["dep_sales", "Sales", "usr_sinta", "#18794e"],
-    ["dep_finance", "Finance", "usr_fajar", "#8a5a10"],
+    ["dep_people", "People & Ops", "usr_alya", "#8764b8"],
+    ["dep_marketing", "Marketing", "usr_maya", "#c239b3"],
+    ["dep_tech", "Technology", "usr_rizky", "#0f6cbd"],
+    ["dep_sales", "Sales", "usr_sinta", "#107c10"],
+    ["dep_finance", "Finance", "usr_fajar", "#8a6d00"],
   ] as const;
   for (const [id, name, head, color] of depts) {
     db.insert(departments).values({ id, orgId, name, headUserId: head, color }).run();
@@ -306,11 +306,11 @@ export function seed() {
   });
 
   const labelRows = [
-    ["lbl_design", "design", "#7a3d9e"],
-    ["lbl_backend", "backend", "#0f6f7a"],
-    ["lbl_content", "content", "#b0345b"],
-    ["lbl_ops", "operations", "#8a5a10"],
-    ["lbl_research", "research", "#18794e"],
+    ["lbl_design", "design", "#8764b8"],
+    ["lbl_backend", "backend", "#038387"],
+    ["lbl_content", "content", "#c239b3"],
+    ["lbl_ops", "operations", "#8a6d00"],
+    ["lbl_research", "research", "#107c10"],
   ] as const;
   for (const [id, name, color] of labelRows) {
     db.insert(taskLabels).values({ id, orgId, name, color }).run();
@@ -429,7 +429,7 @@ export function seed() {
     ["cmt_01", "tsk_01", "usr_alya", "Untuk onboarding, tahan dulu fitur undangan massal. Satu per satu lebih jelas untuk beta.", 30],
     ["cmt_02", "tsk_01", "usr_rizky", "@Alya Prameswari setuju. Saya sudah pasang validasi email dan peran di server, bukan hanya di form.", 26],
     ["cmt_03", "tsk_01", "usr_budi", "Empty state untuk anggota baru sudah saya rapikan. Screenshot ada di dokumen proyek.", 20],
-    ["cmt_04", "tsk_02", "usr_rizky", "Halaman harga pakai label “Hubungi kami” untuk Pro dan Business, karena harga belum ditetapkan.", 18],
+    ["cmt_04", "tsk_02", "usr_rizky", "Halaman harga pakai label â€œHubungi kamiâ€ untuk Pro dan Business, karena harga belum ditetapkan.", 18],
     ["cmt_05", "tsk_02", "usr_maya", "Copy-nya sudah saya baca. Tolong jangan tambahkan angka pengguna atau testimoni yang belum ada.", 12],
     ["cmt_06", "tsk_09", "usr_nadia", "Slot 8 dan 12 masih kosong. Saya butuh konfirmasi topik webinar sebelum mengisi.", 8],
     ["cmt_07", "tsk_09", "usr_maya", "Isi dengan panduan 5 menit dan alur persetujuan. Dua-duanya sudah bisa dipakai di produk.", 5],
@@ -474,7 +474,7 @@ export function seed() {
     ["msg_01", "cnv_umum", "usr_alya", "Selamat pagi. Mulai minggu ini, update proyek cukup di Kullo. Tidak perlu thread email terpisah.", 46],
     ["msg_02", "cnv_umum", "usr_maya", "Siap. Tim Marketing sudah memindahkan kalender konten ke proyek Kampanye Q4.", 44],
     ["msg_03", "cnv_umum", "usr_rizky", "Reminder: sprint review Kullo 1.0 hari Selasa jam 10. Agenda ada di kalender.", 41],
-    ["msg_04", "cnv_umum", "usr_fajar", "Untuk reimbursement, mohon lampirkan bukti transfer di form. Prosesnya jadi lebih cepat.", 39],
+    ["msg_04", "cnv_umum", "usr_fajar", "Untuk penggantian biaya, mohon lampirkan bukti transfer di form. Prosesnya jadi lebih cepat.", 39],
     ["msg_05", "cnv_umum", "usr_nadia", "Handbook baru sudah masuk review. Tolong cek bagian jam kerja dan kanal bantuan.", 30],
     ["msg_06", "cnv_umum", "usr_budi", "Aset desain kampanye saya taruh di folder Marketing. Versi final ditandai v3.", 24],
     ["msg_07", "cnv_kullo", "usr_rizky", "Isolasi data sudah saya uji untuk tugas dan proyek. Dokumen dan pesan menyusul hari ini.", 10],
@@ -484,17 +484,17 @@ export function seed() {
     ["msg_11", "cnv_marketing", "usr_maya", "Webinar kita butuh tanggal final. Usulan: 26 November, jam 14.00 WIB.", 12],
     ["msg_12", "cnv_marketing", "usr_nadia", "Bisa. Saya siapkan halaman pendaftaran dan tiga email pengingat?", 11],
     ["msg_13", "cnv_marketing", "usr_dimas", "Untuk aset mitra, saya kirim versi transparan sore ini.", 9],
-    ["msg_14", "cnv_dm_am", "usr_maya", "Alya, untuk cuti Nadia tanggal 20–22, saya sudah review. Saya teruskan ke People & Ops.", 6],
+    ["msg_14", "cnv_dm_am", "usr_maya", "Alya, untuk cuti Nadia tanggal 20â€“22, saya sudah review. Saya teruskan ke People & Ops.", 6],
     ["msg_15", "cnv_dm_am", "usr_alya", "Terima kasih. Pastikan handover konten November tercatat di tugasnya.", 5],
   ] as const;
   for (const [id, conversationId, authorId, body, hours] of msgRows) {
     db.insert(messages).values({ id, conversationId, authorId, body, createdAt: hoursAgo(hours) }).run();
   }
   db.insert(messageReactions).values([
-    { messageId: "msg_01", userId: "usr_maya", emoji: "👍" },
-    { messageId: "msg_01", userId: "usr_rizky", emoji: "👍" },
-    { messageId: "msg_03", userId: "usr_budi", emoji: "👀" },
-    { messageId: "msg_10", userId: "usr_alya", emoji: "🎉" },
+    { messageId: "msg_01", userId: "usr_maya", emoji: "ðŸ‘" },
+    { messageId: "msg_01", userId: "usr_rizky", emoji: "ðŸ‘" },
+    { messageId: "msg_03", userId: "usr_budi", emoji: "ðŸ‘€" },
+    { messageId: "msg_10", userId: "usr_alya", emoji: "ðŸŽ‰" },
   ]).run();
 
   const folderRows = [
@@ -511,10 +511,10 @@ export function seed() {
   const docRows = [
     ["doc_handbook", "Company Handbook 2026.pdf", "pdf", 2_420_000, 3, "usr_alya", "company", "fld_company", null],
     ["doc_brand", "Brand Guidelines.pdf", "pdf", 8_100_000, 2, "usr_maya", "company", "fld_marketing", null],
-    ["doc_brief", "Kampanye Q4 — Brief.docx", "docx", 640_000, 1, "usr_maya", "project", "fld_marketing", "prj_campaign"],
-    ["doc_spec", "Kullo 1.0 — Product Spec.pdf", "pdf", 1_800_000, 2, "usr_rizky", "project", "fld_tech", "prj_kullo"],
+    ["doc_brief", "Kampanye Q4 â€” Brief.docx", "docx", 640_000, 1, "usr_maya", "project", "fld_marketing", "prj_campaign"],
+    ["doc_spec", "Kullo 1.0 â€” Product Spec.pdf", "pdf", 1_800_000, 2, "usr_rizky", "project", "fld_tech", "prj_kullo"],
     ["doc_arch", "Arsitektur Data v2.md", "md", 84_000, 2, "usr_rizky", "department", "fld_tech", null],
-    ["doc_budget", "Anggaran 2027 — Draft.xlsx", "xlsx", 420_000, 1, "usr_fajar", "company", "fld_finance", null],
+    ["doc_budget", "Anggaran 2027 â€” Draft.xlsx", "xlsx", 420_000, 1, "usr_fajar", "company", "fld_finance", null],
     ["doc_onboard", "Template Onboarding.pptx", "pptx", 5_200_000, 1, "usr_alya", "department", "fld_people", null],
     ["doc_leave", "Rekap Cuti 2026.csv", "csv", 96_000, 1, "usr_alya", "company", "fld_people", null],
   ] as const;
@@ -581,31 +581,31 @@ export function seed() {
       ["Tanggal selesai", "date", true, null],
       ["Alasan", "textarea", true, null],
     ]],
-    ["tpl_reimb", "reimbursement", "Reimbursement", "Klaim biaya operasional dengan bukti yang jelas.", "finance", [
+    ["tpl_reimb", "reimbursement", "Penggantian biaya", "Klaim biaya operasional dengan bukti transaksi.", "finance", [
       ["Tanggal transaksi", "date", true, null],
       ["Kategori", "select", true, ["Perjalanan", "Konsumsi", "Peralatan", "Lainnya"]],
       ["Jumlah (IDR)", "number", true, null],
       ["Deskripsi", "textarea", true, null],
     ]],
-    ["tpl_beli", "purchase", "Purchase Request", "Ajukan pembelian barang atau jasa.", "finance", [
+    ["tpl_beli", "purchase", "Permintaan pembelian", "Ajukan pembelian barang atau jasa.", "finance", [
       ["Item", "text", true, null],
       ["Jumlah (IDR)", "number", true, null],
       ["Vendor", "text", false, null],
       ["Urgensi", "select", true, ["Rendah", "Sedang", "Tinggi"]],
       ["Justifikasi", "textarea", true, null],
     ]],
-    ["tpl_trip", "business-trip", "Business Trip", "Rencanakan perjalanan dinas dan estimasi biayanya.", "operations", [
+    ["tpl_trip", "business-trip", "Perjalanan dinas", "Rencanakan perjalanan dinas dan estimasi biayanya.", "operations", [
       ["Tujuan", "text", true, null],
       ["Tanggal berangkat", "date", true, null],
       ["Durasi (hari)", "number", true, null],
       ["Estimasi biaya (IDR)", "number", true, null],
     ]],
-    ["tpl_it", "it-support", "IT Support", "Laporkan gangguan perangkat atau akses.", "operations", [
+    ["tpl_it", "it-support", "Dukungan IT", "Laporkan gangguan perangkat atau akses.", "operations", [
       ["Kategori", "select", true, ["Perangkat", "Akses", "Jaringan", "Lainnya"]],
       ["Deskripsi", "textarea", true, null],
       ["Prioritas", "select", true, ["Rendah", "Sedang", "Tinggi"]],
     ]],
-    ["tpl_umum", "general", "General Request", "Permintaan umum yang tidak masuk kategori lain.", "general", [
+    ["tpl_umum", "general", "Permintaan umum", "Permintaan umum yang tidak masuk kategori lain.", "general", [
       ["Subjek", "text", true, null],
       ["Detail", "textarea", true, null],
     ]],
@@ -629,8 +629,8 @@ export function seed() {
   }
 
   const reqRows = [
-    ["req_01", "tpl_cuti", "usr_nadia", "Cuti tahunan — 20–22 November", null, JSON.stringify({ "Jenis cuti": "Cuti tahunan", "Tanggal mulai": day(12), "Tanggal selesai": day(14), Alasan: "Acara keluarga di Yogyakarta." }), "pending", 1, 20],
-    ["req_02", "tpl_reimb", "usr_budi", "Reimbursement transport klien", 850_000, JSON.stringify({ "Tanggal transaksi": day(-3), Kategori: "Perjalanan", "Jumlah (IDR)": 850000, Deskripsi: "Transport ke kantor klien Bandung, dua perjalanan." }), "pending", 2, 26],
+    ["req_01", "tpl_cuti", "usr_nadia", "Cuti tahunan â€” 20â€“22 November", null, JSON.stringify({ "Jenis cuti": "Cuti tahunan", "Tanggal mulai": day(12), "Tanggal selesai": day(14), Alasan: "Acara keluarga di Yogyakarta." }), "pending", 1, 20],
+    ["req_02", "tpl_reimb", "usr_budi", "Penggantian biaya transport klien", 850_000, JSON.stringify({ "Tanggal transaksi": day(-3), Kategori: "Perjalanan", "Jumlah (IDR)": 850000, Deskripsi: "Transport ke kantor klien Bandung, dua perjalanan." }), "pending", 2, 26],
     ["req_03", "tpl_beli", "usr_maya", "Pembelian laptop desain", 18_500_000, JSON.stringify({ Item: "Laptop 32GB RAM", "Jumlah (IDR)": 18500000, Vendor: "Mitra Teknologi", Urgensi: "Sedang", Justifikasi: "Penggantian perangkat tim desain yang sudah 5 tahun." }), "approved", 1, 72],
     ["req_04", "tpl_trip", "usr_sinta", "Perjalanan dinas Surabaya", 4_200_000, JSON.stringify({ Tujuan: "Surabaya", "Tanggal berangkat": day(18), "Durasi (hari)": 2, "Estimasi biaya (IDR)": 4200000 }), "revision", 1, 50],
     ["req_05", "tpl_it", "usr_nadia", "Akses ke folder brand", null, JSON.stringify({ Kategori: "Akses", Deskripsi: "Butuh akses edit ke folder Brand Guidelines untuk memperbarui aset kampanye.", Prioritas: "Sedang" }), "submitted", 1, 9],
@@ -677,13 +677,13 @@ export function seed() {
     .run();
 
   const activities = [
-    ["act_01", "usr_nadia", "task", "tsk_09", "mengubah status", "Kalender konten November → In Progress", 3],
+    ["act_01", "usr_nadia", "task", "tsk_09", "mengubah status", "Kalender konten November â†’ In Progress", 3],
     ["act_02", "usr_budi", "task", "tsk_10", "mengunggah lampiran", "studi-kasus-brief.docx", 4],
     ["act_03", "usr_maya", "comment", "tsk_09", "berkomentar", "Isi dengan panduan 5 menit dan alur persetujuan.", 5],
     ["act_04", "usr_rizky", "task", "tsk_01", "memperbarui", "Checklist onboarding: 1 dari 4 selesai", 6],
     ["act_05", "usr_alya", "request", "req_03", "menyetujui", "Pembelian laptop desain", 8],
     ["act_06", "usr_sinta", "project", "prj_crm", "menambahkan anggota", "Alya Prameswari ke Migrasi CRM Sales", 12],
-    ["act_07", "usr_fajar", "request", "req_02", "meneruskan", "Reimbursement transport klien ke level 2", 20],
+    ["act_07", "usr_fajar", "request", "req_02", "meneruskan", "Penggantian biaya transport klien ke level 2", 20],
     ["act_08", "usr_dimas", "document", "doc_brand", "mengunggah versi", "Brand Guidelines v2", 26],
     ["act_09", "usr_maya", "event", "evt_02", "membuat agenda", "Sinkron kampanye Q4", 30],
     ["act_10", "usr_budi", "task", "tsk_05", "membuat tugas", "Audit aksesibilitas sidebar", 34],
@@ -701,8 +701,8 @@ export function seed() {
     ["ntf_04", "usr_alya", "message", "Pesan baru di #peluncuran-kullo", "Nadia: panduan 5 menit sudah ditulis.", "/app/chat?c=cnv_kullo", 12],
     ["ntf_05", "usr_alya", "document", "Dokumen dibagikan", "Brand Guidelines v2 dibagikan oleh Dimas.", "/app/documents", 26],
     ["ntf_06", "usr_maya", "approval", "Cuti menunggu persetujuan", "Nadia Rahmawati mengajukan cuti tahunan.", "/app/approvals", 5],
-    ["ntf_07", "usr_rizky", "approval", "Reimbursement menunggu persetujuan", "Budi Santoso mengajukan reimbursement transport.", "/app/approvals", 7],
-    ["ntf_08", "usr_fajar", "approval", "Reimbursement di level 2", "Reimbursement Budi Santoso menunggu keputusan Anda.", "/app/approvals", 20],
+    ["ntf_07", "usr_rizky", "approval", "Penggantian biaya menunggu persetujuan", "Budi Santoso mengajukan penggantian biaya transport.", "/app/approvals", 7],
+    ["ntf_08", "usr_fajar", "approval", "Penggantian biaya di level 2", "Penggantian biaya Budi Santoso menunggu keputusan Anda.", "/app/approvals", 20],
   ] as const;
   for (const [id, userId, kind, title, body, href, hours] of notificationRows) {
     db.insert(notifications)

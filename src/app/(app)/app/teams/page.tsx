@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { UserPlus } from "lucide-react";
 import { requireApp } from "@/lib/auth";
-import { can } from "@/lib/rbac";
 import { getDepartments, getPeople } from "@/lib/data";
 import { ROLE_LABELS } from "@/lib/rbac";
 import { formatDate } from "@/lib/utils";
-import { Avatar, EmptyState, PageHeader, StatCard } from "@/components/app/ui";
+import { Avatar, EmptyState, RoleBadge, StatCard } from "@/components/app/ui";
+import { workloadTone } from "@/lib/markers";
 
 export const metadata: Metadata = { title: "Tim" };
 
@@ -25,16 +23,7 @@ export default async function TeamsPage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="Organisasi"
-        title="Tim"
-        subtitle={`${people.length} anggota · ${departments.length} departemen · ${active} aktif`}
-        actions={
-          can(ctx, "member.manage") ? (
-            <Link href="/app/settings/members" className="btn btn-primary btn-sm"><UserPlus size={15} /> Undang anggota</Link>
-          ) : undefined
-        }
-      />
+      <h1 className="sr-only">Tim</h1>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 18 }}>
         <StatCard label="Anggota" value={people.length} hint="Seluruh organisasi" />
@@ -57,32 +46,34 @@ export default async function TeamsPage() {
                 {members.map((person, index) => (
                   <li
                     key={person.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: "11px 16px",
-                      borderTop: index === 0 ? "none" : "1px solid var(--border)",
-                    }}
+                    className="team-row"
+                    style={{ borderTop: index === 0 ? "none" : "1px solid var(--border)" }}
                   >
-                    <Avatar name={person.name} color={person.avatarColor} size={36} />
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <p style={{ margin: 0, fontSize: 13.5, fontWeight: 620 }}>{person.name}</p>
-                      <p className="help" style={{ margin: "1px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {person.title ?? ROLE_LABELS[person.role] ?? person.role} · bergabung {formatDate(person.joinedAt)}
+                    <Avatar name={person.name} color={person.avatarColor} size={36} personId={person.id} />
+                    <div className="team-row-main">
+                      <p className="team-row-name" title={person.name}>{person.name}</p>
+                      <p
+                        className="team-row-meta"
+                        title={`${person.title ?? ROLE_LABELS[person.role] ?? person.role} · ${person.email} · bergabung ${formatDate(person.joinedAt)}`}
+                      >
+                        {person.title ?? ROLE_LABELS[person.role] ?? person.role}
+                        <span className="team-email"> · {person.email}</span> · bergabung {formatDate(person.joinedAt)}
                       </p>
                     </div>
-                    <span className="hide-sm" style={{ fontSize: 12.5, color: "var(--text-muted)", minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {person.email}
-                    </span>
-                    <span className="badge" style={{ flexShrink: 0 }}>{ROLE_LABELS[person.role] ?? person.role}</span>
-                    <span
-                      className={`badge ${person.status === "active" ? "badge-success" : person.status === "disabled" ? "" : "badge-warning"}`}
-                      style={{ flexShrink: 0 }}
-                    >
-                      {person.status === "active" ? "Aktif" : person.status === "disabled" ? "Nonaktif" : "Diundang"}
-                    </span>
-                    <span className="badge" style={{ flexShrink: 0 }} title="Tugas terbuka">{person.openTasks ?? 0} tugas</span>
+                    <div className="team-badges">
+                      <RoleBadge role={person.role} label={ROLE_LABELS[person.role] ?? person.role} />
+                      <span
+                        className={`badge ${person.status === "active" ? "badge-success" : person.status === "disabled" ? "badge-neutral" : "badge-warning"}`}
+                      >
+                        {person.status === "active" ? "Aktif" : person.status === "disabled" ? "Nonaktif" : "Diundang"}
+                      </span>
+                      <span
+                        className={`badge ${workloadTone(person.openTasks ?? 0) === "danger" ? "badge-danger" : workloadTone(person.openTasks ?? 0) === "warning" ? "badge-warning" : "badge-success"}`}
+                        title="Tugas terbuka"
+                      >
+                        {person.openTasks ?? 0} tugas
+                      </span>
+                    </div>
                   </li>
                 ))}
               </ul>

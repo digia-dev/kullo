@@ -4,7 +4,7 @@ import { BarChart3, Download, Filter, Timer } from "lucide-react";
 import { requireApp } from "@/lib/auth";
 import { getDepartments, getProjectOptions, getReports } from "@/lib/data";
 import { can } from "@/lib/rbac";
-import { Avatar, PageHeader, StatCard } from "@/components/app/ui";
+import { Avatar, StatCard } from "@/components/app/ui";
 import { formatNumber } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Laporan" };
@@ -33,7 +33,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
   if (!allowed) {
     return (
       <>
-        <PageHeader eyebrow="Analitik" title="Laporan" />
+        <h1 className="sr-only">Laporan</h1>
         <div className="empty-state">
           <strong style={{ color: "var(--text)" }}>Peran Anda belum memiliki izin melihat laporan</strong>
           <p style={{ margin: "4px 0 0" }}>Hubungi administrator organisasi untuk menyesuaikan izin <code>report.view</code>.</p>
@@ -44,16 +44,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
 
   return (
     <>
-      <PageHeader
-        eyebrow="Analitik operasional"
-        title="Laporan"
-        subtitle="Dihitung langsung dari tugas, proyek, dan log waktu di workspace. Tidak ada angka yang diketik manual."
-        actions={
-          <a href={`/api/export/report?${query.toString()}`} className="btn btn-primary btn-sm">
-            <Download size={15} /> Ekspor CSV
-          </a>
-        }
-      />
+      <h1 className="sr-only">Laporan</h1>
 
       <form method="get" className="panel" style={{ padding: "10px 12px", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 16 }}>
         <Filter size={14} style={{ color: "var(--text-muted)" }} />
@@ -71,7 +62,12 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
         <label style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--text-muted)" }}>
           Sampai <input className="input" type="date" name="to" defaultValue={params.to ?? ""} style={{ width: 140, height: 34, fontSize: 12 }} />
         </label>
-        <button type="submit" className="btn btn-outline btn-sm">Terapkan</button>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <button type="submit" className="btn btn-outline btn-sm">Terapkan</button>
+          <a href={`/api/export/report?${query.toString()}`} className="btn btn-primary btn-sm">
+            <Download size={15} /> Ekspor CSV
+          </a>
+        </span>
         <Link href="/app/reports" className="btn btn-ghost btn-sm">Reset</Link>
         <span style={{ marginLeft: "auto", fontSize: 11.5, color: "var(--text-muted)" }}>{reports.totals.total} tugas dalam rentang</span>
       </form>
@@ -81,7 +77,16 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
         <StatCard label="Laju penyelesaian" value={`${reports.totals.completionRate}%`} hint={`${reports.totals.done} selesai`} tone="success" />
         <StatCard label="Terbuka" value={formatNumber(reports.totals.pending)} hint="Belum selesai" tone="warning" />
         <StatCard label="Terlambat" value={formatNumber(reports.totals.overdue)} hint="Melewati tenggat" tone="danger" />
-        <StatCard label="Waktu tercatat" value={`${(reports.totals.minutes / 60).toFixed(1)} jam`} hint="Dari log waktu" />
+        {reports.totals.avgCycleHours !== null && (
+          <StatCard
+            label="Rata-rata durasi"
+            value={reports.totals.avgCycleHours >= 24 ? `${(reports.totals.avgCycleHours / 24).toFixed(1)} hari` : `${Math.max(1, Math.round(reports.totals.avgCycleHours))} jam`}
+            hint="Dibuat → selesai"
+          />
+        )}
+        {reports.totals.minutes > 0 && (
+          <StatCard label="Waktu tercatat" value={`${(reports.totals.minutes / 60).toFixed(1)} jam`} hint="Dari log waktu" />
+        )}
       </div>
 
       {reports.totals.total === 0 ? (
@@ -92,17 +97,17 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
         </div>
       ) : null}
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1.3fr) minmax(300px,.7fr)", gap: 16, alignItems: "start" }} className="dash-grid">
+      <div className="reports-grid">
         <div style={{ display: "grid", gap: 16 }}>
           <section className="panel">
             <div className="panel-head"><h2 className="panel-title">Dibuat vs selesai · 8 minggu</h2><span className="badge">mingguan</span></div>
             <div className="panel-body">
               <div style={{ display: "grid", gridTemplateColumns: `repeat(${reports.weekly.length}, 1fr)`, gap: 8, alignItems: "end", height: 180 }}>
                 {reports.weekly.map((week) => (
-                  <div key={week.label} style={{ display: "grid", gap: 3, justifyItems: "center", height: "100%", alignContent: "end" }}>
-                    <div style={{ display: "flex", alignItems: "end", gap: 3, height: "100%" }}>
-                      <div title={`${week.created} dibuat`} style={{ width: 9, height: `${(week.created / maxWeekly) * 100}%`, minHeight: 2, background: "var(--accent)", borderRadius: "3px 3px 0 0", opacity: 0.45 }} />
-                      <div title={`${week.completed} selesai`} style={{ width: 9, height: `${(week.completed / maxWeekly) * 100}%`, minHeight: 2, background: "var(--success)", borderRadius: "3px 3px 0 0" }} />
+                  <div key={week.label} style={{ display: "grid", gap: 3, justifyItems: "center", alignContent: "end" }}>
+                    <div style={{ display: "flex", alignItems: "flex-end", gap: 3 }}>
+                      <div title={`${week.created} dibuat`} style={{ width: 9, height: Math.max(2, Math.round((week.created / maxWeekly) * 150)), background: "var(--accent)", borderRadius: "3px 3px 0 0", opacity: 0.45 }} />
+                      <div title={`${week.completed} selesai`} style={{ width: 9, height: Math.max(2, Math.round((week.completed / maxWeekly) * 150)), background: "var(--success)", borderRadius: "3px 3px 0 0" }} />
                     </div>
                     <span style={{ fontSize: 9.5, color: "var(--text-muted)" }}>{week.label}</span>
                   </div>
@@ -168,7 +173,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
               {reports.people.map((person) => (
                 <div key={person.id} style={{ display: "grid", gap: 3 }}>
                   <div style={{ display: "flex", gap: 7, alignItems: "center", fontSize: 11.5 }}>
-                    <Avatar name={person.name} color={person.color} size={22} />
+                    <Avatar name={person.name} color={person.color} size={22} personId={person.id} />
                     <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{person.name}</span>
                     <span style={{ color: "var(--text-muted)" }}>{person.open} terbuka</span>
                   </div>
@@ -183,6 +188,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Sear
             <div className="panel-head"><h2 className="panel-title">Catatan metrik</h2></div>
             <div className="panel-body" style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.65, display: "grid", gap: 7 }}>
               <p style={{ margin: 0 }}>Laju penyelesaian = tugas selesai ÷ total tugas pada filter.</p>
+              <p style={{ margin: 0 }}>Durasi = waktu dari tugas dibuat sampai statusnya masuk kategori Done (dihitung ulang saat tugas dibuka kembali). Tugas yang belum selesai tidak dihitung.</p>
               <p style={{ margin: 0 }}>Terlambat dihitung dari tenggat yang sudah lewat dan status belum Done.</p>
               <p style={{ margin: 0, display: "flex", gap: 5, alignItems: "flex-start" }}><Timer size={13} style={{ flex: "none", marginTop: 2 }} /> Waktu berasal dari log waktu yang dicatat pada tugas. Tugas tanpa log tidak dihitung.</p>
               <p style={{ margin: 0 }}>Ekspor CSV memuat ringkasan, proyek, departemen, dan anggota sesuai filter aktif.</p>

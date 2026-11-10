@@ -1,24 +1,25 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { SITE } from "@/content/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: "Kullo — Satu ruang kerja untuk seluruh pekerjaan tim",
+    default: "Kullo: satu ruang kerja untuk kerja tim",
     template: "%s | Kullo",
   },
   description: SITE.description,
   applicationName: "Kullo",
   keywords: [
-    "work management",
+    "manajemen kerja",
     "manajemen proyek",
     "kolaborasi tim",
-    "workspace",
+    "ruang kerja",
     "Kullo",
   ],
   openGraph: {
-    title: "Kullo — Work Together. Move Forward.",
+    title: "Kullo: kerja tim, satu tempat.",
     description: SITE.description,
     url: SITE.url,
     siteName: "Kullo",
@@ -31,13 +32,16 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#ffffff",
+  themeColor: "#f1f3f9",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id">
-      <body>{children}</body>
+    <html lang="id" data-app-theme="light" suppressHydrationWarning>
+      <body>
+        {children}
+        <Script id="kullo-theme-init" src="/theme-init.js" strategy="beforeInteractive" />
+      </body>
     </html>
   );
 }

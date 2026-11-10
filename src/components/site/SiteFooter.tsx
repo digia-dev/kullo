@@ -50,7 +50,7 @@ export function SiteFooter() {
                 width: 18,
                 height: 18,
                 borderRadius: 4,
-                background: "linear-gradient(135deg,#365fd1,#7a3d9e)",
+                background: "linear-gradient(135deg, var(--m-blue), var(--m-violet))",
                 display: "inline-block",
               }}
             />
@@ -67,7 +67,7 @@ export function SiteFooter() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13, color: "var(--text-muted)" }}>
           <KulloLogo size={22} wordSize={15} />
-          <span>© 2026 Kullo. Produk dan dokumen ini adalah milik Kullo.</span>
+          <span>© 2026 Kullo.</span>
         </div>
       </div>
     </footer>

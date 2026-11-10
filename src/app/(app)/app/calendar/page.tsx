@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { CalendarPlus } from "lucide-react";
 import { requireApp } from "@/lib/auth";
 import { can } from "@/lib/rbac";
 import { getEvents, getProjectOptions } from "@/lib/data";
 import { EventCalendar } from "@/components/app/EventCalendar";
-import { PageHeader, StatCard } from "@/components/app/ui";
+import { StatCard } from "@/components/app/ui";
 
 export const metadata: Metadata = { title: "Kalender" };
 
@@ -24,17 +22,7 @@ export default async function CalendarPage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="Jadwal"
-        title="Kalender"
-        subtitle={`${events.length} agenda · ${meetings} rapat · ${deadlines} tenggat · ${weekAhead} dalam 7 hari ke depan`}
-        actions={
-          <>
-            <Link href="/app/tasks?view=board" className="btn btn-outline btn-sm">Tenggat tugas</Link>
-            <Link href="/app/calendar?new=event" className="btn btn-primary btn-sm"><CalendarPlus size={15} /> Agenda baru</Link>
-          </>
-        }
-      />
+      <h1 className="sr-only">Kalender</h1>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 16 }}>
         <StatCard label="Minggu ini" value={weekAhead} hint="Agenda terjadwal" href="#cal" />

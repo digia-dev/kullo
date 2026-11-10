@@ -29,7 +29,7 @@ export function initials(name: string) {
     .join("");
 }
 
-const AVATAR_COLORS = ["#365fd1", "#18794e", "#a1521b", "#7a3d9e", "#b0345b", "#0f6f7a", "#7a5b12"];
+const AVATAR_COLORS = ["#0f6cbd", "#107c10", "#ca5010", "#8764b8", "#c239b3", "#038387", "#616161"];
 
 export function avatarColor(seed: string) {
   let n = 0;
@@ -136,7 +136,7 @@ export function monthKey(date: Date) {
 
 export const PRIORITY = {
   urgent: { label: "Urgent", color: "var(--danger)", rank: 4 },
-  high: { label: "High", color: "#d97706", rank: 3 },
+  high: { label: "High", color: "var(--marker-orange)", rank: 3 },
   medium: { label: "Medium", color: "var(--accent)", rank: 2 },
   low: { label: "Low", color: "var(--text-muted)", rank: 1 },
 } as const;
@@ -160,13 +160,13 @@ export function projectStatus(value: string) {
 }
 
 export const REQUEST_STATUS = {
-  draft: { label: "Draft", tone: "badge" },
+  draft: { label: "Draft", tone: "badge-neutral" },
   submitted: { label: "Submitted", tone: "badge-accent" },
   pending: { label: "Pending", tone: "badge-warning" },
   approved: { label: "Approved", tone: "badge-success" },
   rejected: { label: "Rejected", tone: "badge-danger" },
-  revision: { label: "Revision requested", tone: "badge-warning" },
-  cancelled: { label: "Cancelled", tone: "badge" },
+  revision: { label: "Revision requested", tone: "badge-orange" },
+  cancelled: { label: "Cancelled", tone: "badge-neutral" },
 } as const;
 
 export function requestStatus(value: string) {

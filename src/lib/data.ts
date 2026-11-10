@@ -1,4 +1,6 @@
-import { and, asc, desc, eq, inArray, isNull, ne } from "drizzle-orm";
+﻿import { and, asc, desc, eq, inArray, isNull, ne } from "drizzle-orm";
+import fs from "node:fs";
+import path from "node:path";
 import { db } from "@/db/client";
 import {
   activity,
@@ -7,6 +9,7 @@ import {
   checklistItems,
   checklists,
   comments,
+  commentAttachments,
   conversationMembers,
   conversations,
   departments,
@@ -18,6 +21,7 @@ import {
   formFields,
   formTemplates,
   memberships,
+  messageAttachments,
   messageReactions,
   messages,
   milestones,
@@ -28,6 +32,7 @@ import {
   requests,
   roles,
   taskCollaborators,
+  taskDependencies,
   taskLabels,
   taskLabelLinks,
   tasks,
@@ -231,12 +236,15 @@ export type TaskRow = {
   startDate: string | null;
   dueDate: string | null;
   estimateHours: number | null;
+  completedAt: string | null;
   createdAt: string;
   updatedAt: string;
   done: boolean;
   overdue: boolean;
   labels: Array<{ id: string; name: string; color: string }>;
   collaboratorIds: string[];
+  dependencyIds: string[];
+  blockedByCount: number;
   commentCount: number;
   attachmentCount: number;
   checklistDone: number;
@@ -271,6 +279,9 @@ function enrichTasks(orgId: string, taskRows: Array<typeof tasks.$inferSelect>):
     .leftJoin(checklistItems, eq(checklistItems.checklistId, checklists.id))
     .all();
   const collaboratorRows = db.select().from(taskCollaborators).all();
+  const dependencyRows = db.select().from(taskDependencies).all();
+  const taskById = new Map(taskRows.map((row) => [row.id, row]));
+  const statusById = new Map(statusRows.map((row) => [row.id, row]));
 
   return taskRows.map((task) => {
     const project = projectRows.find((row) => row.id === task.projectId);
@@ -279,6 +290,12 @@ function enrichTasks(orgId: string, taskRows: Array<typeof tasks.$inferSelect>):
     const reporter = people.find((person) => person.id === task.reporterId);
     const done = status?.category === "done";
     const checklist = checklistRows.filter((row) => row.taskId === task.id);
+    const dependencyIds = dependencyRows.filter((row) => row.taskId === task.id).map((row) => row.dependsOnId);
+    const blockedByCount = dependencyIds.filter((dependencyId) => {
+      const dependency = taskById.get(dependencyId);
+      if (!dependency) return false;
+      return statusById.get(dependency.statusId ?? "")?.category !== "done";
+    }).length;
     return {
       id: task.id,
       number: task.number,
@@ -301,12 +318,15 @@ function enrichTasks(orgId: string, taskRows: Array<typeof tasks.$inferSelect>):
       startDate: task.startDate,
       dueDate: task.dueDate,
       estimateHours: task.estimateHours,
+      completedAt: task.completedAt,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
       done: Boolean(done),
       overdue: Boolean(task.dueDate && !done && daysFromToday(task.dueDate) < 0),
       labels: linkRows.filter((row) => row.taskId === task.id).map(({ labelId, name, color }) => ({ id: labelId, name, color })),
       collaboratorIds: collaboratorRows.filter((row) => row.taskId === task.id).map((row) => row.userId),
+      dependencyIds,
+      blockedByCount,
       commentCount: commentRows.filter((row) => row.taskId === task.id).length,
       attachmentCount: attachmentRows.filter((row) => row.taskId === task.id).length,
       checklistDone: checklist.filter((row) => row.done).length,
@@ -388,24 +408,43 @@ export function getProjectBundle(orgId: string, projectId: string): ProjectBundl
 
 export type TaskDetail = {
   task: TaskRow;
-  comments: Array<{ id: string; body: string; authorName: string; authorColor: string; createdAt: string; parentId: string | null }>;
+  comments: Array<{
+    id: string;
+    authorId: string;
+    body: string;
+    authorName: string;
+    authorColor: string;
+    createdAt: string;
+    parentId: string | null;
+    attachments: Array<{ id: string; name: string; kind: string }>;
+  }>;
   checklists: Array<{ id: string; title: string; items: Array<{ id: string; text: string; done: boolean }> }>;
-  attachments: Array<{ id: string; name: string; kind: string; size: number; createdAt: string }>;
+  attachments: Array<{ id: string; documentId: string | null; name: string; kind: string; size: number; createdAt: string }>;
   timeLogs: Array<{ id: string; minutes: number; note: string | null; loggedOn: string; userName: string }>;
   collaborators: Array<{ id: string; name: string; avatarColor: string }>;
   subtasks: TaskRow[];
+  dependencies: TaskRow[];
+  dependents: TaskRow[];
+  dependencyCandidates: TaskRow[];
   activity: Array<{ id: string; actorName: string; verb: string; meta: string | null; createdAt: string }>;
   projectStatuses: Array<typeof projectStatuses.$inferSelect>;
   members: Person[];
+  availableLabels: Array<{ id: string; name: string; color: string }>;
   canEdit: boolean;
 };
 
 export function getTaskDetail(orgId: string, taskId: string, canEdit: boolean): TaskDetail | null {
-  const task = getTaskRows(orgId).find((row) => row.id === taskId);
+  const allTasks = getTaskRows(orgId);
+  const task = allTasks.find((row) => row.id === taskId);
   if (!task) return null;
   const people = getPeople(orgId);
   const peopleMap = new Map(people.map((person) => [person.id, person]));
   const commentRows = db.select().from(comments).where(eq(comments.taskId, taskId)).orderBy(asc(comments.createdAt)).all();
+  const commentAttachmentRows = db
+    .select({ commentId: commentAttachments.commentId, id: documents.id, name: documents.name, kind: documents.kind })
+    .from(commentAttachments)
+    .innerJoin(documents, eq(documents.id, commentAttachments.documentId))
+    .all();
   const checklistRows = db.select().from(checklists).where(eq(checklists.taskId, taskId)).orderBy(asc(checklists.position)).all();
   const itemRows = checklistRows.length
     ? db
@@ -425,7 +464,14 @@ export function getTaskDetail(orgId: string, taskId: string, canEdit: boolean): 
     .orderBy(desc(activity.createdAt))
     .limit(20)
     .all();
-  const subtasks = getTaskRows(orgId).filter((row) => row.parentTaskId === taskId);
+  const subtasks = allTasks.filter((row) => row.parentTaskId === taskId);
+  const dependencies = task.dependencyIds
+    .map((dependencyId) => allTasks.find((row) => row.id === dependencyId))
+    .filter((row): row is TaskRow => Boolean(row));
+  const dependents = allTasks.filter((row) => row.dependencyIds.includes(taskId));
+  const dependencyCandidates = allTasks.filter(
+    (row) => row.id !== taskId && !task.dependencyIds.includes(row.id) && !dependents.some((dependent) => dependent.id === row.id),
+  );
   const statusRows = task.projectId
     ? db.select().from(projectStatuses).where(eq(projectStatuses.projectId, task.projectId)).orderBy(asc(projectStatuses.position)).all()
     : [];
@@ -440,11 +486,15 @@ export function getTaskDetail(orgId: string, taskId: string, canEdit: boolean): 
     task,
     comments: commentRows.map((row) => ({
       id: row.id,
+      authorId: row.authorId,
       body: row.body,
       authorName: peopleMap.get(row.authorId)?.name ?? "Anggota",
-      authorColor: peopleMap.get(row.authorId)?.avatarColor ?? "#365fd1",
+      authorColor: peopleMap.get(row.authorId)?.avatarColor ?? "#0f6cbd",
       createdAt: row.createdAt,
       parentId: row.parentId,
+      attachments: commentAttachmentRows
+        .filter((attachment) => attachment.commentId === row.id)
+        .map((attachment) => ({ id: attachment.id, name: attachment.name, kind: attachment.kind })),
     })),
     checklists: checklistRows.map((list) => ({
       id: list.id,
@@ -455,6 +505,7 @@ export function getTaskDetail(orgId: string, taskId: string, canEdit: boolean): 
     })),
     attachments: attachmentRows.map((row) => ({
       id: row.id,
+      documentId: row.documentId,
       name: row.name,
       kind: row.kind,
       size: row.size,
@@ -469,9 +520,12 @@ export function getTaskDetail(orgId: string, taskId: string, canEdit: boolean): 
     })),
     collaborators: collaboratorRows.map((row) => {
       const person = peopleMap.get(row.userId);
-      return { id: row.userId, name: person?.name ?? "Anggota", avatarColor: person?.avatarColor ?? "#365fd1" };
+      return { id: row.userId, name: person?.name ?? "Anggota", avatarColor: person?.avatarColor ?? "#0f6cbd" };
     }),
     subtasks,
+    dependencies,
+    dependents,
+    dependencyCandidates,
     activity: activityRows.map((row) => ({
       id: row.id,
       actorName: row.actorId ? peopleMap.get(row.actorId)?.name ?? "Sistem" : "Sistem",
@@ -481,6 +535,12 @@ export function getTaskDetail(orgId: string, taskId: string, canEdit: boolean): 
     })),
     projectStatuses: statusRows,
     members: members.length ? members : people,
+    availableLabels: db
+      .select({ id: taskLabels.id, name: taskLabels.name, color: taskLabels.color })
+      .from(taskLabels)
+      .where(eq(taskLabels.orgId, orgId))
+      .orderBy(asc(taskLabels.name))
+      .all(),
     canEdit,
   };
 }
@@ -525,8 +585,9 @@ export function getDashboard(orgId: string, userId: string) {
     events: eventRows,
     activity: activityRows.map((row) => ({
       id: row.id,
+      actorId: row.actorId,
       actorName: row.actorId ? peopleMap.get(row.actorId)?.name ?? "Sistem" : "Sistem",
-      actorColor: row.actorId ? peopleMap.get(row.actorId)?.avatarColor ?? "#365fd1" : "#66665f",
+      actorColor: row.actorId ? peopleMap.get(row.actorId)?.avatarColor ?? "#0f6cbd" : "#58617a",
       verb: row.verb,
       meta: row.meta,
       createdAt: row.createdAt,
@@ -617,11 +678,22 @@ export function getConversations(ctx: { org: { id: string }; user: { id: string 
       const unread = convMessages.filter(
         (message) => message.authorId !== ctx.user.id && (!membership?.lastReadAt || message.createdAt > membership.lastReadAt),
       ).length;
+      let displayName = conversation.name;
+      if (conversation.kind === "dm") {
+        const members = db
+          .select()
+          .from(conversationMembers)
+          .where(eq(conversationMembers.conversationId, conversation.id))
+          .all();
+        const otherId = members.find((member) => member.userId !== ctx.user.id)?.userId;
+        if (otherId) displayName = peopleMap.get(otherId)?.name ?? displayName;
+      }
       return {
         id: conversation.id,
         kind: conversation.kind,
-        name: conversation.name,
+        name: displayName,
         description: conversation.description,
+        icon: conversation.icon,
         projectId: conversation.projectId,
         departmentId: conversation.departmentId,
         lastMessage: last?.body ?? null,
@@ -635,7 +707,7 @@ export function getConversations(ctx: { org: { id: string }; user: { id: string 
 
 export function getConversation(ctx: { org: { id: string }; user: { id: string } }, conversationId?: string) {
   const list = getConversations(ctx);
-  const active = list.find((conversation) => conversation.id === conversationId) ?? list[0] ?? null;
+  const active = conversationId ? list.find((conversation) => conversation.id === conversationId) ?? null : null;
   if (!active) return { list, active: null, messages: [] };
   const rows = db
     .select()
@@ -646,15 +718,24 @@ export function getConversation(ctx: { org: { id: string }; user: { id: string }
   const people = getPeople(ctx.org.id);
   const peopleMap = new Map(people.map((person) => [person.id, person]));
   const allReactions = db.select().from(messageReactions).all();
+  const attachmentRows = db.select().from(messageAttachments).all();
+  const documentRows = db.select().from(documents).all();
+  const documentMap = new Map(documentRows.map((doc) => [doc.id, doc]));
   const enriched = rows.map((message) => ({
     id: message.id,
     body: message.body,
     authorId: message.authorId,
     authorName: peopleMap.get(message.authorId)?.name ?? "Anggota",
-    authorColor: peopleMap.get(message.authorId)?.avatarColor ?? "#365fd1",
+    authorColor: peopleMap.get(message.authorId)?.avatarColor ?? "#0f6cbd",
     createdAt: message.createdAt,
     replyToId: message.replyToId,
     replyBody: message.replyToId ? rows.find((row) => row.id === message.replyToId)?.body ?? null : null,
+    attachments: attachmentRows
+      .filter((attachment) => attachment.messageId === message.id)
+      .flatMap((attachment) => {
+        const doc = documentMap.get(attachment.documentId);
+        return doc ? [{ id: doc.id, name: doc.name, kind: doc.kind, size: doc.size }] : [];
+      }),
     reactions: Array.from(
       allReactions
         .filter((reaction) => reaction.messageId === message.id)
@@ -665,10 +746,38 @@ export function getConversation(ctx: { org: { id: string }; user: { id: string }
         .entries(),
     ).map(([emoji, userIds]) => ({ emoji, count: userIds.length, mine: userIds.includes(ctx.user.id) })),
   }));
-  return { list, active, messages: enriched };
+  const memberRows = db
+    .select()
+    .from(conversationMembers)
+    .where(eq(conversationMembers.conversationId, active.id))
+    .all();
+  const memberIds = memberRows.map((member) => member.userId);
+  const roles: Record<string, string> = {};
+  for (const member of memberRows) roles[member.userId] = member.role;
+  return { list, active: { ...active, memberIds, roles }, messages: enriched };
 }
 
 export function getDocuments(orgId: string) {
+  // Arsip otomatis dibersihkan setelah 30 hari.
+  const cutoffIso = new Date(Date.now() - 30 * 86400000).toISOString();
+  const initialDocs = db.select().from(documents).where(eq(documents.orgId, orgId)).all();
+  const expired = initialDocs.filter((doc) => doc.isTrashed && doc.deletedAt && doc.deletedAt < cutoffIso);
+  if (expired.length > 0) {
+    const versionRows = db.select().from(documentVersions).all();
+    for (const doc of expired) {
+      const keys = new Set<string>();
+      if (doc.storageKey) keys.add(doc.storageKey);
+      for (const row of versionRows) if (row.documentId === doc.id && row.storageKey) keys.add(row.storageKey);
+      db.delete(documents).where(eq(documents.id, doc.id)).run();
+      for (const key of keys) {
+        try {
+          fs.rmSync(path.join(process.cwd(), "data", "uploads", key), { force: true });
+        } catch {
+          /* abaikan */
+        }
+      }
+    }
+  }
   const folderRows = db.select().from(folders).where(eq(folders.orgId, orgId)).orderBy(asc(folders.name)).all();
   const docRows = db.select().from(documents).where(eq(documents.orgId, orgId)).orderBy(desc(documents.createdAt)).all();
   const people = getPeople(orgId);
@@ -678,7 +787,7 @@ export function getDocuments(orgId: string) {
   return {
     folders: folderRows.map((folder) => ({
       ...folder,
-      count: docRows.filter((doc) => doc.folderId === folder.id).length,
+      count: docRows.filter((doc) => doc.folderId === folder.id && !doc.isTrashed).length,
     })),
     documents: docRows.map((doc) => ({
       id: doc.id,
@@ -689,9 +798,11 @@ export function getDocuments(orgId: string) {
       visibility: doc.visibility,
       folderId: doc.folderId,
       folderName: folderRows.find((folder) => folder.id === doc.folderId)?.name ?? "Tanpa folder",
-      ownerName: doc.ownerId ? peopleMap.get(doc.ownerId)?.name ?? "Anggota" : "—",
+      ownerName: doc.ownerId ? peopleMap.get(doc.ownerId)?.name ?? "Anggota" : "â€”",
       projectName: projectRows.find((project) => project.id === doc.projectId)?.name ?? null,
       storageKey: doc.storageKey,
+      isTrashed: doc.isTrashed,
+      deletedAt: doc.deletedAt,
       createdAt: doc.createdAt,
       versions: versions
         .filter((version) => version.documentId === doc.id)
@@ -700,8 +811,12 @@ export function getDocuments(orgId: string) {
           id: version.id,
           version: version.version,
           note: version.note,
+          name: version.name,
+          kind: version.kind,
+          size: version.size,
+          hasFile: Boolean(version.storageKey),
           createdAt: version.createdAt,
-          authorName: version.authorId ? peopleMap.get(version.authorId)?.name ?? "Anggota" : "—",
+          authorName: version.authorId ? peopleMap.get(version.authorId)?.name ?? "Anggota" : "â€”",
         })),
     })),
   };
@@ -759,7 +874,7 @@ export function getRequests(orgId: string): RequestRow[] {
       templateKey: template?.key ?? null,
       requesterId: request.requesterId,
       requesterName: peopleMap.get(request.requesterId)?.name ?? "Anggota",
-      requesterColor: peopleMap.get(request.requesterId)?.avatarColor ?? "#365fd1",
+      requesterColor: peopleMap.get(request.requesterId)?.avatarColor ?? "#0f6cbd",
       data,
       steps: stepRows
         .filter((step) => step.requestId === request.id)
@@ -835,6 +950,13 @@ export function getReports(orgId: string, filters?: { departmentId?: string; fro
   const overdue = filtered.filter((task) => task.overdue);
   const pending = filtered.filter((task) => !task.done);
   const completionRate = filtered.length ? Math.round((done.length / filtered.length) * 100) : 0;
+  const cycleHours = done
+    .filter((task) => task.completedAt)
+    .map((task) => (new Date(task.completedAt as string).getTime() - new Date(task.createdAt).getTime()) / 3_600_000)
+    .filter((hours) => Number.isFinite(hours) && hours >= 0);
+  const avgCycleHours = cycleHours.length
+    ? Math.round((cycleHours.reduce((sum, hours) => sum + hours, 0) / cycleHours.length) * 10) / 10
+    : null;
   const timeRows = db.select().from(timeLogs).all();
   const taskIds = new Set(filtered.map((task) => task.id));
   const minutes = timeRows.filter((row) => taskIds.has(row.taskId)).reduce((sum, row) => sum + row.minutes, 0);
@@ -849,7 +971,7 @@ export function getReports(orgId: string, filters?: { departmentId?: string; fro
     return {
       label: `${start.getDate()}/${start.getMonth() + 1}`,
       completed: filtered.filter(
-        (task) => task.done && task.updatedAt.slice(0, 10) >= startKey && task.updatedAt.slice(0, 10) <= endKey,
+        (task) => task.completedAt && task.completedAt.slice(0, 10) >= startKey && task.completedAt.slice(0, 10) <= endKey,
       ).length,
       created: filtered.filter(
         (task) => task.createdAt.slice(0, 10) >= startKey && task.createdAt.slice(0, 10) <= endKey,
@@ -865,6 +987,7 @@ export function getReports(orgId: string, filters?: { departmentId?: string; fro
       overdue: overdue.length,
       completionRate,
       minutes,
+      avgCycleHours,
     },
     projects: projectsList.map((project) => ({
       id: project.id,
@@ -915,7 +1038,7 @@ export function getSearchResults(ctx: { org: { id: string } }, query: string) {
         id: task.id,
         type: "Tugas",
         title: task.title,
-        subtitle: `${task.projectCode ?? "Tanpa proyek"} · ${task.statusName ?? "Backlog"}`,
+        subtitle: `${task.projectCode ?? "Tanpa proyek"} Â· ${task.statusName ?? "Backlog"}`,
         href: `/app/tasks?task=${task.id}`,
       });
     }
@@ -926,7 +1049,7 @@ export function getSearchResults(ctx: { org: { id: string } }, query: string) {
         id: project.id,
         type: "Proyek",
         title: project.name,
-        subtitle: `${project.code} · ${project.taskDone}/${project.taskTotal} tugas selesai`,
+        subtitle: `${project.code} Â· ${project.taskDone}/${project.taskTotal} tugas selesai`,
         href: `/app/projects/${project.id}/overview`,
       });
     }
@@ -937,7 +1060,7 @@ export function getSearchResults(ctx: { org: { id: string } }, query: string) {
         id: person.id,
         type: "Orang",
         title: person.name,
-        subtitle: `${person.title ?? "Anggota"} · ${person.departmentName ?? "Umum"}`,
+        subtitle: `${person.title ?? "Anggota"} Â· ${person.departmentName ?? "Umum"}`,
         href: `/app/teams?person=${person.id}`,
       });
     }
@@ -945,7 +1068,7 @@ export function getSearchResults(ctx: { org: { id: string } }, query: string) {
   const docs = db.select().from(documents).where(eq(documents.orgId, ctx.org.id)).all();
   for (const doc of docs) {
     if (doc.name.toLowerCase().includes(q)) {
-      results.push({ id: doc.id, type: "Dokumen", title: doc.name, subtitle: `${doc.kind.toUpperCase()} · v${doc.version}`, href: `/app/documents?doc=${doc.id}` });
+      results.push({ id: doc.id, type: "Dokumen", title: doc.name, subtitle: `${doc.kind.toUpperCase()} Â· v${doc.version}`, href: `/app/documents?doc=${doc.id}` });
     }
   }
   return results.slice(0, 24);

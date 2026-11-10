@@ -52,12 +52,12 @@ export function ContactForm() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
         <label style={{ display: "grid", gap: 6 }}>
           <span className="label">Nama</span>
-          <input name="name" className="input" placeholder="Nama Anda" autoComplete="name" aria-invalid={!!state.errors?.name} />
+          <input name="name" className="input" placeholder="cth: Alya Prameswari" autoComplete="name" aria-invalid={!!state.errors?.name} />
           {state.errors?.name && <span className="error-text">{state.errors.name}</span>}
         </label>
         <label style={{ display: "grid", gap: 6 }}>
           <span className="label">Email</span>
-          <input name="email" type="email" className="input" placeholder="nama@perusahaan.id" autoComplete="email" aria-invalid={!!state.errors?.email} />
+          <input name="email" type="email" className="input" placeholder="cth: nama@perusahaan.id" autoComplete="email" aria-invalid={!!state.errors?.email} />
           {state.errors?.email && <span className="error-text">{state.errors.email}</span>}
         </label>
       </div>
@@ -80,7 +80,7 @@ export function ContactForm() {
           name="message"
           className="textarea"
           rows={6}
-          placeholder="Ceritakan kebutuhan tim Anda: berapa anggota, alur kerja apa yang ingin dirapikan, dan kapan ingin mulai."
+          placeholder="Ceritakan kebutuhan tim: jumlah anggota, alur kerja yang ingin dirapikan, dan target mulai."
           aria-invalid={!!state.errors?.message}
         />
         {state.errors?.message && <span className="error-text">{state.errors.message}</span>}

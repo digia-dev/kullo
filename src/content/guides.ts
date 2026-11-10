@@ -12,35 +12,35 @@ export const GUIDES: Guide[] = [
     slug: "panduan-5-menit",
     category: "Panduan",
     title: "Panduan 5 menit pertama",
-    excerpt: "Buat organisasi, undang dua anggota, buat proyek, dan selesaikan tugas pertama.",
+    excerpt: "Buat organisasi, undang dua anggota, buat proyek, lalu selesaikan tugas pertama.",
     minutes: 5,
     sections: [
       {
         heading: "1. Buat organisasi",
         body: [
-          "Saat pertama mendaftar, Kullo membuat satu organisasi atas nama Anda. Isi nama perusahaan, alamat, jam kerja, dan zona waktu di Pengaturan › Organisasi.",
-          "Jam kerja dan zona waktu dipakai untuk menghitung jadwal dan tampilan tanggal, jadi atur sekali di awal.",
+          "Saat mendaftar, Kullo membuat satu organisasi atas nama Anda. Isi nama perusahaan, alamat, jam kerja, dan zona waktu di Pengaturan > Organisasi.",
+          "Jam kerja dan zona waktu dipakai untuk menghitung jadwal dan menampilkan tanggal. Atur sekali di awal agar jadwal tim tidak perlu diperbaiki belakangan.",
         ],
       },
       {
         heading: "2. Undang anggota",
         body: [
-          "Buka Pengaturan › Anggota, masukkan email dan pilih peran. Kullo membuat tautan undangan sekali pakai yang bisa Anda salin dan kirim lewat kanal apa pun.",
-          "Mulailah dengan peran Manager untuk kepala tim, Team Leader untuk koordinator, dan Staff untuk anggota. Peran dapat diubah kapan saja.",
+          "Buka Pengaturan > Anggota, masukkan email, lalu pilih peran. Kullo membuat tautan undangan sekali pakai yang dapat Anda salin dan kirim lewat kanal apa pun.",
+          "Mulai dengan Manajer untuk kepala tim, Pemimpin tim untuk koordinator, dan Staf untuk anggota. Peran dapat diubah kapan saja.",
         ],
       },
       {
         heading: "3. Buat proyek pertama",
         body: [
-          "Pada Proyek › Buat proyek, isi kode proyek, nama, departemen, manajer, dan tanggal. Kullo membuat lima status bawaan: Backlog, To Do, In Progress, In Review, Done.",
-          "Satu proyek pertama sudah cukup. Struktur lain menyusul setelah tim terbiasa.",
+          "Di Proyek > Buat proyek, isi kode, nama, departemen, manajer, dan tanggal. Kullo membuat lima status bawaan: Backlog, To Do, In Progress, In Review, Done.",
+          "Satu proyek pertama sudah cukup. Tambahkan struktur lain setelah tim terbiasa dengan alurnya.",
         ],
       },
       {
         heading: "4. Selesaikan tugas pertama",
         body: [
-          "Tambahkan tugas dari papan proyek, tetapkan PIC, lalu pindahkan status dari kolom ke kolom. Setiap perubahan masuk ke activity log dan, bila ada penerima, ke notifikasi.",
-          "Buka My Work untuk melihat tugas yang baru ditugaskan ke Anda, lengkap dengan tenggat dan prioritasnya.",
+          "Tambahkan tugas dari papan proyek, tetapkan PIC, lalu pindahkan statusnya. Setiap perubahan masuk ke riwayat aktivitas dan, bila ada penerima, ke notifikasi.",
+          "Buka My Work untuk melihat tugas yang baru ditugaskan kepada Anda, lengkap dengan tenggat dan prioritas.",
         ],
       },
     ],
@@ -48,29 +48,29 @@ export const GUIDES: Guide[] = [
   {
     slug: "alur-kerja-tugas",
     category: "Alur kerja",
-    title: "Alur kerja tugas dari pengajuan sampai selesai",
-    excerpt: "Lima status, empat prioritas, dan jejak aktivitas yang tidak bisa dilewati.",
+    title: "Alur tugas dari pengajuan sampai selesai",
+    excerpt: "Lima status, empat prioritas, dan riwayat aktivitas yang tidak bisa dilewati.",
     minutes: 6,
     sections: [
       {
         heading: "Status bawaan",
         body: [
-          "Backlog → To Do → In Progress → In Review → Done. Admin proyek dapat mengubah status, tetapi urutan default sudah cukup untuk sebagian besar tim.",
-          "Ketika semua tugas masuk Done, progres proyek dihitung ulang otomatis. Progres bukan angka yang diketik manual.",
+          "Backlog, To Do, In Progress, In Review, Done. Admin proyek dapat mengubah status, tetapi urutan bawaan sudah cukup untuk sebagian besar tim.",
+          "Saat semua tugas masuk Done, progres proyek dihitung ulang. Progres tidak diketik manual.",
         ],
       },
       {
         heading: "Prioritas",
         body: [
-          "Urgent, High, Medium, Low. Prioritas dipakai untuk menyusun urutan tampilan dan penandaan warna, bukan untuk menggantikan tenggat.",
-          "Tenggat dan prioritas adalah dua hal berbeda: tenggat kapan selesai, prioritas seberapa penting bila harus memilih.",
+          "Urgent, High, Medium, Low. Prioritas dipakai untuk menyusun urutan tampilan dan penanda warna, bukan untuk menggantikan tenggat.",
+          "Tenggat menjawab kapan pekerjaan selesai. Prioritas menjawab apa yang dipilih lebih dulu saat waktu terbatas.",
         ],
       },
       {
         heading: "Diskusi dan lampiran",
         body: [
-          "Setiap tugas memiliki ruang diskusi sendiri: komentar, balasan, mention dengan @nama, lampiran, dan riwayat aktivitas.",
-          "Perubahan status, prioritas, PIC, dan tenggat juga tercatat, sehingga tidak perlu ada riwayat di pesan pribadi.",
+          "Setiap tugas punya ruang diskusi sendiri: komentar, balasan, mention dengan @nama, lampiran, dan riwayat aktivitas.",
+          "Perubahan status, prioritas, PIC, dan tenggat juga tercatat, sehingga riwayat pekerjaan tidak tertinggal di pesan pribadi.",
         ],
       },
     ],
@@ -78,30 +78,30 @@ export const GUIDES: Guide[] = [
   {
     slug: "alur-persetujuan",
     category: "Alur kerja",
-    title: "Alur persetujuan multi-level",
-    excerpt: "Bagaimana pengajuan bergerak dari pengirim ke atasan, lalu ke pihak berwenang.",
+    title: "Alur persetujuan bertingkat",
+    excerpt: "Dari pengirim ke atasan, lalu ke pihak yang berwenang, dengan keputusan yang tercatat.",
     minutes: 6,
     sections: [
       {
         heading: "Tiga tahap",
         body: [
-          "Pengirim mengisi form dan mengirim. Form divalidasi di server, bukan hanya di peramban.",
-          "Tahap pertama biasanya atasan langsung. Tahap kedua kecukupan anggaran, misalnya kepala departemen Finance.",
-          "Setelah semua tahap disetujui, status menjadi Approved dan riwayat keputusan lengkap tersimpan.",
+          "Pengirim mengisi formulir dan mengirim. Formulir diperiksa ulang di server sebelum disimpan.",
+          "Tahap pertama biasanya atasan langsung. Tahap kedua memeriksa kecukupan anggaran, misalnya kepala departemen Keuangan.",
+          "Setelah semua tahap disetujui, status menjadi Disetujui dan riwayat keputusan tersimpan lengkap.",
         ],
       },
       {
         heading: "Keputusan",
         body: [
           "Approver dapat menyetujui, menolak, atau meminta revisi. Catatan wajib diisi bila hasilnya bukan persetujuan.",
-          "Persetujuan atas pengajuan sendiri selalu diblokir oleh server, meski aturannya berbeda di UI.",
+          "Server selalu menolak persetujuan atas pengajuan sendiri, meskipun tampilan antarmuka berubah.",
         ],
       },
       {
         heading: "Notifikasi",
         body: [
           "Setiap keputusan menghasilkan notifikasi dalam aplikasi yang mengarah ke pengajuan terkait.",
-          "Kanal email dan WhatsApp belum aktif pada versi ini. Kami tidak menjanjikan sesuatu yang belum berjalan.",
+          "Email dan WhatsApp belum aktif pada versi ini. Kami tidak menjanjikan kanal yang belum berjalan.",
         ],
       },
     ],
@@ -110,30 +110,30 @@ export const GUIDES: Guide[] = [
     slug: "catatan-rilis",
     category: "Rilis",
     title: "Catatan rilis v1.0",
-    excerpt: "Modul yang tersedia hari ini, dan yang masih ada di peta jalan.",
+    excerpt: "Modul yang tersedia hari ini dan yang masih ada di peta jalan.",
     minutes: 4,
     sections: [
       {
         heading: "Tersedia sekarang",
         body: [
-          "Autentikasi, sesi aman, dan pengaturan organisasi. Dashboard, My Work, Proyek (overview, board, list, timeline, files), dan Tugas.",
-          "Tim dan departemen, Chat dengan kanal proyek, Kalender, Dokumen dengan versi dan izin.",
-          "Form & Permintaan, Persetujuan multi-level, Laporan dengan ekspor CSV, Pengaturan termasuk matriks izin.",
+          "Autentikasi, sesi aman, dan pengaturan organisasi. Dashboard, My Work, Proyek (ringkasan, papan, daftar, lini masa, file), dan Tugas.",
+          "Tim dan departemen, Chat dengan kanal proyek, Kalender, serta Dokumen dengan versi dan izin.",
+          "Formulir dan Permintaan, Persetujuan bertingkat, Laporan dengan ekspor CSV, dan Pengaturan termasuk matriks izin.",
           "Pencarian global dengan Ctrl+K dan notifikasi dalam aplikasi.",
         ],
       },
       {
         heading: "Masih di peta jalan",
         body: [
-          "Asisten AI, otomatisasi alur kerja, integrasi eksternal, dan notifikasi email serta push.",
-          "Periode waktu kerja dan timesheet, ekspor XLSX, serta sinkronisasi kalender eksternal.",
+          "Asisten AI, otomatisasi alur kerja, integrasi eksternal, serta notifikasi email dan push.",
+          "Timesheet, ekspor XLSX, dan sinkronisasi kalender eksternal.",
         ],
       },
       {
-        heading: "Yang sengaja tidak kami bangun",
+        heading: "Yang belum dibangun",
         body: [
           "Penggajian, akuntansi, pajak, kasir, inventori, rekrutmen, absensi GPS, aplikasi seluler, dan video konferensi.",
-          "Kami menahannya agar fokus pada manajemen pekerjaan sampai kebutuhan pasar terbukti.",
+          "Semua itu ditahan agar tim fokus pada manajemen pekerjaan sampai kebutuhan pasar terbukti.",
         ],
       },
     ],
@@ -142,28 +142,28 @@ export const GUIDES: Guide[] = [
     slug: "panduan-peran-dan-izin",
     category: "Panduan",
     title: "Peran, izin, dan data antarorganisasi",
-    excerpt: "Tujuh peran bawaan, matriks izin yang bisa diubah, dan isolasi data di server.",
+    excerpt: "Peran bawaan, matriks izin yang dapat diubah, dan isolasi data di server.",
     minutes: 7,
     sections: [
       {
         heading: "Peran bawaan",
         body: [
-          "Platform Super Admin, Organization Owner, Administrator, Manager, Team Leader, Staff, dan Guest.",
-          "Owner selalu memiliki akses penuh. Peran lain mengikuti matriks izin di Pengaturan › Role & Izin.",
+          "Pemilik organisasi, administrator, manajer, pemimpin tim, staf, dan tamu.",
+          "Pemilik organisasi selalu memiliki akses penuh. Peran lain mengikuti matriks izin di Pengaturan > Peran dan Izin.",
         ],
       },
       {
         heading: "Izin diperiksa di server",
         body: [
-          "Setiap permintaan membaca role dari basis data, bukan dari antarmuka. Menyembunyikan tombol bukan keamanan.",
-          "Data setiap organisasi disaring dengan organisasi aktif pada sesi. Akses silang menghasilkan 403.",
+          "Setiap permintaan membaca peran dari basis data, bukan dari antarmuka. Menyembunyikan tombol bukan pengamanan.",
+          "Data setiap organisasi disaring dengan organisasi aktif pada sesi. Akses lintas organisasi ditolak.",
         ],
       },
       {
         heading: "Tindakan yang dibatasi",
         body: [
-          "Memberi persetujuan, mengelola anggota, mengubah role, dan mengarsipkan proyek butuh izin khusus.",
-          "Staf dapat mengedit tugas yang ditugaskan atau dilaporkan olehnya, tetapi tidak menghapus tugas orang lain.",
+          "Memberi persetujuan, mengelola anggota, mengubah peran, dan mengarsipkan proyek memerlukan izin khusus.",
+          "Staf dapat mengubah tugas yang ditugaskan atau dilaporkan kepadanya, tetapi tidak menghapus tugas orang lain.",
         ],
       },
     ],
@@ -181,44 +181,44 @@ export const SUPPORT_FAQ: FAQ[] = [
     anchor: "faq",
     question: "Apakah Kullo gratis dicoba?",
     answer:
-      "Ya. Paket Free memuat 1 organisasi dengan 5 anggota dan 3 proyek. Tidak ada kartu kredit dan tidak ada masa uji coba yang diam-diam berakhir.",
+      "Ya. Paket Gratis memuat 1 organisasi dengan 5 anggota dan 3 proyek. Tidak perlu kartu kredit dan tidak ada masa uji coba yang berakhir diam-diam.",
   },
   {
-    question: "Berapa harga paket Pro dan Business?",
+    question: "Berapa harga paket Pro dan Bisnis?",
     answer:
-      "Harga belum ditetapkan dan sedang divalidasi lewat riset pasar. Untuk saat ini kami mengarahkan Anda ke kontak langsung, bukan mengarang angka rupiah.",
+      "Belum ditetapkan. Harga sedang divalidasi lewat riset pasar, jadi kami belum menampilkan angka rupiah. Untuk kebutuhan saat ini, hubungi tim lewat formulir kontak.",
   },
   {
     question: "Di mana data organisasi saya disimpan?",
     answer:
-      "Data disimpan dalam basis data perusahaan yang dienkripsi saat transit dengan HTTPS. Setiap baris membawa organisasinya, dan server menolak akses lintas organisasi.",
+      "Data disimpan di basis data dan dienkripsi saat transit dengan HTTPS. Setiap baris membawa ID organisasi, dan server menolak akses lintas organisasi.",
   },
   {
     question: "Apakah ada notifikasi email?",
     answer:
-      "Belum. Versi ini mengirim notifikasi dalam aplikasi saja. Email, push peramban, dan WhatsApp ada di peta jalan dan belum kami klaim berjalan.",
+      "Belum. Versi ini mengirim notifikasi di dalam aplikasi. Email, push peramban, dan WhatsApp masih di peta jalan dan belum berjalan.",
   },
   {
-    question: "Apakah bisa mengganti alur persetujuan?",
+    question: "Apakah alur persetujuan bisa diubah?",
     answer:
-      "Ya. Jumlah tahap dan approver dapat diatur di Pengaturan › Pengaturan persetujuan. Tata letak daftarnya sederhana; penyusunan alur lengkap menyusul.",
+      "Bisa. Jumlah tahap dan approver diatur di Pengaturan > Pengaturan persetujuan. Penyusunan alur visual yang lebih lengkap menyusul.",
   },
   {
     anchor: "keamanan",
-    question: "Bagaimana keamanan kata sandi dan sesi?",
+    question: "Bagaimana kata sandi dan sesi diamankan?",
     answer:
       "Kata sandi di-hash dengan scrypt dan garam unik. Sesi disimpan sebagai token acak yang di-hash, dikirim lewat cookie HttpOnly, dan berakhir setelah 7 hari.",
   },
   {
     question: "Apakah Kullo punya aplikasi seluler?",
     answer:
-      "Belum. Versi ini responsif hingga 390px dan cukup untuk memeriksa tugas, memperbarui status, chat, dan menyetujui. Aplikasi asli Android/iOS belum ada di peta jalan dekat.",
+      "Belum. Antarmuka web responsif sampai 390px dan cukup untuk memeriksa tugas, memperbarui status, chat, dan menyetujui. Aplikasi Android dan iOS belum ada di peta jalan dekat.",
   },
   {
     anchor: "hubungi",
     question: "Bagaimana menghubungi tim Kullo?",
     answer:
-      "Gunakan formulir di bawah halaman ini atau kirim email ke halo@kullo.app. Setiap pesan masuk ke antrean dukungan kami dan dibalas lewat email Anda.",
+      "Gunakan formulir di halaman ini atau kirim email ke halo@kullo.app. Pesan masuk ke antrean dukungan dan dibalas lewat email Anda.",
   },
 ];
 
@@ -232,36 +232,36 @@ export type RoadmapPhase = {
 export const ROADMAP: RoadmapPhase[] = [
   {
     phase: "Fase 1",
-    title: "Core Workspace",
+    title: "Ruang kerja inti",
     status: "Tersedia",
-    items: ["Autentikasi dan organisasi", "Anggota, departemen, peran", "Dashboard dan My Work", "Proyek dan tugas", "Board, list, komentar, lampiran", "Notifikasi dan activity log"],
+    items: ["Autentikasi dan organisasi", "Anggota, departemen, peran", "Dashboard dan My Work", "Proyek dan tugas", "Papan, daftar, komentar, lampiran", "Notifikasi dan riwayat aktivitas"],
   },
   {
     phase: "Fase 2",
-    title: "Team Collaboration",
+    title: "Kolaborasi tim",
     status: "Tersedia",
     items: ["Chat dan kanal proyek", "Kalender", "Dokumen dan versi", "Pencarian global", "Mention dan notifikasi lanjutan"],
   },
   {
     phase: "Fase 3",
-    title: "Business Operations",
+    title: "Operasional bisnis",
     status: "Tersedia",
-    items: ["Form builder dan template", "Permintaan internal", "Persetujuan multi-level", "Reimbursement, cuti, lembur", "Laporan lanjutan"],
+    items: ["Pembuat formulir dan template", "Permintaan internal", "Persetujuan bertingkat", "Reimbursement, cuti, lembur", "Laporan lanjutan"],
   },
   {
     phase: "Fase 4",
-    title: "Intelligence & Automation",
+    title: "Kecerdasan dan otomatisasi",
     status: "Peta jalan",
     items: ["Asisten kerja AI", "Ringkasan proyek", "Pembuat tugas dari bahasa alami", "Otomatisasi alur", "Integrasi eksternal"],
   },
 ];
 
 export const PRINCIPLES = [
-  { title: "Clarity over Complexity", body: "Halaman hanya menampilkan yang dibutuhkan untuk keputusan berikutnya. Detail disusun bertahap, bukan sekaligus." },
-  { title: "Minimal Visual Noise", body: "Satu aksen warna, dua bayangan, dan border tipis. Status ditandai dengan warna kecil, bukan blok besar." },
-  { title: "Fast Navigation", body: "Sidebar tetap, pencarian global dengan Ctrl+K, dan setiap daftar menyimpan konteksnya." },
-  { title: "Consistent Components", body: "Tabel, kartu, dialog, dan tombol memakai tingkat ukuran dan radius yang sama di seluruh modul." },
-  { title: "Information Hierarchy", body: "Judul, data utama, lalu konteks. Angka penting lebih besar dari penjelasannya." },
-  { title: "Contextual Actions", body: "Aksi muncul di tempat tugas itu berada. Tidak ada tombol global untuk tindakan yang menyangkut satu baris." },
-  { title: "Responsive Experience", body: "Desktop adalah ruang kerja utama; 390px berfokus pada membaca tugas, memperbarui status, chat, dan persetujuan." },
+  { title: "Kejelasan lebih dulu", body: "Halaman hanya menampilkan yang dibutuhkan untuk keputusan berikutnya. Detail disusun bertahap, bukan sekaligus." },
+  { title: "Tampilan tanpa gangguan", body: "Satu aksen warna, border tipis, dan status ditandai dengan warna kecil, bukan blok besar." },
+  { title: "Navigasi cepat", body: "Sidebar tetap, pencarian global dengan Ctrl+K, dan setiap daftar menyimpan konteksnya." },
+  { title: "Komponen konsisten", body: "Tabel, kartu, dialog, dan tombol memakai ukuran dan radius yang sama di seluruh modul." },
+  { title: "Hierarki informasi", body: "Judul, data utama, lalu konteks. Angka penting lebih besar dari penjelasannya." },
+  { title: "Aksi sesuai konteks", body: "Aksi muncul di tempat tugas itu berada, bukan tombol global untuk satu baris." },
+  { title: "Pengalaman responsif", body: "Desktop menjadi ruang kerja utama; 390px berfokus pada membaca tugas, memperbarui status, chat, dan persetujuan." },
 ];

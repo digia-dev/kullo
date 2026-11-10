@@ -18,8 +18,8 @@ export default function DukunganPage() {
     <>
       <PageHero
         eyebrow="Dukungan"
-        title="Bantuan tanpa basa-basi"
-        lede="Jawaban untuk pertanyaan yang paling sering muncul. Bila belum cukup, tulis pesan dan kami balas lewat email Anda."
+        title="Bantuan yang langsung menjawab"
+        lede="Jawaban untuk pertanyaan yang sering muncul. Bila belum cukup, tulis pesan dan kami balas lewat email Anda."
         actions={[{ label: "Tulis pesan", href: "#hubungi" }, { label: "Panduan memulai", href: "/sumber-daya", variant: "outline" }]}
       />
 
@@ -31,7 +31,7 @@ export default function DukunganPage() {
               title: "Pertanyaan umum",
               body: "Paket, harga, data, dan batasan versi ini dijawab apa adanya.",
               href: "#faq",
-              cta: "Baca FAQ",
+              cta: "Baca pertanyaan umum",
             },
             {
               Icon: ShieldCheck,
@@ -108,7 +108,7 @@ export default function DukunganPage() {
         <div className="shell">
           <SectionHeading
             title="Keamanan yang bisa Anda periksa"
-            lede="Bukan daftar sertifikasi — ini yang benar-benar dijalankan kode aplikasinya."
+            lede="Kami tidak mencantumkan sertifikasi yang belum dimiliki. Bagian ini menjelaskan pengamanan yang berjalan di kode aplikasi."
           />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 20 }}>
             {[
@@ -119,7 +119,7 @@ export default function DukunganPage() {
             ].map((item) => (
               <div key={item.title} className="panel">
                 <div className="panel-body">
-                  <h3 style={{ fontSize: 16, margin: "0 0 6px", fontWeight: 650 }}>{item.title}</h3>
+                  <h3 style={{ fontSize: 16, margin: "0 0 6px", fontWeight: 750 }}>{item.title}</h3>
                   <p className="market-card-copy" style={{ margin: 0 }}>
                     {item.body}
                   </p>

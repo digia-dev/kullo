@@ -32,7 +32,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
     <>
       <section
         style={{
-          background: "linear-gradient(180deg, #f5f7ff 0%, #ffffff 100%)",
+          background: "var(--accent-soft)",
           borderBottom: "1px solid var(--border)",
           padding: "44px 0 36px",
         }}
@@ -121,7 +121,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                     {item.excerpt}
                   </p>
                   <Link href={`/sumber-daya/${item.slug}`} className="textlink">
-                    Baca <ArrowRight size={15} />
+                    Baca panduan <ArrowRight size={15} />
                   </Link>
                 </div>
               </article>

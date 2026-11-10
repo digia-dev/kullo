@@ -10,5 +10,5 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const editable = can(ctx, "task.edit");
   const detail = getTaskDetail(ctx.org.id, id, editable);
   if (!detail) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(detail);
+  return NextResponse.json({ ...detail, currentUserId: ctx.user.id });
 }

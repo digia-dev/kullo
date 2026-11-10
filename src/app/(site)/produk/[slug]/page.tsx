@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const mod = moduleBySlug(slug);
   if (!mod) return { title: "Modul tidak ditemukan" };
   return {
-    title: `${mod.name} â€” ${mod.tagline}`,
+    title: `${mod.name}: ${mod.tagline}`,
     description: mod.summary,
   };
 }
@@ -51,8 +51,8 @@ export default async function ModulePage({ params }: { params: Params }) {
   return (
     <>
       <PageHero
-        eyebrow={`Modul ${mod.number} Â· ${mod.group}`}
-        title={`${mod.name}: ${mod.tagline.toLowerCase()}`}
+        eyebrow={`Modul ${mod.number} · ${mod.group}`}
+        title={`${mod.name}: ${mod.tagline}`}
         lede={mod.summary}
         actions={[
           { label: "Buka di aplikasi", href: mod.route },
@@ -82,10 +82,12 @@ export default async function ModulePage({ params }: { params: Params }) {
                 Cara kerjanya
               </p>
             </div>
-            <h2 className="market-h2">{mod.description}</h2>
+            <h2 className="market-h2">{mod.name} dalam alur kerja Anda</h2>
             <p className="market-lede" style={{ margin: 0 }}>
-              Modul ini memakai data organisasi yang sama dengan modul lain. Tidak ada impor ulang, tidak ada
-              salinan yang tertinggal.
+              {mod.description}
+            </p>
+            <p className="market-lede" style={{ margin: 0 }}>
+              Modul ini memakai data organisasi yang sama dengan modul lain. Tidak ada impor ulang atau salinan yang tertinggal.
             </p>
             <Link href={mod.route} className="btn btn-primary" style={{ alignSelf: "flex-start" }}>
               Lihat {mod.name} di aplikasi <ArrowRight size={16} />
@@ -93,7 +95,7 @@ export default async function ModulePage({ params }: { params: Params }) {
           </div>
           <div className="split-band-art" style={{ position: "relative" }}>
             <div style={{ position: "absolute", inset: 0 }}>
-              <CardArt variant={art} label={`Ilustrasi modul ${mod.name}`} />
+              <CardArt variant={art} label={`Tampilan ${mod.name}`} />
             </div>
           </div>
         </div>
@@ -103,8 +105,8 @@ export default async function ModulePage({ params }: { params: Params }) {
         <SectionHeading
           id="kemampuan"
           eyebrow="Yang bisa dilakukan"
-          title={`Kemampuan ${mod.name.toLowerCase()}`}
-          lede="Setiap poin di bawah ini punya layar dan aksi nyata di aplikasi, bukan sekadar daftar fitur."
+          title={`Kemampuan ${mod.name}`}
+          lede="Fitur berikut tersedia di aplikasi setelah Anda masuk."
         />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
           {mod.capabilities.map((capability) => (
@@ -156,7 +158,7 @@ export default async function ModulePage({ params }: { params: Params }) {
               <div key={item.title} className="panel" style={{ background: "var(--bg)" }}>
                 <div className="panel-body" style={{ display: "grid", gap: 8 }}>
                   <item.Icon size={20} aria-hidden style={{ color: "var(--accent)" }} />
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 650 }}>{item.title}</h3>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 750 }}>{item.title}</h3>
                   <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "var(--text-muted)" }}>{item.copy}</p>
                 </div>
               </div>
@@ -192,7 +194,7 @@ export default async function ModulePage({ params }: { params: Params }) {
             alignItems: "center",
             gap: 20,
             flexWrap: "wrap",
-            background: "linear-gradient(135deg,#f5f7ff,#ffffff)",
+            background: "var(--accent-soft)",
           }}
         >
           <div style={{ flex: 1, minWidth: 240 }}>
@@ -200,7 +202,7 @@ export default async function ModulePage({ params }: { params: Params }) {
               Lanjutkan
             </p>
             <h2 className="market-h2" style={{ fontSize: 24, lineHeight: "30px" }}>
-              {next.name} â€” {next.tagline.toLowerCase()}
+              {next.name}: {next.tagline}
             </h2>
           </div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>

@@ -40,7 +40,7 @@ const SECTIONS = [
   {
     heading: "Paket dan pembayaran",
     body: [
-      "Paket Free disediakan tanpa biaya dengan batas yang tercantum di halaman harga. Harga paket berbayar belum ditetapkan; saat ditetapkan, ketentuan pembayaran akan diumumkan sebelum Anda berlangganan.",
+      "Paket Gratis disediakan tanpa biaya dengan batas yang tercantum di halaman harga. Harga paket berbayar belum ditetapkan; saat ditetapkan, ketentuan pembayaran akan diumumkan sebelum Anda berlangganan.",
       "Saat ini Kullo tidak memproses pembayaran apa pun di dalam aplikasi.",
     ],
   },
@@ -48,7 +48,7 @@ const SECTIONS = [
     heading: "Pembatasan tanggung jawab",
     body: [
       "Sejauh diizinkan hukum, Kullo tidak bertanggung jawab atas kerugian tidak langsung, kehilangan data akibat kelalaian Anda sendiri, atau kerugian bisnis yang timbul dari pemakaian layanan.",
-      "Tanggung jawab kami terbatas pada kerugian langsung yang terbukti dan sebesar biaya yang Anda bayarkan kepada Kullo dalam 12 bulan terakhir, atau Rp0 bila Anda memakai paket Free.",
+      "Tanggung jawab kami terbatas pada kerugian langsung yang terbukti dan sebesar biaya yang Anda bayarkan kepada Kullo dalam 12 bulan terakhir, atau Rp0 bila Anda memakai paket Gratis.",
     ],
   },
   {

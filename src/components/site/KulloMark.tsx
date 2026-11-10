@@ -30,7 +30,7 @@ export function KulloMark({
         <path d="M16.2 16 L23.4 8.6" />
         <path d="M16.2 16 L23.4 23.4" />
       </g>
-      <circle cx="25.6" cy="24.4" r="2.6" fill="#f5a524" />
+      <circle cx="25.6" cy="24.4" r="2.6" fill="#ffb900" />
     </svg>
   );
 }

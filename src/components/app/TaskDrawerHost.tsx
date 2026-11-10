@@ -18,5 +18,5 @@ export function TaskDrawerHost() {
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
 
-  return <TaskDrawer taskId={taskId} onClose={close} onChanged={() => router.refresh()} />;
+  return <TaskDrawer key={taskId} taskId={taskId} onClose={close} onChanged={() => router.refresh()} />;
 }

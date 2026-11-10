@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation";
 import { CalendarPlus, ChevronLeft, ChevronRight, Clock, MapPin, Pencil, Trash2, Users, X } from "lucide-react";
 import { deleteEventAction, updateEventAction } from "@/app/(app)/actions";
 import { EmptyState } from "./ui";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { toast } from "./Toaster";
 import { formatDate, formatTime } from "@/lib/utils";
+import { eventColor } from "@/lib/markers";
 
 export type CalendarEvent = {
   id: string;
@@ -22,12 +25,12 @@ export type CalendarEvent = {
   participantCount: number;
 };
 
-const KINDS: Record<string, { label: string; color: string }> = {
-  meeting: { label: "Rapat tim", color: "#365fd1" },
-  personal: { label: "Pribadi", color: "#7a3d9e" },
-  company: { label: "Perusahaan", color: "#8a5a10" },
-  deadline: { label: "Tenggat", color: "#c02f2f" },
-  reminder: { label: "Pengingat", color: "#18794e" },
+const KINDS: Record<string, { label: string }> = {
+  meeting: { label: "Rapat tim" },
+  personal: { label: "Pribadi" },
+  company: { label: "Perusahaan" },
+  deadline: { label: "Tenggat" },
+  reminder: { label: "Pengingat" },
 };
 
 const VIEWS = [
@@ -78,6 +81,8 @@ export function EventCalendar({
   const [view, setView] = useState("month");
   const [cursor, setCursor] = useState(() => new Date());
   const [kindFilter, setKindFilter] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [selected, setSelected] = useState<CalendarEvent | null>(null);
   const [editing, setEditing] = useState(false);
   const [pending, setPending] = useState(false);
@@ -135,7 +140,7 @@ export function EventCalendar({
         <EmptyState title="Belum ada agenda" copy="Buat rapat tim, pengingat, atau acara perusahaan. Agenda pribadi hanya perlu peserta Anda sendiri." action={{ label: "Buat agenda", href: "/app/calendar?new=event" }} />
       ) : view === "month" ? (
         <div className="panel" style={{ overflowX: "auto" }}>
-          <div className="calendar-grid" style={{ gridTemplateColumns: "repeat(7,minmax(88px,1fr))" }}>
+          <div className="calendar-grid">
             {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((day) => (
               <div key={day} style={{ padding: "7px 8px", fontSize: 10.5, fontWeight: 650, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--text-muted)", borderRight: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>{day}</div>
             ))}
@@ -150,7 +155,7 @@ export function EventCalendar({
                       key={event.id}
                       type="button"
                       className="calendar-event"
-                      style={{ background: `${KINDS[event.kind]?.color ?? "#365fd1"}14`, color: KINDS[event.kind]?.color ?? "var(--accent)", borderLeftColor: KINDS[event.kind]?.color ?? "var(--accent)" }}
+                      style={{ background: `color-mix(in srgb, ${eventColor(event.kind)} 12%, transparent)`, color: "var(--text)", borderLeftColor: eventColor(event.kind) }}
                       onClick={() => openEvent(event)}
                       title={`${event.title} · ${formatTime(event.startsAt)}`}
                     >
@@ -165,12 +170,12 @@ export function EventCalendar({
         </div>
       ) : view === "week" ? (
         <div className="panel" style={{ overflowX: "auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7,minmax(100px,1fr))" }}>
+          <div className="week-grid">
             {week.map((date) => {
               const key = dateKey(date);
               return (
-                <div key={key} style={{ borderRight: "1px solid var(--border)", minHeight: 340, background: key === today ? "var(--accent-soft)" : undefined }}>
-                  <div style={{ padding: "7px 9px", borderBottom: "1px solid var(--border)", fontSize: 11, fontWeight: 650 }}>
+                <div key={key} className={`week-col ${key === today ? "today" : ""}`}>
+                  <div className="week-col-head">
                     {new Intl.DateTimeFormat("id-ID", { weekday: "short", day: "numeric" }).format(date)}
                   </div>
                   <div style={{ padding: 6, display: "grid", gap: 5 }}>
@@ -179,7 +184,7 @@ export function EventCalendar({
                         key={event.id}
                         type="button"
                         onClick={() => openEvent(event)}
-                        style={{ textAlign: "left", border: 0, borderLeft: `3px solid ${KINDS[event.kind]?.color ?? "var(--accent)"}`, background: `${KINDS[event.kind]?.color ?? "#365fd1"}12`, borderRadius: 5, padding: "5px 6px", cursor: "pointer" }}
+                        style={{ textAlign: "left", border: 0, borderLeft: `3px solid ${eventColor(event.kind)}`, background: `color-mix(in srgb, ${eventColor(event.kind)} 12%, transparent)`, borderRadius: 6, padding: "5px 6px", cursor: "pointer" }}
                       >
                         <span style={{ display: "block", fontSize: 10.5, fontWeight: 600 }}>{formatTime(event.startsAt)}</span>
                         <span style={{ display: "block", fontSize: 11, lineHeight: 1.35 }}>{event.title}</span>
@@ -209,7 +214,7 @@ export function EventCalendar({
                     {event.location ? ` · ${event.location}` : ""}
                   </span>
                 </span>
-                <span className="badge" style={{ background: `${KINDS[event.kind]?.color ?? "#365fd1"}14`, color: KINDS[event.kind]?.color ?? "var(--accent)" }}>{KINDS[event.kind]?.label ?? event.kind}</span>
+                <span className="badge" style={{ background: `color-mix(in srgb, ${eventColor(event.kind)} 12%, transparent)`, color: eventColor(event.kind) }}>{KINDS[event.kind]?.label ?? event.kind}</span>
               </button>
             ))}
         </div>
@@ -218,16 +223,16 @@ export function EventCalendar({
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 12, fontSize: 11, color: "var(--text-muted)" }}>
         {Object.entries(KINDS).map(([key, meta]) => (
           <span key={key} style={{ display: "inline-flex", gap: 5, alignItems: "center" }}>
-            <span style={{ width: 8, height: 8, borderRadius: 2, background: meta.color }} /> {meta.label}
+            <span style={{ width: 8, height: 8, borderRadius: 2, background: eventColor(key) }} /> {meta.label}
           </span>
         ))}
       </div>
 
       {selected && (
         <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
-          <div className="modal" role="dialog" aria-modal="true" aria-label={selected.title}>
+          <div className="modal" role="dialog" aria-modal="true" aria-label={selected.title} aria-hidden={deleteOpen ? true : undefined}>
             <div className="modal-head">
-              <span style={{ width: 10, height: 10, borderRadius: 3, background: KINDS[selected.kind]?.color ?? "var(--accent)" }} />
+              <span style={{ width: 10, height: 10, borderRadius: 3, background: eventColor(selected.kind) }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h2 style={{ margin: 0, fontSize: 16 }}>{selected.title}</h2>
                 <p style={{ margin: 0, fontSize: 11.5, color: "var(--text-muted)" }}>{KINDS[selected.kind]?.label ?? selected.kind}</p>
@@ -292,13 +297,9 @@ export function EventCalendar({
                       type="button"
                       className="btn btn-ghost btn-sm"
                       style={{ color: "var(--danger)" }}
-                      onClick={async () => {
-                        if (!window.confirm("Hapus agenda ini?")) return;
-                        const result = await deleteEventAction(selected.id);
-                        if (result.ok) {
-                          setSelected(null);
-                          router.refresh();
-                        } else setError(result.error ?? "Gagal menghapus agenda.");
+                      onClick={() => {
+                        setError("");
+                        setDeleteOpen(true);
                       }}
                     >
                       <Trash2 size={14} /> Hapus
@@ -312,6 +313,30 @@ export function EventCalendar({
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteOpen && !!selected}
+        title="Hapus agenda?"
+        description={selected ? `“${selected.title}” akan dihapus permanen dari kalender organisasi.` : ""}
+        confirmLabel="Hapus agenda"
+        busyLabel="Menghapus…"
+        busy={deleting}
+        error={error}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={async () => {
+          if (!selected) return;
+          setDeleting(true);
+          setError("");
+          const result = await deleteEventAction(selected.id);
+          setDeleting(false);
+          if (result.ok) {
+            setDeleteOpen(false);
+            setSelected(null);
+            toast("Agenda dihapus", "info");
+            router.refresh();
+          } else setError(result.error ?? "Gagal menghapus agenda.");
+        }}
+      />
     </>
   );
 }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Clock } from "lucide-react";
 import { PageHero, SectionHeading } from "@/components/site/PageHero";
-import { GUIDES } from "@/content/guides";
+import { GUIDES, PRINCIPLES } from "@/content/guides";
 
 export const metadata: Metadata = {
   title: "Sumber daya",
@@ -25,7 +25,7 @@ export default function SumberDayaPage() {
       <PageHero
         eyebrow="Sumber daya"
         title="Panduan yang bisa langsung dipraktikkan"
-        lede="Ditulis dari cara kerja aplikasinya sendiri — bukan janji fitur yang belum ada."
+        lede="Ditulis dari cara kerja aplikasinya sendiri, bukan janji fitur yang belum ada."
         actions={[{ label: "Panduan 5 menit", href: "/sumber-daya/panduan-5-menit" }, { label: "Pusat dukungan", href: "/dukungan", variant: "outline" }]}
       />
 
@@ -82,17 +82,9 @@ export default function SumberDayaPage() {
             lede="Dipakai sebagai acuan saat modul baru dibuat, agar tabel, kartu, dan dialog tetap terasa satu produk."
           />
           <ol style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12, counterReset: "prinsip" }}>
-            {[
-              ["Clarity over Complexity", "Halaman hanya menampilkan yang dibutuhkan untuk keputusan berikutnya."],
-              ["Minimal Visual Noise", "Satu aksen warna, border tipis, dan status ditandai dengan warna kecil."],
-              ["Fast Navigation", "Sidebar tetap, Ctrl+K untuk pencarian global, dan daftar menyimpan konteksnya."],
-              ["Consistent Components", "Tabel, kartu, dialog, dan tombol memakai radius serta ukuran yang sama."],
-              ["Information Hierarchy", "Judul, data utama, lalu konteks. Angka penting lebih besar dari penjelasannya."],
-              ["Contextual Actions", "Aksi muncul di tempat tugas itu berada, bukan tombol global untuk satu baris."],
-              ["Responsive Experience", "390px berfokus pada membaca tugas, memperbarui status, chat, dan persetujuan."],
-            ].map(([title, body], index) => (
+            {PRINCIPLES.map((principle, index) => (
               <li
-                key={title}
+                key={principle.title}
                 className="panel"
                 style={{ counterIncrement: "prinsip" }}
               >
@@ -110,9 +102,9 @@ export default function SumberDayaPage() {
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <div>
-                    <h3 style={{ fontSize: 16, margin: "0 0 4px", fontWeight: 650 }}>{title}</h3>
+                    <h3 style={{ fontSize: 16, margin: "0 0 4px", fontWeight: 750 }}>{principle.title}</h3>
                     <p className="market-card-copy" style={{ margin: 0 }}>
-                      {body}
+                      {principle.body}
                     </p>
                   </div>
                 </div>

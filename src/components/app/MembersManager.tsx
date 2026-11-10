@@ -6,6 +6,7 @@ import { Check, Copy, Loader2, Mail, UserPlus, UserX } from "lucide-react";
 import { Avatar } from "./ui";
 import { inviteMemberAction, setMemberStatusAction, updateMemberRoleAction } from "@/app/(app)/actions";
 import { ROLE_LABELS } from "@/lib/permissions";
+import { RoleBadge } from "./ui";
 import { formatDate } from "@/lib/utils";
 
 type Member = {
@@ -130,7 +131,7 @@ export function MembersManager({
                   <tr key={member.membershipId}>
                     <td>
                       <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-                        <Avatar name={member.name} color={member.avatarColor} size={28} />
+                        <Avatar name={member.name} color={member.avatarColor} size={28} personId={member.id} />
                         <span>
                           <span style={{ display: "block", fontSize: 12.5, fontWeight: 600 }}>{member.name}{isSelf ? " (Anda)" : ""}</span>
                           <span style={{ display: "block", fontSize: 10.5, color: "var(--text-muted)" }}>{member.email} · {member.title ?? "Anggota"}</span>
@@ -143,7 +144,7 @@ export function MembersManager({
                           {ROLES.map((role) => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
                         </select>
                       ) : (
-                        <span className="badge">{ROLE_LABELS[member.role] ?? member.role}</span>
+                        <RoleBadge role={member.role} label={ROLE_LABELS[member.role] ?? member.role} />
                       )}
                     </td>
                     <td>

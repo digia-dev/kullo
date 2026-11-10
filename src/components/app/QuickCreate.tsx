@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { CalendarPlus, FolderPlus, Loader2, PlusSquare, X } from "lucide-react";
+import { CalendarPlus, Check, FolderPlus, Loader2, PlusSquare, Search, X } from "lucide-react";
 import { createEventAction, createProjectAction, createTaskAction } from "@/app/(app)/actions";
+import { Avatar } from "./ui";
+import { toast } from "./Toaster";
 import { todayISO } from "@/lib/utils";
 
 type Meta = {
@@ -18,6 +20,12 @@ const TITLES: Record<string, string> = {
   event: "Agenda baru",
 };
 
+const CREATED: Record<string, string> = {
+  task: "Tugas dibuat",
+  project: "Proyek dibuat",
+  event: "Agenda dibuat",
+};
+
 export function QuickCreateHost() {
   const params = useSearchParams();
   const router = useRouter();
@@ -26,10 +34,14 @@ export function QuickCreateHost() {
   const [meta, setMeta] = useState<Meta | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [participantQuery, setParticipantQuery] = useState("");
+  const [participantIds, setParticipantIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!mode || !["task", "project", "event"].includes(mode)) return;
     setError("");
+    setParticipantIds([]);
+    setParticipantQuery("");
     void fetch("/api/meta", { cache: "no-store" })
       .then((response) => response.json())
       .then((data: Meta) => setMeta(data))
@@ -66,6 +78,7 @@ export function QuickCreateHost() {
       return;
     }
     close();
+    toast(CREATED[mode ?? ""] ?? "Tersimpan");
     router.refresh();
   }
 
@@ -233,15 +246,77 @@ export function QuickCreateHost() {
                     </select>
                   </label>
                 </div>
-                <label className="field">
+                <div className="field">
                   <span className="label">Peserta</span>
-                  <select className="select" name="participants" multiple size={4}>
-                    {meta?.people.map((person) => (
-                      <option key={person.id} value={person.id}>{person.name}</option>
-                    ))}
-                  </select>
-                  <span className="help">Tahan Ctrl/Cmd untuk memilih beberapa peserta.</span>
-                </label>
+                  {participantIds.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {participantIds.map((id) => {
+                        const person = meta?.people.find((row) => row.id === id);
+                        if (!person) return null;
+                        return (
+                          <span key={id} className="badge badge-accent" style={{ gap: 5 }}>
+                            {person.name}
+                            <button
+                              type="button"
+                              aria-label={`Hapus ${person.name} dari peserta`}
+                              onClick={() => setParticipantIds((value) => value.filter((row) => row !== id))}
+                              style={{ border: 0, background: "transparent", color: "inherit", cursor: "pointer", display: "inline-flex", padding: 0 }}
+                            >
+                              <X size={11} />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div style={{ position: "relative" }}>
+                    <Search size={14} aria-hidden style={{ position: "absolute", left: 9, top: 10, color: "var(--text-muted)" }} />
+                    <input
+                      className="input"
+                      style={{ paddingLeft: 30 }}
+                      placeholder="Cari nama anggota…"
+                      value={participantQuery}
+                      onChange={(event) => setParticipantQuery(event.target.value)}
+                      aria-label="Cari peserta"
+                    />
+                  </div>
+                  <div className="participant-list">
+                    {(meta?.people ?? [])
+                      .filter((person) => person.name.toLowerCase().includes(participantQuery.trim().toLowerCase()))
+                      .map((person) => {
+                        const selected = participantIds.includes(person.id);
+                        return (
+                          <button
+                            key={person.id}
+                            type="button"
+                            className="participant-row"
+                            aria-pressed={selected}
+                            onClick={() =>
+                              setParticipantIds((value) =>
+                                selected ? value.filter((row) => row !== person.id) : [...value, person.id],
+                              )
+                            }
+                          >
+                            <Avatar name={person.name} size={22} personId={person.id} />
+                            <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {person.name}
+                            </span>
+                            {person.role && <span className="participant-role">{person.role}</span>}
+                            {selected && <Check size={14} style={{ color: "var(--accent)" }} />}
+                          </button>
+                        );
+                      })}
+                    {(meta?.people ?? []).filter((person) => person.name.toLowerCase().includes(participantQuery.trim().toLowerCase())).length === 0 && (
+                      <p className="help" style={{ margin: 0, padding: 8 }}>Tidak ada anggota yang cocok.</p>
+                    )}
+                  </div>
+                  {participantIds.map((id) => (
+                    <input key={id} type="hidden" name="participants" value={id} />
+                  ))}
+                  <span className="help">
+                    {participantIds.length > 0 ? `${participantIds.length} peserta dipilih` : "Cari dan klik anggota untuk menambahkan peserta."}
+                  </span>
+                </div>
               </>
             )}
           </div>

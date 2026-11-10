@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { ArrowRight, KeyRound, Mail, UserRound } from "lucide-react";
-import { loginAction, registerAction, type AuthState } from "@/app/(site)/auth-actions";
+import { loginAction, registerAction, type AuthState } from "@/lib/auth-actions";
 
 const initial: AuthState = {};
 
@@ -49,10 +49,10 @@ export function LoginForm({ next }: { next?: string }) {
         </p>
       )}
       <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
-        {pending ? "Memeriksa…" : "Masuk"} <ArrowRight size={17} />
+        {pending ? "Memeriksaâ€¦" : "Masuk"} <ArrowRight size={17} />
       </button>
       <p className="help" style={{ margin: 0, textAlign: "center" }}>
-        Belum punya akun? <Link href="/daftar" className="textlink">Buat organisasi gratis</Link>
+        Belum punya akun? <Link href="/daftar" className="textlink">Buat akun gratis</Link>
       </p>
     </form>
   );
@@ -65,7 +65,7 @@ export function RegisterForm() {
     <form action={action} style={{ display: "grid", gap: 14 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px,1fr))", gap: 14 }}>
         <label className="field">
-          <span className="label">Nama Anda</span>
+          <span className="label">Nama lengkap</span>
           <div style={{ position: "relative" }}>
             <UserRound size={16} aria-hidden style={{ position: "absolute", left: 12, top: 10, color: "var(--text-muted)" }} />
             <input className="input" style={{ paddingLeft: 36 }} name="name" autoComplete="name" required placeholder="Nama lengkap" />
@@ -106,7 +106,7 @@ export function RegisterForm() {
         </p>
       )}
       <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
-        {pending ? "Membuat organisasi…" : "Buat akun dan organisasi"} <ArrowRight size={17} />
+        {pending ? "Membuat organisasiâ€¦" : "Buat akun dan organisasi"} <ArrowRight size={17} />
       </button>
       <p className="help" style={{ margin: 0, textAlign: "center" }}>
         Sudah punya akun? <Link href="/masuk" className="textlink">Masuk</Link>

@@ -2,14 +2,20 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Archive, Copy, Plus, Save, Trash2 } from "lucide-react";
+import { Archive, ChevronDown, ChevronUp, Copy, Plus, Save, Trash2 } from "lucide-react";
 import { Avatar } from "./ui";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { toast } from "./Toaster";
 import {
   addProjectMemberAction,
   archiveProjectAction,
+  createStatusAction,
+  deleteStatusAction,
   duplicateProjectAction,
   removeProjectMemberAction,
+  reorderStatusAction,
   updateProjectAction,
+  updateStatusAction,
 } from "@/app/(app)/actions";
 
 type Project = {
@@ -26,17 +32,34 @@ type Project = {
   managerName: string | null;
 };
 
+type BoardStatus = {
+  id: string;
+  name: string;
+  position: number;
+  category: string;
+  taskCount: number;
+};
+
+const STATUS_CATEGORIES = [
+  ["open", "Terbuka"],
+  ["active", "Berjalan"],
+  ["review", "Review"],
+  ["done", "Selesai"],
+] as const;
+
 export function ProjectSettings({
   project,
   departments,
   people,
   members,
+  statuses,
   canEdit,
 }: {
   project: Project;
   departments: Array<{ id: string; name: string }>;
   people: Array<{ id: string; name: string; avatarColor: string; title: string | null }>;
   members: Array<{ id: string; name: string; avatarColor: string; title: string | null; role: string }>;
+  statuses: BoardStatus[];
   canEdit: boolean;
 }) {
   const router = useRouter();
@@ -44,8 +67,32 @@ export function ProjectSettings({
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [newMember, setNewMember] = useState("");
+  const [statusError, setStatusError] = useState("");
+  const [newStatus, setNewStatus] = useState("");
+  const [deleteStatus, setDeleteStatus] = useState<BoardStatus | null>(null);
+  const [deletingStatus, setDeletingStatus] = useState(false);
   const available = people.filter((person) => !members.some((member) => member.id === person.id));
+
+  async function statusAction(
+    run: () => Promise<{ ok: boolean; error?: string }>,
+    successMessage?: string,
+  ): Promise<boolean> {
+    setPending(true);
+    setStatusError("");
+    const result = await run();
+    setPending(false);
+    if (!result.ok) {
+      setStatusError(result.error ?? "Tahap gagal disimpan.");
+      router.refresh(); // kembalikan nilai input ke keadaan server
+      return false;
+    }
+    if (successMessage) toast(successMessage);
+    router.refresh();
+    return true;
+  }
 
   async function save() {
     if (!formRef.current) return;
@@ -151,11 +198,135 @@ export function ProjectSettings({
 
       <div style={{ display: "grid", gap: 16 }}>
         <section className="panel">
+          <div className="panel-head"><h2 className="panel-title">Tahapan papan</h2><span className="badge">{statuses.length}</span></div>
+          <div className="panel-body" style={{ display: "grid", gap: 8 }}>
+            <p className="help" style={{ margin: 0 }}>
+              Urutan kolom papan Kanban proyek. Tahap berkategori <strong>Selesai</strong> dihitung sebagai progres proyek.
+            </p>
+            {statuses.map((status, index) => (
+              <div key={status.id} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <input
+                  key={`${status.id}:${status.name}`}
+                  className="input"
+                  defaultValue={status.name}
+                  maxLength={30}
+                  disabled={!canEdit || pending}
+                  aria-label={`Nama tahap ${status.name}`}
+                  style={{ height: 32, fontSize: 12, flex: "1 1 auto", minWidth: 0 }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      const value = event.currentTarget.value.trim();
+                      if (value && value !== status.name) void statusAction(() => updateStatusAction(status.id, { name: value }), "Nama tahap diperbarui");
+                    }
+                  }}
+                  onBlur={(event) => {
+                    const value = event.currentTarget.value.trim();
+                    if (value && value !== status.name) void statusAction(() => updateStatusAction(status.id, { name: value }), "Nama tahap diperbarui");
+                  }}
+                />
+                <select
+                  className="select"
+                  value={status.category}
+                  disabled={!canEdit || pending}
+                  aria-label={`Kategori ${status.name}`}
+                  onChange={(event) => void statusAction(() => updateStatusAction(status.id, { category: event.target.value }), "Kategori tahap diperbarui")}
+                  style={{ height: 32, fontSize: 11.5, width: 104, flex: "none" }}
+                >
+                  {STATUS_CATEGORIES.map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+                <span className="badge" title={`${status.taskCount} tugas di tahap ini`} style={{ flex: "none" }}>{status.taskCount}</span>
+                {canEdit && (
+                  <>
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      aria-label={`Naikkan ${status.name}`}
+                      title="Naikkan"
+                      disabled={pending || index === 0}
+                      onClick={() => void statusAction(() => reorderStatusAction(status.id, -1), "Urutan tahap diperbarui")}
+                      style={{ width: 28, height: 28, flex: "none" }}
+                    >
+                      <ChevronUp size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      aria-label={`Turunkan ${status.name}`}
+                      title="Turunkan"
+                      disabled={pending || index === statuses.length - 1}
+                      onClick={() => void statusAction(() => reorderStatusAction(status.id, 1), "Urutan tahap diperbarui")}
+                      style={{ width: 28, height: 28, flex: "none" }}
+                    >
+                      <ChevronDown size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      aria-label={`Hapus tahap ${status.name}`}
+                      title="Hapus tahap"
+                      disabled={pending}
+                      onClick={() => {
+                        setStatusError("");
+                        setDeleteStatus(status);
+                      }}
+                      style={{ width: 28, height: 28, flex: "none" }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </>
+                )}
+              </div>
+            ))}
+            {canEdit && (
+              <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                <input
+                  className="input"
+                  placeholder="Tahap baru…"
+                  maxLength={30}
+                  value={newStatus}
+                  disabled={pending}
+                  onChange={(event) => setNewStatus(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void (async () => {
+                        const value = newStatus.trim();
+                        if (!value) return;
+                        const ok = await statusAction(() => createStatusAction(project.id, value), "Tahap ditambahkan");
+                        if (ok) setNewStatus("");
+                      })();
+                    }
+                  }}
+                  style={{ height: 32, fontSize: 12, flex: "1 1 auto", minWidth: 0 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  disabled={!newStatus.trim() || pending}
+                  onClick={async () => {
+                    const value = newStatus.trim();
+                    if (!value) return;
+                    const ok = await statusAction(() => createStatusAction(project.id, value), "Tahap ditambahkan");
+                    if (ok) setNewStatus("");
+                  }}
+                >
+                  <Plus size={14} /> Tambah
+                </button>
+              </div>
+            )}
+            {statusError && <p className="error-text" role="alert" style={{ margin: 0 }}>{statusError}</p>}
+          </div>
+        </section>
+
+        <section className="panel">
           <div className="panel-head"><h2 className="panel-title">Anggota proyek</h2><span className="badge">{members.length}</span></div>
           <div className="panel-body" style={{ display: "grid", gap: 9 }}>
             {members.map((member) => (
               <div key={member.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Avatar name={member.name} color={member.avatarColor} size={26} />
+                <Avatar name={member.name} color={member.avatarColor} size={26} personId={member.id} />
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{ margin: 0, fontSize: 12, fontWeight: 550 }}>{member.name}</p>
                   <p style={{ margin: 0, fontSize: 10.5, color: "var(--text-muted)" }}>{member.title ?? "Anggota"} · {member.role}</p>
@@ -210,13 +381,9 @@ export function ProjectSettings({
               type="button"
               className="btn btn-outline btn-sm"
               style={{ color: "var(--danger)" }}
-              onClick={async () => {
-                if (!window.confirm("Arsipkan proyek ini? Tindakan ini dapat diubah dari data, tetapi tidak ada tombol buka arsip.")) return;
-                const result = await archiveProjectAction(project.id);
-                if (result.ok) {
-                  router.push("/app/projects");
-                  router.refresh();
-                } else setError(result.error ?? "Gagal mengarsipkan proyek.");
+              onClick={() => {
+                setError("");
+                setArchiveOpen(true);
               }}
             >
               <Archive size={14} /> Arsipkan proyek
@@ -225,6 +392,62 @@ export function ProjectSettings({
           </section>
         )}
       </div>
+
+      <ConfirmDialog
+        open={archiveOpen}
+        title="Arsipkan proyek?"
+        description={`“${project.name}” beserta tugasnya tetap tersimpan, tetapi tidak tampil di daftar aktif. Belum ada tombol buka arsip di versi ini.`}
+        confirmLabel="Arsipkan proyek"
+        busyLabel="Mengarsipkan…"
+        busy={archiving}
+        error={archiveOpen ? error : undefined}
+        onClose={() => setArchiveOpen(false)}
+        onConfirm={async () => {
+          setArchiving(true);
+          setError("");
+          const result = await archiveProjectAction(project.id);
+          setArchiving(false);
+          if (result.ok) {
+            setArchiveOpen(false);
+            toast("Proyek diarsipkan", "info");
+            router.push("/app/projects");
+            router.refresh();
+          } else setError(result.error ?? "Gagal mengarsipkan proyek.");
+        }}
+      />
+      <ConfirmDialog
+        open={Boolean(deleteStatus)}
+        title="Hapus tahap papan?"
+        description={
+          deleteStatus
+            ? deleteStatus.taskCount > 0
+              ? `Tahap "${deleteStatus.name}" masih berisi ${deleteStatus.taskCount} tugas. Pindahkan tugas tersebut ke tahap lain sebelum menghapus.`
+              : `Tahap "${deleteStatus.name}" akan dihilangkan dari papan proyek. Tindakan ini tidak menghapus tugas.`
+            : ""
+        }
+        confirmLabel="Hapus tahap"
+        busyLabel="Menghapus…"
+        busy={deletingStatus}
+        error={deleteStatus ? statusError : undefined}
+        onClose={() => {
+          setDeleteStatus(null);
+          setStatusError("");
+        }}
+        onConfirm={async () => {
+          if (!deleteStatus) return;
+          setDeletingStatus(true);
+          setStatusError("");
+          const result = await deleteStatusAction(deleteStatus.id);
+          setDeletingStatus(false);
+          if (result.ok) {
+            setDeleteStatus(null);
+            toast("Tahap dihapus");
+            router.refresh();
+          } else {
+            setStatusError(result.error ?? "Tahap gagal dihapus.");
+          }
+        }}
+      />
     </div>
   );
 }

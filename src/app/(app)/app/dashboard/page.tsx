@@ -2,30 +2,24 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
-  CalendarDays,
   CheckCircle2,
   Circle,
   Clock3,
-  FileText,
-  FolderPlus,
   MessageSquare,
   Plus,
-  Send,
-  Sparkles,
   TriangleAlert,
 } from "lucide-react";
 import { requireApp } from "@/lib/auth";
 import { getDashboard } from "@/lib/data";
 import { formatDate, formatTime, relativeTime } from "@/lib/utils";
-import { Avatar, PageHeader, PriorityDot, StatCard, StatusBadge } from "@/components/app/ui";
+import { Avatar, DueBadge, PriorityDot, StatCard, StatusBadge } from "@/components/app/ui";
+import { eventColor, workloadTone } from "@/lib/markers";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const ctx = await requireApp();
   const data = getDashboard(ctx.org.id, ctx.user.id);
-  const firstName = ctx.user.name.split(" ")[0];
-  const today = new Intl.DateTimeFormat("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Jakarta" }).format(new Date());
   const totalOpen = data.myTasks.length;
   const now = new Date().getTime();
   const completedWeek = data.completed.filter((task) => {
@@ -35,19 +29,9 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow={today}
-        title={`Selamat bekerja, ${firstName}`}
-        subtitle={`${totalOpen} tugas terbuka · ${data.dueToday.length} jatuh tempo hari ini · ${data.overdue.length} terlambat`}
-        actions={
-          <>
-            <Link href="/app/my-work" className="btn btn-outline btn-sm">Buka My Work</Link>
-            <Link href="/app/dashboard?new=task" className="btn btn-primary btn-sm"><Plus size={15} /> Buat tugas</Link>
-          </>
-        }
-      />
+      <h1 className="sr-only">Dashboard</h1>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 18 }}>
+      <div className="dash-metrics" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 18 }}>
         <StatCard label="Tugas saya" value={totalOpen} hint="Belum selesai" href="/app/my-work" />
         <StatCard label="Jatuh tempo hari ini" value={data.dueToday.length} hint="Perlu perhatian" tone="warning" href="/app/my-work?scope=assigned&view=list" />
         <StatCard label="Terlambat" value={data.overdue.length} hint="Melewati tenggat" tone="danger" href="/app/my-work?scope=overdue&view=list" />
@@ -86,11 +70,7 @@ export default async function DashboardPage() {
                         <span aria-hidden>·</span>
                         <StatusBadge status={task.statusName} category={task.statusCategory} />
                         <PriorityDot priority={task.priority} label={false} />
-                        {task.dueDate && (
-                          <span style={{ color: task.overdue ? "var(--danger)" : undefined }}>
-                            {task.overdue ? "Terlambat " : ""}{formatDate(task.dueDate)}
-                          </span>
-                        )}
+                        <DueBadge dueDate={task.dueDate} done={task.done} compact />
                       </span>
                     </span>
                     <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -148,7 +128,7 @@ export default async function DashboardPage() {
               ) : (
                 data.activity.map((row) => (
                   <div key={row.id} style={{ display: "flex", gap: 10 }}>
-                    <Avatar name={row.actorName} color={row.actorColor} size={27} />
+                    <Avatar name={row.actorName} color={row.actorColor} size={27} personId={row.actorId ?? undefined} />
                     <div style={{ minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5 }}>
                         <strong>{row.actorName}</strong> {row.verb}{" "}
@@ -182,7 +162,7 @@ export default async function DashboardPage() {
                       style={{
                         width: 4,
                         borderRadius: 99,
-                        background: event.kind === "deadline" ? "var(--danger)" : event.kind === "company" ? "var(--warning)" : "var(--accent)",
+                        background: eventColor(event.kind),
                         flex: "none",
                       }}
                     />
@@ -228,9 +208,15 @@ export default async function DashboardPage() {
             <div className="panel-body" style={{ display: "grid", gap: 9 }}>
               {data.workload.slice(0, 6).map((person) => (
                 <div key={person.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Avatar name={person.name} color={person.color} size={23} />
+                  <Avatar name={person.name} color={person.color} size={23} personId={person.id} />
                   <span style={{ fontSize: 12, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{person.name}</span>
-                  <span className="mini-bar" style={{ width: 70 }}>
+                  <span
+                    className="mini-bar workload-bar"
+                    data-tone={workloadTone(person.open)}
+                    style={{ width: 70 }}
+                    aria-label={`${person.name}: ${person.open} tugas terbuka`}
+                    title={`${person.open} tugas terbuka`}
+                  >
                     <span style={{ width: `${Math.min(100, person.open * 14)}%` }} />
                   </span>
                   <span style={{ fontSize: 11, color: "var(--text-muted)", width: 18, textAlign: "right" }}>{person.open}</span>
@@ -238,34 +224,6 @@ export default async function DashboardPage() {
               ))}
             </div>
           </section>
-
-          <section className="panel">
-            <div className="panel-head">
-              <h2 className="panel-title">Aksi cepat</h2>
-            </div>
-            <div className="panel-body" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {[
-                { label: "Tugas", href: "/app/dashboard?new=task", Icon: Plus },
-                { label: "Proyek", href: "/app/projects?new=project", Icon: FolderPlus },
-                { label: "Agenda", href: "/app/calendar?new=event", Icon: CalendarDays },
-                { label: "Permintaan", href: "/app/requests?new=1", Icon: FileText },
-                { label: "Pesan", href: "/app/chat", Icon: MessageSquare },
-                { label: "Dokumen", href: "/app/documents?new=1", Icon: Send },
-              ].map((action) => (
-                <Link key={action.label} href={action.href} className="btn btn-outline btn-sm" style={{ justifyContent: "flex-start", fontSize: 12 }}>
-                  <action.Icon size={14} /> {action.label}
-                </Link>
-              ))}
-            </div>
-          </section>
-
-          <div className="panel" style={{ padding: 16, background: "linear-gradient(135deg,var(--accent-soft),var(--bg))" }}>
-            <Sparkles size={18} aria-hidden style={{ color: "var(--accent)" }} />
-            <p style={{ margin: "8px 0 4px", fontSize: 13, fontWeight: 600 }}>Asisten AI ada di peta jalan</p>
-            <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)", lineHeight: 1.55 }}>
-              Kami belum menampilkan asisten yang belum berjalan. Ringkasan di halaman ini dihitung langsung dari data workspace.
-            </p>
-          </div>
         </div>
       </div>
 
