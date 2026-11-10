@@ -187,12 +187,7 @@ export function SiteHeader() {
       <header className="masthead">
         <div className="shell masthead-inner">
           <div className="masthead-left">
-            <Link href="/masuk" className="utility-btn site-user" aria-label="Masuk ke akun">
-              <span className="avatar sm" aria-hidden>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0116 0" /></svg>
-              </span>
-              <span className="nav-desktop-label">Masuk</span>
-            </Link>
+            <KulloLogo />
             <nav className="market-nav nav-desktop" aria-label="Navigasi utama">
               {PRIMARY_NAV.map((item) => (
                 <Link
@@ -205,10 +200,6 @@ export function SiteHeader() {
                 </Link>
               ))}
             </nav>
-          </div>
-
-          <div className="masthead-center">
-            <KulloLogo />
           </div>
 
           <div className="masthead-right">
@@ -298,6 +289,9 @@ export function SiteHeader() {
             </button>
             <Link href="/daftar" className="btn btn-primary btn-sm nav-desktop" style={{ marginLeft: 6 }}>
               Coba gratis
+            </Link>
+            <Link href="/masuk" className="btn btn-secondary btn-sm nav-desktop" style={{ marginLeft: 6 }}>
+              Masuk
             </Link>
           </div>
             <button

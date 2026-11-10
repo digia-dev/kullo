@@ -396,3 +396,16 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - **Belum diverifikasi**: halaman produksi Vercel dengan kredensial Supabase asli (butuh environment variables di akun pemilik) dan upload nyata ke Supabase Storage.
 - **Perbaikan teks**: 102 urutan mojibake (`â€”`, `â€“`, `â€œ`, `â€`, `â€¦`) di 7 berkas diperbaiki menjadi em dash, en dash, kutip lengkung, dan elipsis; nama dokumen demo sekarang tampil benar (`Anggaran 2027 — Draft.xlsx`).
 - **Bukti**: `replica/screens/batch26-documents-1440.png`, `batch26-documents-390.png`, `batch26-tasks-1440.png`; contrast 20 pair 0 gagal; sweep bersih.
+
+### Batch 27: header baru, alur demo & pendaftaran berbayar (2026-11-11)
+
+- **Header desktop**: logo di kiri, navigasi (Produk, Solusi, Harga, Sumber daya, Dukungan) lalu **Lihat fitur** tepat di samping Dukungan; **Cari**, **Coba gratis**, dan **Masuk** di kanan. Mobile tetap logo kiri, cari + hamburger kanan.
+- **Halaman masuk**: blok akun demo dihapus seluruhnya (tidak ada kredensial demo di UI publik).
+- **Akun khusus**: seed memakai `demo@kullo.app` / `demopertama`, nama **Pemilik Perusahaan**. Tidak ditampilkan di halaman masuk.
+- **Alur demo** (`/daftar?mode=demo`): form perusahaan + nama + email/WA → tersimpan di `access_requests` → notifikasi admin (outbox/Resend) → admin menyetujui di `/app/admin/akses` → ruang kerja baru dibuat (nama perusahaan, owner sesuai nama form) → email berisi tautan `/akses/klaim/<token>` yang langsung membuat sesi login.
+- **Alur pendaftaran** (`/daftar`): form + pilihan paket (Gratis / Pro / Business) → permintaan terkirim → admin menandai invoice dikirim → pemohon mengunggah bukti pembayaran di `/akses/status/<token>` → admin menyetujui → tautan masuk dikirim; pemohon juga dapat login dengan email + kata sandi yang didaftarkan.
+- **Email**: adapter Resend (`RESEND_API_KEY`) dengan fallback `mail_outbox`; tanpa key, isi email dan tautan ditampilkan di inbox admin untuk dikirim manual. Tidak ada klaim email terkirim saat provider belum diatur.
+- **Admin**: `/app/admin/akses` hanya untuk `KULLO_ADMIN_EMAILS` (default `hi.digia@gmail.com,demo@kullo.app`); notifikasi ke `KULLO_NOTIFY_EMAILS` (default `hi.digia@gmail.com`).
+- **Supabase**: migrasi `drizzle/0001_overjoyed_ultimates.sql` (access_requests, mail_outbox) diterapkan; RLS aktif di kedua tabel; seed ulang dengan akun demo baru.
+- **Verifikasi**: `npm run check` lulus; `npm test` **43/43** (Postgres lokal); alur demo dan pendaftaran diuji end-to-end lokal (permintaan → invoice → bukti → setujui → magic link → login kata sandi).
+- **Bukti**: `replica/screens/header-v2-1440.png`, `header-v2-390.png`, `login-no-demo-1440.png`, `daftar-1440.png`, `daftar-demo-1440.png`, `daftar-demo-390.png`, `admin-access-1440.png`, `admin-access-approved-1440.png`.

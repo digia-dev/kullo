@@ -87,6 +87,7 @@ const MOBILE_TABS = [
 ];
 
 const PAGE_LABELS: Array<[string, string]> = [
+  ["/app/admin/akses", "Permintaan akses"],
   ["/app/dashboard", "Dashboard"],
   ["/app/my-work", "My Work"],
   ["/app/projects", "Proyek"],

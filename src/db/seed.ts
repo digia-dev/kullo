@@ -89,7 +89,7 @@ export async function seed() {
   await db.delete(users);
   await db.delete(organizations);
 
-  const passwordHash = hashPassword("kullo123");
+  const passwordHash = hashPassword("demopertama");
   const orgId = "org_nusantara";
 
   await db.insert(organizations)
@@ -105,7 +105,7 @@ export async function seed() {
     });
 
   const people = [
-    ["usr_alya", "Alya Prameswari", "alya@nusantara.id", "Chief Executive Officer", "0812-1100-2211", "#0f6cbd"],
+    ["usr_alya", "Pemilik Perusahaan", "demo@kullo.app", "Pemilik Perusahaan", "0812-1100-2211", "#0f6cbd"],
     ["usr_maya", "Maya Kusuma", "maya@nusantara.id", "Head of Marketing", "0812-1100-2212", "#c239b3"],
     ["usr_rizky", "Rizky Pratama", "rizky@nusantara.id", "Head of Technology", "0812-1100-2213", "#038387"],
     ["usr_sinta", "Sinta Dewi", "sinta@nusantara.id", "Sales Lead", "0812-1100-2214", "#107c10"],

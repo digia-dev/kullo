@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { LockKeyhole } from "lucide-react";
 import { KulloLogo } from "./KulloMark";
 
 type AuthShellProps = {
@@ -7,7 +6,6 @@ type AuthShellProps = {
   formDescription: string;
   leftIllustration: string;
   rightIllustration: string;
-  demo?: { email: string; password: string; organization: string };
   children: React.ReactNode;
 };
 
@@ -29,7 +27,6 @@ export function AuthShell({
   formDescription,
   leftIllustration,
   rightIllustration,
-  demo,
   children,
 }: AuthShellProps) {
   const leftSize = ILLUSTRATION_DIMENSIONS[leftIllustration] ?? { width: 870, height: 520 };
@@ -65,20 +62,6 @@ export function AuthShell({
             <Link href="/dukungan">Butuh bantuan untuk masuk?</Link>
           </p>
 
-          {demo && (
-            <div className="auth-demo">
-              <div className="auth-demo-head">
-                <LockKeyhole size={14} aria-hidden />
-                <strong>Akun demo</strong>
-              </div>
-              <p>
-                Email <code>{demo.email}</code>
-                <br />
-                Kata sandi <code>{demo.password}</code>
-              </p>
-              <p className="help">Organisasi {demo.organization}. Data contoh sudah terisi.</p>
-            </div>
-          )}
         </section>
 
         <div className="auth-footer-brand">

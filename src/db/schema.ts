@@ -585,3 +585,38 @@ export const sessions = pgTable(
   },
   (t) => [index("sessions_user").on(t.userId)],
 );
+
+export const accessRequests = pgTable(
+  "access_requests",
+  {
+    id: text("id").primaryKey(),
+    kind: text("kind").notNull(),
+    companyName: text("company_name").notNull(),
+    contactName: text("contact_name").notNull(),
+    email: text("email").notNull(),
+    phone: text("phone"),
+    plan: text("plan").notNull().default("free"),
+    status: text("status").notNull().default("pending"),
+    note: text("note"),
+    passwordHash: text("password_hash"),
+    paymentProofKey: text("payment_proof_key"),
+    token: text("token").notNull().unique(),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    orgId: text("org_id").references(() => organizations.id, { onDelete: "set null" }),
+    claimedAt: text("claimed_at"),
+    createdAt: text("created_at").notNull().default(now),
+    updatedAt: text("updated_at").notNull().default(now),
+  },
+  (t) => [index("access_requests_status").on(t.status, t.createdAt)],
+);
+
+export const mailOutbox = pgTable("mail_outbox", {
+  id: text("id").primaryKey(),
+  to: text("to").notNull(),
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  kind: text("kind").notNull().default("transactional"),
+  requestId: text("request_id"),
+  sentAt: text("sent_at"),
+  createdAt: text("created_at").notNull().default(now),
+});

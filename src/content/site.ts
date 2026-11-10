@@ -3,7 +3,7 @@ export const SITE = {
   tagline: "Kerja tim, satu tempat.",
   description:
     "Kullo menyatukan proyek, tugas, chat, dokumen, dan persetujuan dalam satu ruang kerja. Satu basis data, satu set izin.",
-  url: "https://kullo.app",
+  url: process.env.NEXT_PUBLIC_APP_URL ?? "https://kullo.web.id",
   email: "halo@kullo.app",
   locale: "Indonesia",
 };

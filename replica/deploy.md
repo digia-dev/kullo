@@ -38,6 +38,18 @@ DIRECT_URL=postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase
 NEXT_PUBLIC_SUPABASE_URL=https://<ref>.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>      # server only, never NEXT_PUBLIC_
 SUPABASE_STORAGE_BUCKET=kullo-files
+
+# Transactional email (optional). Without a key, messages land in mail_outbox
+# and are visible in /app/admin/akses for manual sending.
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+RESEND_API_KEY=
+KULLO_MAIL_FROM=Kullo <noreply@kullo.app>
+KULLO_ADMIN_EMAILS=hi.digia@gmail.com,demo@kullo.app
+KULLO_NOTIFY_EMAILS=hi.digia@gmail.com
+NEXT_PUBLIC_APP_URL=https://your-domain
 KULLO_SHOW_DEMO=1                                  # optional public demo account
 ```
 

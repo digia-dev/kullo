@@ -318,17 +318,15 @@ svg {
 
 .masthead-inner {
   height: var(--header);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
 }
 .masthead-left {
   display: flex;
   align-items: center;
-  justify-self: start;
   min-width: 0;
-  gap: 8px;
+  gap: 18px;
 }
 .masthead-center {
   display: flex;
@@ -339,7 +337,7 @@ svg {
 .masthead-right {
   display: flex;
   align-items: center;
-  justify-self: end;
+  margin-left: auto;
   min-width: 0;
   gap: 8px;
 }

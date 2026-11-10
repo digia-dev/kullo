@@ -124,8 +124,8 @@ test.describe("auth gate", () => {
 test.describe("F08 sign in / out", () => {
   test("seed account reaches the dashboard, then signs out", async ({ page }) => {
     await page.goto("/masuk");
-    await page.fill('input[name="email"]', "alya@nusantara.id");
-    await page.fill('input[name="password"]', "kullo123");
+    await page.fill('input[name="email"]', "demo@kullo.app");
+    await page.fill('input[name="password"]', "demopertama");
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/app\/dashboard/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
@@ -137,7 +137,7 @@ test.describe("F08 sign in / out", () => {
 
   test("wrong password stays on sign-in with an error", async ({ page }) => {
     await page.goto("/masuk");
-    await page.fill('input[name="email"]', "alya@nusantara.id");
+    await page.fill('input[name="email"]', "demo@kullo.app");
     await page.fill('input[name="password"]', "salah-sandi");
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/masuk/);
@@ -148,8 +148,8 @@ test.describe("F08 sign in / out", () => {
 test.describe("product shell after login", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/masuk");
-    await page.fill('input[name="email"]', "alya@nusantara.id");
-    await page.fill('input[name="password"]', "kullo123");
+    await page.fill('input[name="email"]', "demo@kullo.app");
+    await page.fill('input[name="password"]', "demopertama");
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/app\/dashboard/, { timeout: 15_000 });
   });

@@ -3,9 +3,15 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { ArrowRight, KeyRound, Mail, UserRound } from "lucide-react";
-import { loginAction, registerAction, type AuthState } from "@/lib/auth-actions";
+import { loginAction, type AuthState } from "@/lib/auth-actions";
+import {
+  requestDemoAction,
+  requestSignupAction,
+  type RequestState,
+} from "@/lib/access-actions";
 
 const initial: AuthState = {};
+const initialRequest: RequestState = {};
 
 export function LoginForm({ next }: { next?: string }) {
   const [state, action, pending] = useActionState(loginAction, initial);
@@ -52,14 +58,27 @@ export function LoginForm({ next }: { next?: string }) {
         {pending ? "Memeriksa…" : "Masuk"} <ArrowRight size={17} />
       </button>
       <p className="help" style={{ margin: 0, textAlign: "center" }}>
-        Belum punya akun? <Link href="/daftar" className="textlink">Buat akun gratis</Link>
+        Belum punya akun? <Link href="/daftar" className="textlink">Daftar</Link>
       </p>
     </form>
   );
 }
 
 export function RegisterForm() {
-  const [state, action, pending] = useActionState(registerAction, initial);
+  const [state, action, pending] = useActionState(requestSignupAction, initialRequest);
+
+  if (state.ok) {
+    return (
+      <div style={{ display: "grid", gap: 12 }}>
+        <p className="help" role="status" style={{ margin: 0 }}>{state.message}</p>
+        {state.statusUrl ? (
+          <Link href={state.statusUrl} className="btn btn-primary" style={{ justifyContent: "center" }}>
+            Buka status permintaan
+          </Link>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <form action={action} style={{ display: "grid", gap: 14 }}>
@@ -84,6 +103,19 @@ export function RegisterForm() {
         </div>
       </label>
       <label className="field">
+        <span className="label">Nomor WhatsApp</span>
+        <input className="input" name="phone" inputMode="tel" placeholder="08xx xxxx xxxx" />
+      </label>
+      <label className="field">
+        <span className="label">Paket</span>
+        <select className="input" name="plan" defaultValue="free">
+          <option value="free">Gratis</option>
+          <option value="pro">Pro — harga belum ditetapkan</option>
+          <option value="business">Business — sesuai kebutuhan</option>
+        </select>
+        <span className="help">Paket berbayar dikonfirmasi admin melalui invoice sebelum akses dibuka.</span>
+      </label>
+      <label className="field">
         <span className="label">Kata sandi</span>
         <div style={{ position: "relative" }}>
           <KeyRound size={16} aria-hidden style={{ position: "absolute", left: 12, top: 10, color: "var(--text-muted)" }} />
@@ -98,7 +130,6 @@ export function RegisterForm() {
             placeholder="Minimal 8 karakter"
           />
         </div>
-        <span className="help">Minimal 8 karakter. Gunakan kombinasi yang tidak dipakai di layanan lain.</span>
       </label>
       {state.error && (
         <p className="error-text" role="alert" style={{ margin: 0 }}>
@@ -106,15 +137,60 @@ export function RegisterForm() {
         </p>
       )}
       <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
-        {pending ? "Membuat organisasi…" : "Buat akun dan organisasi"} <ArrowRight size={17} />
+        {pending ? "Mengirim permintaan…" : "Kirim permintaan pendaftaran"} <ArrowRight size={17} />
       </button>
       <p className="help" style={{ margin: 0, textAlign: "center" }}>
         Sudah punya akun? <Link href="/masuk" className="textlink">Masuk</Link>
       </p>
+    </form>
+  );
+}
+
+export function DemoRequestForm() {
+  const [state, action, pending] = useActionState(requestDemoAction, initialRequest);
+
+  if (state.ok) {
+    return (
+      <div style={{ display: "grid", gap: 12 }}>
+        <p className="help" role="status" style={{ margin: 0 }}>{state.message}</p>
+        <Link href="/masuk" className="btn btn-secondary" style={{ justifyContent: "center" }}>
+          Kembali ke halaman masuk
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <form action={action} style={{ display: "grid", gap: 14 }}>
+      <label className="field">
+        <span className="label">Nama perusahaan</span>
+        <input className="input" name="companyName" required placeholder="PT Contoh Digital" />
+      </label>
+      <label className="field">
+        <span className="label">Nama Anda</span>
+        <input className="input" name="contactName" autoComplete="name" required placeholder="Nama lengkap" />
+      </label>
+      <label className="field">
+        <span className="label">Email</span>
+        <div style={{ position: "relative" }}>
+          <Mail size={16} aria-hidden style={{ position: "absolute", left: 12, top: 10, color: "var(--text-muted)" }} />
+          <input className="input" style={{ paddingLeft: 36 }} type="email" name="email" autoComplete="email" required placeholder="nama@perusahaan.id" />
+        </div>
+      </label>
+      <label className="field">
+        <span className="label">Nomor WhatsApp</span>
+        <input className="input" name="phone" inputMode="tel" placeholder="08xx xxxx xxxx" />
+      </label>
+      {state.error && (
+        <p className="error-text" role="alert" style={{ margin: 0 }}>
+          {state.error}
+        </p>
+      )}
+      <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
+        {pending ? "Mengirim…" : "Ajukan demo"} <ArrowRight size={17} />
+      </button>
       <p className="help" style={{ margin: 0, textAlign: "center" }}>
-        Dengan mendaftar, Anda menyetujui{" "}
-        <Link href="/ketentuan" className="textlink">ketentuan penggunaan</Link> dan{" "}
-        <Link href="/privasi" className="textlink">kebijakan privasi</Link>.
+        Demo diverifikasi admin. Anda akan menerima tautan masuk setelah disetujui.
       </p>
     </form>
   );
