@@ -6,8 +6,16 @@
  *
  * Usage: npm run db:backup:check
  */
-import "dotenv/config";
+import { loadEnvFile } from "node:process";
 import postgres from "postgres";
+
+for (const file of [".env.local", ".env"]) {
+  try {
+    loadEnvFile(file);
+  } catch {
+    // optional
+  }
+}
 
 const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
 if (!connectionString) {
