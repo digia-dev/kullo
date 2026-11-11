@@ -644,11 +644,6 @@ export function TaskExplorer({
                       {task.commentCount ? ` · ${task.commentCount} komentar` : ""}
                       {task.checklistTotal ? ` · ${task.checklistDone}/${task.checklistTotal} checklist` : ""}
                     </span>
-                    {task.blockedByCount > 0 && (
-                      <span className="badge badge-danger" style={{ height: 18, fontSize: 9.5, marginTop: 2 }} title={`${task.blockedByCount} tugas prasyarat belum selesai`}>
-                        Terhambat
-                      </span>
-                    )}
                   </td>
                   <td style={{ fontSize: 11.5, color: "var(--text-muted)", whiteSpace: "nowrap" }}>{task.projectCode ?? "—"}</td>
                   <td><StatusBadge status={task.statusName} category={task.statusCategory} /></td>
@@ -802,7 +797,6 @@ export function TaskExplorer({
                       )}
                       <div className="board-card-top">
                         <span className="badge" style={{ fontFamily: "var(--font-mono)", fontSize: 9.5 }}>{task.projectCode ?? "—"}</span>
-                        {task.blockedByCount > 0 && <span className="badge badge-danger" style={{ height: 18, fontSize: 9.5 }}>Terhambat</span>}
                         <PriorityDot priority={task.priority} label={false} />
                       </div>
                       <p style={{ margin: "6px 0 5px", fontSize: 12.5, fontWeight: 550, lineHeight: 1.4 }}>{task.title}</p>

@@ -444,3 +444,12 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - **Detail tugas mobile**: tetap sheet penuh; panel atribut punya tombol lipat **Status, prioritas, PIC, tenggat** dengan ikon panah atas/bawah. Label dibuat selebar baris agar tidak terpotong.
 - **Verifikasi**: `npm run check` lulus; `npm test` **43/43**; contrast 0 gagal; sweep bersih. `/api/tasks/tsk_01` 200 dan modal memuat data.
 - **Bukti**: `theme-dark-1440.png`, `theme-light-1440.png`, `members-mobile-390.png`, `task-modal-1440.png`, `task-modal-390.png`, `task-modal-collapsed-390.png`.
+
+### Batch 32: header bersih, dependensi dihapus, mention komentar (2026-11-11)
+
+- **Header**: status idle tidak lagi menampilkan teks "Tersambung"; indikator hanya muncul saat menyinkronkan, tersimpan, gagal, atau luring.
+- **Dependensi tugas dihapus dari UI**: section Dependensi di drawer, badge Terhambat berbasis prasyarat di daftar/papan, dan tombol tambah/hapus dependensi dihilangkan. Tabel dan action lama dibiarkan agar data historis tidak rusak.
+- **Mention komentar**: textarea Diskusi mendeteksi `@`, menampilkan pencarian anggota, navigasi panah/Enter/Tab/Escape, lalu menyisipkan `@Nama`. Render memakai `MentionText` sehingga mention tampil sebagai chip biru.
+- **Toggle mobile**: tombol atribut kini ikon panah 30×30 tanpa teks, dengan `aria-label` dinamis; tetap melipat Status/Prioritas/PIC/Tenggat.
+- **Verifikasi**: `npm run check` lulus; `npm test` **43/43**; uji UI: Tersambung 0, Dependensi 0, mention popup 1 item lalu tersisip `@Rizky Pratama`, toggle 30×30.
+- **Bukti**: `task-mention-1440.png`, `task-toggle-mobile-390.png`.

@@ -39,6 +39,7 @@ export function ConnectionStatus() {
   }, []);
 
   const state = !online ? "offline" : sync;
+  if (state === "idle") return null;
   const label =
     state === "offline"
       ? "Luring"
@@ -48,7 +49,7 @@ export function ConnectionStatus() {
           ? "Tersimpan"
           : state === "error"
             ? "Gagal menyimpan"
-            : "Tersambung";
+            : "";
   const Icon =
     state === "offline"
       ? CloudOff

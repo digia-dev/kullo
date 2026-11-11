@@ -26,12 +26,10 @@ import { toast } from "./Toaster";
 import {
   addChecklistItemAction,
   addCommentWithFilesAction,
-  addTaskDependencyAction,
   archiveTaskAction,
   createTaskAction,
   createTaskLabelAction,
   deleteTaskAttachmentAction,
-  removeTaskDependencyAction,
   setTaskLabelsAction,
   toggleChecklistItemAction,
   updateTaskAction,
@@ -116,18 +114,21 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
   const [comment, setComment] = useState("");
   const [checkItem, setCheckItem] = useState("");
   const [subtaskTitle, setSubtaskTitle] = useState("");
-  const [dependencyTarget, setDependencyTarget] = useState("");
   const [commentFiles, setCommentFiles] = useState<Array<{ id: string; file: File; url: string }>>([]);
   const [labelQuery, setLabelQuery] = useState("");
   const [labelOpen, setLabelOpen] = useState(false);
   const [labelBusy, setLabelBusy] = useState(false);
   const [discardOpen, setDiscardOpen] = useState(false);
   const [propsOpen, setPropsOpen] = useState(true);
+  const [mentionOpen, setMentionOpen] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionIndex, setMentionIndex] = useState(0);
   const [saved, setSaved] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [deleteAttachment, setDeleteAttachment] = useState<{ id: string; name: string } | null>(null);
   const [deletingAttachment, setDeletingAttachment] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
+  const commentRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const requestClose = useCallback(() => {
@@ -293,6 +294,42 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
     });
   }
 
+  const mentionMatches = (detail?.members ?? [])
+    .filter((person) => person.id !== detail?.currentUserId)
+    .filter((person) => {
+      const query = mentionQuery.trim().toLowerCase();
+      return !query || person.name.toLowerCase().includes(query);
+    })
+    .slice(0, 6);
+
+  function updateComment(value: string, caret: number) {
+    setComment(value);
+    const before = value.slice(0, caret);
+    const match = before.match(/(?:^|\s)@([\p{L}\p{N}_ ]{0,24})$/u);
+    if (!match) {
+      setMentionOpen(false);
+      return;
+    }
+    setMentionQuery(match[1]);
+    setMentionIndex(0);
+    setMentionOpen(true);
+  }
+
+  function insertMention(name: string) {
+    const element = commentRef.current;
+    const caret = element?.selectionStart ?? comment.length;
+    const at = comment.slice(0, caret).lastIndexOf("@");
+    if (at < 0) return;
+    const next = `${comment.slice(0, at)}@${name} ${comment.slice(caret)}`;
+    setComment(next);
+    setMentionOpen(false);
+    window.requestAnimationFrame(() => {
+      element?.focus();
+      const position = at + name.length + 2;
+      element?.setSelectionRange(position, position);
+    });
+  }
+
   async function submitComment() {
     if (!detail) return;
     if (!comment.trim() && commentFiles.length === 0) return;
@@ -305,6 +342,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
     for (const entry of commentFiles) URL.revokeObjectURL(entry.url);
     setCommentFiles([]);
     setComment("");
+    setMentionOpen(false);
     toast("Komentar dikirim");
   }
 
@@ -361,9 +399,6 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                   <StatusBadge status={detail.task.statusName} category={detail.task.statusCategory} />
                   <span className={`badge ${priorityMeta(detail.task.priority).className}`}>{priorityMeta(detail.task.priority).label}</span>
                   <DueBadge dueDate={detail.task.dueDate} done={detail.task.done} compact />
-                  {(detail.task.statusCategory === "blocked" || detail.dependencies.some((dependency) => !dependency.done)) && (
-                    <span className="badge badge-danger" title={detail.dependencies.some((dependency) => !dependency.done) ? "Menunggu tugas prasyarat" : undefined}>Terhambat</span>
-                  )}
                 </div>
                 <p style={{ margin: "4px 0 0", fontSize: 11.5, color: "var(--text-muted)" }}>
                   Dibuat oleh {detail.task.reporterName ?? "Anggota"} · Diperbarui {relativeTime(detail.task.updatedAt)}
@@ -398,9 +433,10 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                 className="task-props-toggle"
                 aria-expanded={propsOpen}
                 aria-controls="task-properties-grid"
+                aria-label={propsOpen ? "Sembunyikan status, prioritas, PIC, dan tenggat" : "Tampilkan status, prioritas, PIC, dan tenggat"}
+                title={propsOpen ? "Sembunyikan atribut" : "Tampilkan atribut"}
                 onClick={() => setPropsOpen((value) => !value)}
               >
-                <span>Status, prioritas, PIC, tenggat</span>
                 {propsOpen ? <ChevronUp size={15} aria-hidden /> : <ChevronDown size={15} aria-hidden />}
               </button>
               <div id="task-properties-grid" className={`task-props-grid ${propsOpen ? "" : "is-collapsed"}`} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))", gap: 8 }}>
@@ -698,69 +734,6 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                     )}
                   </section>
 
-                  <section>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                      <h3 style={{ margin: 0, fontSize: 12, textTransform: "uppercase", letterSpacing: ".08em", color: "var(--text-muted)" }}>Dependensi</h3>
-                      <span className="badge">{detail.dependencies.length}</span>
-                    </div>
-                    <p className="help" style={{ margin: "0 0 8px" }}>Tugas ini menunggu tugas prasyarat selesai sebelum dapat dianggap siap.</p>
-                    {detail.dependencies.length === 0 ? (
-                      <p className="help" style={{ margin: 0 }}>Belum ada dependensi.</p>
-                    ) : (
-                      <div style={{ display: "grid", gap: 4 }}>
-                        {detail.dependencies.map((dependency) => (
-                          <div key={dependency.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: "1px solid color-mix(in srgb, var(--border) 60%, transparent)" }}>
-                            <span style={{ fontSize: 10.5, color: "var(--text-muted)", fontFamily: "var(--font-mono)", flex: "none" }}>{dependency.projectCode ?? "—"}-{dependency.number}</span>
-                            <span style={{ minWidth: 0, flex: 1 }}>
-                              <span style={{ display: "block", fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{dependency.title}</span>
-                              <StatusBadge status={dependency.statusName} category={dependency.statusCategory} />
-                            </span>
-                            {dependency.done ? <span className="badge badge-success">Selesai</span> : <span className="badge badge-warning">Menunggu</span>}
-                            {detail.canEdit && (
-                              <button
-                                type="button"
-                                className="icon-btn"
-                                aria-label={`Hapus dependensi ${dependency.title}`}
-                                title="Hapus dependensi"
-                                disabled={saving}
-                                onClick={() => void act(async () => await removeTaskDependencyAction(detail.task.id, dependency.id)).then((ok) => ok && toast("Dependensi dihapus", "info"))}
-                              >
-                                <X size={14} />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {detail.dependents.length > 0 && (
-                      <p className="help" style={{ margin: "8px 0 0" }}>
-                        Menjadi prasyarat untuk {detail.dependents.map((dependent) => dependent.title).slice(0, 3).join(", ")}{detail.dependents.length > 3 ? `, +${detail.dependents.length - 3}` : ""}.
-                      </p>
-                    )}
-                    {detail.canEdit && detail.dependencyCandidates.length > 0 && (
-                      <form
-                        style={{ display: "flex", gap: 6, marginTop: 8 }}
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          if (!dependencyTarget) return;
-                          void act(async () => await addTaskDependencyAction(detail.task.id, dependencyTarget)).then((ok) => {
-                            if (ok) {
-                              setDependencyTarget("");
-                              toast("Dependensi ditambahkan");
-                            }
-                          });
-                        }}
-                      >
-                        <select className="select" aria-label="Pilih tugas prasyarat" value={dependencyTarget} onChange={(event) => setDependencyTarget(event.target.value)}>
-                          <option value="">Pilih tugas prasyarat…</option>
-                          {detail.dependencyCandidates.map((candidate) => (
-                            <option key={candidate.id} value={candidate.id}>{candidate.projectCode ?? "—"}-{candidate.number} · {candidate.title}</option>
-                          ))}
-                        </select>
-                        <button className="btn btn-outline btn-sm" type="submit" disabled={saving || !dependencyTarget}>Tambah</button>
-                      </form>
-                    )}
-                  </section>
 
                 </div>
               )}
@@ -806,13 +779,54 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                       ))}
                     </div>
                   )}
-                  <div className="panel" style={{ padding: 10, background: "var(--surface)" }}>
+                  <div className="panel" style={{ padding: 10, background: "var(--surface)", position: "relative" }}>
+                    {mentionOpen && mentionMatches.length > 0 && (
+                      <div className="mention-pop" role="listbox" aria-label="Sebut anggota">
+                        {mentionMatches.map((person, index) => (
+                          <button
+                            key={person.id}
+                            type="button"
+                            role="option"
+                            aria-selected={index === mentionIndex}
+                            className="mention-item"
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              insertMention(person.name);
+                            }}
+                            onMouseEnter={() => setMentionIndex(index)}
+                          >
+                            <Avatar name={person.name} color={person.avatarColor} size={22} personId={person.id} />
+                            <span style={{ minWidth: 0, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {person.name}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <textarea
+                      ref={commentRef}
                       className="textarea"
-                      placeholder="Tulis komentar…"
+                      placeholder="Tulis komentar. Ketik @ untuk menandai anggota."
                       aria-label="Tulis komentar"
                       value={comment}
-                      onChange={(event) => setComment(event.target.value)}
+                      onChange={(event) => updateComment(event.target.value, event.target.selectionStart)}
+                      onKeyDown={(event) => {
+                        if (!mentionOpen || mentionMatches.length === 0) return;
+                        if (event.key === "ArrowDown") {
+                          event.preventDefault();
+                          setMentionIndex((index) => Math.min(index + 1, mentionMatches.length - 1));
+                        } else if (event.key === "ArrowUp") {
+                          event.preventDefault();
+                          setMentionIndex((index) => Math.max(index - 1, 0));
+                        } else if (event.key === "Enter" || event.key === "Tab") {
+                          event.preventDefault();
+                          insertMention(mentionMatches[mentionIndex]?.name ?? mentionMatches[0].name);
+                        } else if (event.key === "Escape") {
+                          event.preventDefault();
+                          setMentionOpen(false);
+                        }
+                      }}
+                      onBlur={() => window.setTimeout(() => setMentionOpen(false), 120)}
                       onPaste={handlePaste}
                       style={{ minHeight: 70, background: "var(--bg)" }}
                     />

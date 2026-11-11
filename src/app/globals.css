@@ -5082,17 +5082,16 @@ a.task-attachment-name:hover { color: var(--accent); text-decoration: underline;
 /* ------------------- Task dialog: desktop modal + mobile props ------------------- */
 .task-props-toggle {
   display: none;
-  width: 100%;
+  width: 30px;
+  height: 30px;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: center;
+  justify-self: end;
+  margin-left: auto;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 6px 10px;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 0;
   color: var(--text);
   cursor: pointer;
 }
