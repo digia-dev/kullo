@@ -435,3 +435,12 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - **Form demo**: `DemoRequestForm` sekarang memakai grid dua kolom (`auth-form-row`) seperti form daftar, sehingga desktop menampilkan perusahaan/nama dan email/WA sejajar, logo tengah + footer tetap, tanpa scroll (1440×900 dan 1280×720).
 - **Performa dev**: dengan `.env.development.local` ke Postgres lokal, log dev menunjukkan dashboard 462 ms, proyek 471 ms, pengaturan 140–500 ms (sebelumnya 15–40 detik ke Supabase Sydney).
 - **Verifikasi**: `npm run check` lulus; `npm test` **43/43**; screenshot `daftar-demo-dev-1440.png` dan `daftar-demo-dev-1280x720.png`.
+
+### Batch 31: tema gelap di pengaturan, anggota mobile, modal tugas desktop (2026-11-11)
+
+- **Tema**: panel **Tampilan** di `/app/settings/profile` dengan tombol Terang/Gelap. Pilihan disimpan di `localStorage:kullo:theme` dan dibaca `theme-init.js` sebelum paint; tema hanya berlaku untuk ruang kerja, bukan situs marketing. Diuji: tombol Gelap mengubah `data-app-theme="dark"` dan tersimpan.
+- **Anggota mobile**: tabel anggota berubah menjadi kartu per anggota di ≤720px (label Peran/Departemen/Status/Bergabung/Aksi, select penuh, tanpa scroll horizontal).
+- **Detail tugas desktop**: drawer kanan menjadi **modal tengah** maksimal 1120px dengan dua kolom — konten/tab di kiri, panel Status/Prioritas/PIC/Tenggat/Label di kanan; header dan footer selebar modal.
+- **Detail tugas mobile**: tetap sheet penuh; panel atribut punya tombol lipat **Status, prioritas, PIC, tenggat** dengan ikon panah atas/bawah. Label dibuat selebar baris agar tidak terpotong.
+- **Verifikasi**: `npm run check` lulus; `npm test` **43/43**; contrast 0 gagal; sweep bersih. `/api/tasks/tsk_01` 200 dan modal memuat data.
+- **Bukti**: `theme-dark-1440.png`, `theme-light-1440.png`, `members-mobile-390.png`, `task-modal-1440.png`, `task-modal-390.png`, `task-modal-collapsed-390.png`.

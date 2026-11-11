@@ -120,7 +120,7 @@ export function MembersManager({
       <section className="panel">
         <div className="panel-head"><h2 className="panel-title">Anggota organisasi</h2><span className="badge">{members.length}</span></div>
         <div className="app-table-wrap">
-          <table className="table" style={{ minWidth: 780 }}>
+          <table className="table members-table">
             <thead><tr><th>Anggota</th><th>Peran</th><th>Departemen</th><th>Status</th><th>Bergabung</th><th /></tr></thead>
             <tbody>
               {members.map((member) => {
@@ -129,7 +129,7 @@ export function MembersManager({
                 const isOwner = member.role === "owner";
                 return (
                   <tr key={member.membershipId}>
-                    <td>
+                    <td data-label="Anggota">
                       <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
                         <Avatar name={member.name} color={member.avatarColor} size={28} personId={member.id} />
                         <span>
@@ -138,7 +138,7 @@ export function MembersManager({
                         </span>
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Peran">
                       {canManage && !isOwner && !isSelf ? (
                         <select className="select" style={{ height: 30, fontSize: 11.5, width: 150 }} value={edit.role} onChange={(event) => setEdits((current) => ({ ...current, [member.membershipId]: { ...edit, role: event.target.value } }))}>
                           {ROLES.map((role) => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
@@ -147,7 +147,7 @@ export function MembersManager({
                         <RoleBadge role={member.role} label={ROLE_LABELS[member.role] ?? member.role} />
                       )}
                     </td>
-                    <td>
+                    <td data-label="Departemen">
                       {canManage && !isOwner && !isSelf ? (
                         <select className="select" style={{ height: 30, fontSize: 11.5, width: 145 }} value={edit.departmentId} onChange={(event) => setEdits((current) => ({ ...current, [member.membershipId]: { ...edit, departmentId: event.target.value } }))}>
                           <option value="">Tanpa departemen</option>
@@ -157,9 +157,9 @@ export function MembersManager({
                         <span style={{ fontSize: 11.5 }}>{member.departmentName ?? "—"}</span>
                       )}
                     </td>
-                    <td><span className={`badge ${member.status === "active" ? "badge-success" : member.status === "invited" ? "badge-warning" : "badge"}`}>{member.status}</span></td>
-                    <td style={{ fontSize: 11, color: "var(--text-muted)" }}>{formatDate(member.joinedAt)}</td>
-                    <td>
+<td data-label="Status"><span className={`badge ${member.status === "active" ? "badge-success" : member.status === "invited" ? "badge-warning" : "badge"}`}>{member.status}</span></td>
+<td data-label="Bergabung" style={{ fontSize: 11, color: "var(--text-muted)" }}>{formatDate(member.joinedAt)}</td>
+                    <td data-label="Aksi">
                       {canManage && !isOwner && !isSelf && (
                         <div style={{ display: "flex", gap: 4 }}>
                           <button

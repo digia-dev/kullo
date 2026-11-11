@@ -8,6 +8,7 @@ import {
   Check,
   CheckSquare,
   ChevronDown,
+  ChevronUp,
   ExternalLink,
   FileText,
   Loader2,
@@ -121,6 +122,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
   const [labelOpen, setLabelOpen] = useState(false);
   const [labelBusy, setLabelBusy] = useState(false);
   const [discardOpen, setDiscardOpen] = useState(false);
+  const [propsOpen, setPropsOpen] = useState(true);
   const [saved, setSaved] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [deleteAttachment, setDeleteAttachment] = useState<{ id: string; name: string } | null>(null);
@@ -340,7 +342,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
     .slice(0, 6);
   return (
     <div
-      className="sheet-backdrop"
+      className="sheet-backdrop task-drawer-backdrop"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) requestClose();
@@ -377,7 +379,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
         </div>
 
         {error && (
-          <div style={{ padding: "8px 16px", background: "var(--danger-soft)", color: "var(--danger)", fontSize: 12.5 }} role="alert">
+          <div className="task-error" style={{ padding: "8px 16px", background: "var(--danger-soft)", color: "var(--danger)", fontSize: 12.5 }} role="alert">
             {error}
           </div>
         )}
@@ -390,8 +392,18 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
           </div>
         ) : detail ? (
           <>
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", display: "grid", gap: 9 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))", gap: 8 }}>
+            <div className="task-properties" style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", display: "grid", gap: 9 }}>
+              <button
+                type="button"
+                className="task-props-toggle"
+                aria-expanded={propsOpen}
+                aria-controls="task-properties-grid"
+                onClick={() => setPropsOpen((value) => !value)}
+              >
+                <span>Status, prioritas, PIC, tenggat</span>
+                {propsOpen ? <ChevronUp size={15} aria-hidden /> : <ChevronDown size={15} aria-hidden />}
+              </button>
+              <div id="task-properties-grid" className={`task-props-grid ${propsOpen ? "" : "is-collapsed"}`} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))", gap: 8 }}>
                 <label className="field">
                   <span className="label" style={{ fontSize: 11 }}>Status</span>
                   <select
@@ -438,7 +450,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                     onChange={async (event) => void await patch({ dueDate: event.target.value || null })}
                   />
                 </label>
-                <div className="field" style={{ minWidth: 0 }}>
+                <div className="field" style={{ minWidth: 0, gridColumn: "1 / -1" }}>
                   <span className="label" style={{ fontSize: 11 }}>Label</span>
                   <div style={{ position: "relative" }}>
                     <div className="label-picker">
@@ -526,6 +538,7 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
               </div>
             </div>
 
+            <div className="task-main">
             <div className="tab-row" style={{ padding: "0 10px" }} role="tablist" aria-label="Bagian tugas">
               {TABS.map((item) => (
                 <button
@@ -963,6 +976,8 @@ export function TaskDrawer({ taskId, onClose, onChanged }: { taskId: string; onC
                   )}
                 </div>
               )}
+            </div>
+
             </div>
 
             <div className="sheet-foot">
