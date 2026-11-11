@@ -428,3 +428,10 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - **Auth desktop**: logo di atas tengah, baris brand + copyright/ketentuan/privasi/dukungan di bawah tetap tampil pada desktop pendek (1280×720), tanpa scroll — `scrollHeight = innerHeight`, `auth-brand` dan `auth-panel-foot` terdeteksi.
 - **Verifikasi**: `npm run check` lulus; `npm test` **43/43**; alur demo → approve → login kredensial lulus di Postgres lokal; email HTML dirender dan diperiksa visual.
 - **Bukti**: `replica/screens/demo-email-660.png`, `login-v4-1280x720.png`, `daftar-v4-1280x720.png`.
+
+### Batch 30: dev cache basi + form demo dua kolom (2026-11-11)
+
+- **Penyebab tampilan lama**: dev server berjalan bersamaan dengan `next build` dan memakai cache `.next/dev` lama. Cache dev dihapus, server dev dijalankan ulang, dan halaman dikompilasi fresh.
+- **Form demo**: `DemoRequestForm` sekarang memakai grid dua kolom (`auth-form-row`) seperti form daftar, sehingga desktop menampilkan perusahaan/nama dan email/WA sejajar, logo tengah + footer tetap, tanpa scroll (1440×900 dan 1280×720).
+- **Performa dev**: dengan `.env.development.local` ke Postgres lokal, log dev menunjukkan dashboard 462 ms, proyek 471 ms, pengaturan 140–500 ms (sebelumnya 15–40 detik ke Supabase Sydney).
+- **Verifikasi**: `npm run check` lulus; `npm test` **43/43**; screenshot `daftar-demo-dev-1440.png` dan `daftar-demo-dev-1280x720.png`.

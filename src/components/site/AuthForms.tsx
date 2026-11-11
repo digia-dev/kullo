@@ -163,25 +163,29 @@ export function DemoRequestForm() {
 
   return (
     <form action={action} style={{ display: "grid", gap: 14 }}>
-      <label className="field">
-        <span className="label">Nama perusahaan</span>
-        <input className="input" name="companyName" required placeholder="PT Contoh Digital" />
-      </label>
-      <label className="field">
-        <span className="label">Nama Anda</span>
-        <input className="input" name="contactName" autoComplete="name" required placeholder="Nama lengkap" />
-      </label>
-      <label className="field">
-        <span className="label">Email</span>
-        <div style={{ position: "relative" }}>
-          <Mail size={16} aria-hidden style={{ position: "absolute", left: 12, top: 10, color: "var(--text-muted)" }} />
-          <input className="input" style={{ paddingLeft: 36 }} type="email" name="email" autoComplete="email" required placeholder="nama@perusahaan.id" />
-        </div>
-      </label>
-      <label className="field">
-        <span className="label">Nomor WhatsApp</span>
-        <input className="input" name="phone" inputMode="tel" placeholder="08xx xxxx xxxx" />
-      </label>
+      <div className="auth-form-row">
+        <label className="field">
+          <span className="label">Nama perusahaan</span>
+          <input className="input" name="companyName" required placeholder="PT Contoh Digital" />
+        </label>
+        <label className="field">
+          <span className="label">Nama Anda</span>
+          <input className="input" name="contactName" autoComplete="name" required placeholder="Nama lengkap" />
+        </label>
+      </div>
+      <div className="auth-form-row">
+        <label className="field">
+          <span className="label">Email</span>
+          <div style={{ position: "relative" }}>
+            <Mail size={16} aria-hidden style={{ position: "absolute", left: 12, top: 10, color: "var(--text-muted)" }} />
+            <input className="input" style={{ paddingLeft: 36 }} type="email" name="email" autoComplete="email" required placeholder="nama@perusahaan.id" />
+          </div>
+        </label>
+        <label className="field">
+          <span className="label">Nomor WhatsApp</span>
+          <input className="input" name="phone" inputMode="tel" placeholder="08xx xxxx xxxx" />
+        </label>
+      </div>
       {state.error && (
         <p className="error-text" role="alert" style={{ margin: 0 }}>
           {state.error}
