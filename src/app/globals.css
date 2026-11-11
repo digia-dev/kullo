@@ -5038,3 +5038,39 @@ a.task-attachment-name:hover { color: var(--accent); text-decoration: underline;
   .task-file-row { display: grid; grid-template-columns: auto minmax(0, 1fr); }
   .task-file-row .btn-primary { grid-column: 2; justify-self: start; }
 }
+
+/* ---------------------- Auth: fit to desktop viewport ---------------------- */
+.auth-form-row { display: grid; gap: 14px; }
+
+@media (min-width: 960px) {
+  .auth-page {
+    height: 100dvh;
+    min-height: 0;
+    padding: 18px 20px 14px;
+    overflow: hidden;
+  }
+  .auth-main {
+    width: min(600px, 100%);
+    gap: 10px;
+  }
+  .auth-card { padding: 20px 26px 18px; }
+  .auth-heading { margin-bottom: 12px; gap: 3px; }
+  .auth-card form { gap: 10px !important; }
+  .auth-card .field { gap: 3px; }
+  .auth-card .input { height: 36px; }
+  .auth-card .help { font-size: 11px; line-height: 1.35; }
+  .auth-card .btn-lg { min-height: 40px; }
+  .auth-form-row { grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+  .auth-brand { padding-bottom: 0; }
+  .auth-help-link { margin-top: 10px; padding-top: 10px; font-size: 11.5px; }
+  .auth-page .auth-corner img { max-height: 26vh; width: auto; }
+}
+
+@media (min-width: 960px) and (max-height: 780px) {
+  .auth-brand,
+  .auth-footer-brand,
+  .auth-panel-foot { display: none; }
+  .auth-card { padding: 16px 24px 14px; }
+  .auth-main { gap: 8px; }
+  .auth-heading { margin-bottom: 10px; }
+}

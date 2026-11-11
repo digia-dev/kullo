@@ -120,7 +120,7 @@ export default function TentangPage() {
           </div>
           <p className="help" style={{ marginTop: 18, maxWidth: "70ch" }}>
             Asisten AI, otomatisasi alur kerja, integrasi eksternal, dan notifikasi email serta push masih
-            berstatus peta jalan. Harga paket berbayar juga belum ditetapkan.
+            berstatus peta jalan. Harga paket berbayar tercantum di halaman harga.
           </p>
         </div>
       </section>

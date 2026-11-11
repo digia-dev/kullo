@@ -64,7 +64,7 @@ export function LoginForm({ next }: { next?: string }) {
   );
 }
 
-export function RegisterForm() {
+export function RegisterForm({ defaultPlan = "free" }: { defaultPlan?: string }) {
   const [state, action, pending] = useActionState(requestSignupAction, initialRequest);
 
   if (state.ok) {
@@ -95,42 +95,46 @@ export function RegisterForm() {
           <input className="input" name="orgName" autoComplete="organization" required placeholder="PT Contoh Digital" />
         </label>
       </div>
-      <label className="field">
-        <span className="label">Email kerja</span>
-        <div style={{ position: "relative" }}>
-          <Mail size={16} aria-hidden style={{ position: "absolute", left: 12, top: 10, color: "var(--text-muted)" }} />
-          <input className="input" style={{ paddingLeft: 36 }} type="email" name="email" autoComplete="email" required placeholder="nama@perusahaan.id" />
-        </div>
-      </label>
-      <label className="field">
-        <span className="label">Nomor WhatsApp</span>
-        <input className="input" name="phone" inputMode="tel" placeholder="08xx xxxx xxxx" />
-      </label>
-      <label className="field">
-        <span className="label">Paket</span>
-        <select className="input" name="plan" defaultValue="free">
-          <option value="free">Gratis</option>
-          <option value="pro">Pro — harga belum ditetapkan</option>
-          <option value="business">Business — sesuai kebutuhan</option>
-        </select>
-        <span className="help">Paket berbayar dikonfirmasi admin melalui invoice sebelum akses dibuka.</span>
-      </label>
-      <label className="field">
-        <span className="label">Kata sandi</span>
-        <div style={{ position: "relative" }}>
-          <KeyRound size={16} aria-hidden style={{ position: "absolute", left: 12, top: 10, color: "var(--text-muted)" }} />
-          <input
-            className="input"
-            style={{ paddingLeft: 36 }}
-            type="password"
-            name="password"
-            autoComplete="new-password"
-            required
-            minLength={8}
-            placeholder="Minimal 8 karakter"
-          />
-        </div>
-      </label>
+      <div className="auth-form-row">
+        <label className="field">
+          <span className="label">Email kerja</span>
+          <div style={{ position: "relative" }}>
+            <Mail size={16} aria-hidden style={{ position: "absolute", left: 12, top: 10, color: "var(--text-muted)" }} />
+            <input className="input" style={{ paddingLeft: 36 }} type="email" name="email" autoComplete="email" required placeholder="nama@perusahaan.id" />
+          </div>
+        </label>
+        <label className="field">
+          <span className="label">Nomor WhatsApp</span>
+          <input className="input" name="phone" inputMode="tel" placeholder="08xx xxxx xxxx" />
+        </label>
+      </div>
+      <div className="auth-form-row">
+        <label className="field">
+          <span className="label">Paket</span>
+          <select className="input" name="plan" defaultValue={defaultPlan}>
+            <option value="free">Gratis</option>
+            <option value="pro">Pro — Rp399.000/bulan (25 anggota)</option>
+            <option value="business">Bisnis — Rp1.199.000/bulan (100 anggota)</option>
+          </select>
+          <span className="help">Paket berbayar dikonfirmasi admin melalui invoice sebelum akses dibuka.</span>
+        </label>
+        <label className="field">
+          <span className="label">Kata sandi</span>
+          <div style={{ position: "relative" }}>
+            <KeyRound size={16} aria-hidden style={{ position: "absolute", left: 12, top: 10, color: "var(--text-muted)" }} />
+            <input
+              className="input"
+              style={{ paddingLeft: 36 }}
+              type="password"
+              name="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              placeholder="Minimal 8 karakter"
+            />
+          </div>
+        </label>
+      </div>
       {state.error && (
         <p className="error-text" role="alert" style={{ margin: 0 }}>
           {state.error}
@@ -139,9 +143,6 @@ export function RegisterForm() {
       <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
         {pending ? "Mengirim permintaan…" : "Kirim permintaan pendaftaran"} <ArrowRight size={17} />
       </button>
-      <p className="help" style={{ margin: 0, textAlign: "center" }}>
-        Sudah punya akun? <Link href="/masuk" className="textlink">Masuk</Link>
-      </p>
     </form>
   );
 }

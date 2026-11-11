@@ -422,7 +422,7 @@ export async function seed() {
     ["cmt_01", "tsk_01", "usr_alya", "Untuk onboarding, tahan dulu fitur undangan massal. Satu per satu lebih jelas untuk beta.", 30],
     ["cmt_02", "tsk_01", "usr_rizky", "@Alya Prameswari setuju. Saya sudah pasang validasi email dan peran di server, bukan hanya di form.", 26],
     ["cmt_03", "tsk_01", "usr_budi", "Empty state untuk anggota baru sudah saya rapikan. Screenshot ada di dokumen proyek.", 20],
-    ["cmt_04", "tsk_02", "usr_rizky", "Halaman harga pakai label \"Hubungi kami\" untuk Pro dan Business, karena harga belum ditetapkan.", 18],
+    ["cmt_04", "tsk_02", "usr_rizky", "Halaman harga memakai angka Rp399rb dan Rp1,199jt. Jangan tambahkan klaim pengguna atau testimoni yang belum ada.", 18],
     ["cmt_05", "tsk_02", "usr_maya", "Copy-nya sudah saya baca. Tolong jangan tambahkan angka pengguna atau testimoni yang belum ada.", 12],
     ["cmt_06", "tsk_09", "usr_nadia", "Slot 8 dan 12 masih kosong. Saya butuh konfirmasi topik webinar sebelum mengisi.", 8],
     ["cmt_07", "tsk_09", "usr_maya", "Isi dengan panduan 5 menit dan alur persetujuan. Dua-duanya sudah bisa dipakai di produk.", 5],
@@ -654,7 +654,7 @@ export async function seed() {
     .values([
       { id: "plan_free", key: "free", name: "Free", memberLimit: 5, projectLimit: 3, features: JSON.stringify(["1 organisasi", "5 anggota", "3 proyek", "Kanban dan list", "Chat dasar"]) },
       { id: "plan_pro", key: "pro", name: "Pro", memberLimit: 25, projectLimit: null, features: JSON.stringify(["1 organisasi", "25 anggota", "Proyek tanpa batas", "Chat penuh", "Laporan lanjutan", "Persetujuan lanjutan"]) },
-      { id: "plan_business", key: "business", name: "Business", memberLimit: null, projectLimit: null, features: JSON.stringify(["Organisasi tanpa batas", "Anggota sesuai kebutuhan", "Proyek tanpa batas", "Dukungan prioritas", "Kontrol izin lanjutan"]) },
+      { id: "plan_business", key: "business", name: "Business", memberLimit: 100, projectLimit: null, features: JSON.stringify(["Beberapa organisasi", "Hingga 100 anggota", "Proyek tanpa batas", "Dukungan prioritas", "Kontrol izin lanjutan"]) },
     ]);
 
   await db.insert(subscriptions)

@@ -8,9 +8,10 @@ export const metadata: Metadata = {
   description: "Ajukan pendaftaran organisasi atau minta akses demo yang diverifikasi admin.",
 };
 
-export default async function DaftarPage({ searchParams }: { searchParams: Promise<{ mode?: string }> }) {
-  const { mode } = await searchParams;
+export default async function DaftarPage({ searchParams }: { searchParams: Promise<{ mode?: string; plan?: string }> }) {
+  const { mode, plan } = await searchParams;
   const demo = mode === "demo";
+  const defaultPlan = ["free", "pro", "business"].includes(plan ?? "") ? (plan as string) : "free";
 
   return (
     <AuthShell
@@ -29,7 +30,7 @@ export default async function DaftarPage({ searchParams }: { searchParams: Promi
             href="/daftar"
             role="tab"
             aria-selected={!demo}
-            className={`btn btn-sm ${demo ? "btn-secondary" : "btn-primary"}`}
+            className={`btn btn-sm ${demo ? "btn-outline" : "btn-primary"}`}
             style={{ justifyContent: "center" }}
           >
             Daftar
@@ -38,14 +39,14 @@ export default async function DaftarPage({ searchParams }: { searchParams: Promi
             href="/daftar?mode=demo"
             role="tab"
             aria-selected={demo}
-            className={`btn btn-sm ${demo ? "btn-primary" : "btn-secondary"}`}
+            className={`btn btn-sm ${demo ? "btn-primary" : "btn-outline"}`}
             style={{ justifyContent: "center" }}
           >
             Coba demo
           </Link>
         </div>
 
-        {demo ? <DemoRequestForm /> : <RegisterForm />}
+        {demo ? <DemoRequestForm /> : <RegisterForm defaultPlan={defaultPlan} />}
 
         <p className="help" style={{ margin: 0, textAlign: "center" }}>
           Sudah punya akses? <Link href="/masuk" className="textlink">Masuk</Link>

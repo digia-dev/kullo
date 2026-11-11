@@ -409,3 +409,13 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - **Supabase**: migrasi `drizzle/0001_overjoyed_ultimates.sql` (access_requests, mail_outbox) diterapkan; RLS aktif di kedua tabel; seed ulang dengan akun demo baru.
 - **Verifikasi**: `npm run check` lulus; `npm test` **43/43** (Postgres lokal); alur demo dan pendaftaran diuji end-to-end lokal (permintaan → invoice → bukti → setujui → magic link → login kata sandi).
 - **Bukti**: `replica/screens/header-v2-1440.png`, `header-v2-390.png`, `login-no-demo-1440.png`, `daftar-1440.png`, `daftar-demo-1440.png`, `daftar-demo-390.png`, `admin-access-1440.png`, `admin-access-approved-1440.png`.
+
+### Batch 28: auth fit-to-screen, harga pasar, duplikasi Masuk (2026-11-11)
+
+- **Auth desktop tanpa scroll**: `.auth-page` dikunci ke `100dvh` + `overflow:hidden` pada ≥960px; kartu dibuat lebih rapat (padding 20/26px, input 36px, gap 10px), dan form daftar memakai dua kolom (email/WA, paket/password). Terukur `scrollHeight = innerHeight` di 1440×900 dan 1280×720 untuk `/masuk`, `/daftar`, dan `/daftar?mode=demo`. Mobile tetap satu kolom dan bisa scroll.
+- **Teks Masuk ganda**: tautan “Sudah punya akun? Masuk” di dalam form dihapus; hanya tersisa satu tautan “Sudah punya akses? Masuk” di bawah kartu. Tab Daftar/Coba demo kini memakai tombol outline agar terlihat sebagai tab.
+- **Harga pasar**: Pro **Rp399.000/bulan** (hingga 25 anggota), Bisnis **Rp1.199.000/bulan** (hingga 100 anggota, beberapa organisasi). Acuan riset: Kolabo Rp500.000/bulan untuk 35 pengguna (kolabo.id) dan Circle mulai US$89/bulan setara ±Rp1,47 juta (circle.so/pricing, Des 2026). Kullo sengaja sedikit lebih murah.
+- **Konsistensi**: metadata/lede/notes halaman harga, FAQ di `guides.ts`, ketentuan, tentang, label paket di form daftar, `access-actions`, dan seed demo diperbarui. Catatan baru: harga belum termasuk PPN dan aktivasi setelah konfirmasi admin.
+- **Preselect paket**: CTA harga mengarah ke `/daftar?plan=pro` atau `?plan=business`; form memilih paket tersebut otomatis.
+- **Verifikasi**: `npm run check` lulus; `npm test` **43/43** (test harga diperbarui); contrast 20 pair 0 gagal; sweep bersih.
+- **Bukti**: `replica/screens/login-v3-1440.png`, `daftar-v3-1440.png`, `daftar-v3-1280x720.png`, `daftar-demo-v3-1440.png`, `daftar-v3-390.png`, `harga-v3-1440.png`.

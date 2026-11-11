@@ -62,11 +62,11 @@ test.describe("marketing pages", () => {
     await expect(page.locator(".market-h1").first()).toBeVisible();
   });
 
-  test("pricing page is honest about undisclosed prices", async ({ page }) => {
+  test("pricing page lists rupiah prices and billing notes", async ({ page }) => {
     await page.goto("/harga");
-    await expect(page.getByText(/belum ditetapkan/i).first()).toBeVisible();
-    await expect(page.getByText(/hubungi tim/i).first()).toBeVisible();
-    await expect(page.getByText(/Rp\s?\d/i)).toHaveCount(0);
+    await expect(page.getByText("Rp399.000").first()).toBeVisible();
+    await expect(page.getByText("Rp1.199.000").first()).toBeVisible();
+    await expect(page.getByText(/belum termasuk PPN/i).first()).toBeVisible();
   });
 
   test("auth pages render without marketing chrome", async ({ page }) => {

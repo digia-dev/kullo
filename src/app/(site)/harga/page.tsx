@@ -8,13 +8,13 @@ import { SUPPORT_FAQ as FAQ } from "@/content/guides";
 export const metadata: Metadata = {
   title: "Paket dan harga",
   description:
-    "Bandingkan paket Gratis, Pro, dan Bisnis. Harga Pro dan Bisnis belum ditetapkan, jadi kami tidak menampilkan angka sementara.",
+    "Bandingkan paket Gratis, Pro, dan Bisnis. Harga dalam Rupiah per bulan, belum termasuk PPN.",
 };
 
 const NOTES = [
   "Paket Gratis tidak memerlukan kartu kredit.",
   "Batas anggota dan proyek diperiksa di server saat dipakai.",
-  "Harga Pro dan Bisnis ditetapkan setelah riset pasar selesai. Sampai saat itu, hubungi kami.",
+  "Harga per bulan, belum termasuk PPN. Pembayaran paket berbayar melalui invoice dan diaktifkan setelah konfirmasi admin.",
 ];
 
 export default function HargaPage() {
@@ -23,7 +23,7 @@ export default function HargaPage() {
       <PageHero
         eyebrow="Paket"
         title="Mulai gratis. Naik paket saat tim tumbuh."
-        lede="Tiga paket dengan batas yang jelas. Kami belum menetapkan harga Pro dan Bisnis, jadi halaman ini tidak menampilkan angka."
+        lede="Tiga paket dengan batas yang jelas. Harga Pro dan Bisnis dalam Rupiah per bulan, lebih hemat dibanding alat serupa untuk kebutuhan yang sama."
         actions={[{ label: "Mulai dengan paket Gratis", href: "/daftar" }, { label: "Tanya tim", href: "/dukungan#hubungi", variant: "outline" }]}
       />
 

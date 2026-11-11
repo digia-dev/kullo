@@ -17,8 +17,8 @@ export type RequestState = { ok?: boolean; error?: string; message?: string; sta
 
 const PLANS: Record<string, string> = {
   free: "Gratis",
-  pro: "Pro (harga belum ditetapkan)",
-  business: "Business (sesuai kebutuhan)",
+  pro: "Pro — Rp399.000/bulan",
+  business: "Bisnis — Rp1.199.000/bulan",
 };
 
 function token() {

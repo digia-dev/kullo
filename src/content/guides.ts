@@ -186,7 +186,7 @@ export const SUPPORT_FAQ: FAQ[] = [
   {
     question: "Berapa harga paket Pro dan Bisnis?",
     answer:
-      "Belum ditetapkan. Harga sedang divalidasi lewat riset pasar, jadi kami belum menampilkan angka rupiah. Untuk kebutuhan saat ini, hubungi tim lewat formulir kontak.",
+      "Pro Rp399.000 per bulan untuk hingga 25 anggota. Bisnis Rp1.199.000 per bulan untuk hingga 100 anggota dan beberapa organisasi. Harga belum termasuk PPN; pembayaran melalui invoice dan akses diaktifkan setelah admin mengonfirmasi.",
   },
   {
     question: "Di mana data organisasi saya disimpan?",

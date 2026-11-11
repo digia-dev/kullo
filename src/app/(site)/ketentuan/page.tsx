@@ -40,7 +40,7 @@ const SECTIONS = [
   {
     heading: "Paket dan pembayaran",
     body: [
-      "Paket Gratis disediakan tanpa biaya dengan batas yang tercantum di halaman harga. Harga paket berbayar belum ditetapkan; saat ditetapkan, ketentuan pembayaran akan diumumkan sebelum Anda berlangganan.",
+      "Paket Gratis disediakan tanpa biaya dengan batas yang tercantum di halaman harga. Paket Pro Rp399.000 per bulan dan Bisnis Rp1.199.000 per bulan, belum termasuk PPN. Pembayaran melalui invoice dan akses diaktifkan setelah konfirmasi admin.",
       "Saat ini Kullo tidak memproses pembayaran apa pun di dalam aplikasi.",
     ],
   },
