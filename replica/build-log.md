@@ -419,3 +419,12 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - **Preselect paket**: CTA harga mengarah ke `/daftar?plan=pro` atau `?plan=business`; form memilih paket tersebut otomatis.
 - **Verifikasi**: `npm run check` lulus; `npm test` **43/43** (test harga diperbarui); contrast 20 pair 0 gagal; sweep bersih.
 - **Bukti**: `replica/screens/login-v3-1440.png`, `daftar-v3-1440.png`, `daftar-v3-1280x720.png`, `daftar-demo-v3-1440.png`, `daftar-v3-390.png`, `harga-v3-1440.png`.
+
+### Batch 29: email demo berdesain + kredensial + footer auth desktop (2026-11-11)
+
+- **Email demo**: template HTML transaksional baru (`src/lib/email-template.ts`) memakai table + inline style, wordmark Kullo, kartu kredensial, tombol masuk, tautan langsung, dan footer. Teks fallback tetap dikirim untuk klien yang memblokir HTML.
+- **Akun demo nyata**: saat admin menyetujui permintaan demo, sistem membuat kata sandi acak `Kullo-…`, menyimpan hash-nya, membuat user + membership **owner** di organisasi baru bernama perusahaan, dan mengirim email berisi email, kata sandi, serta magic link. Diuji: user hasil approval bisa login dengan kata sandi dari email dan masuk ke dashboard organisasi tersebut.
+- **Admin outbox**: isi email (termasuk kata sandi dan tautan) tetap tersimpan sehingga bisa dikirim manual bila SMTP gagal.
+- **Auth desktop**: logo di atas tengah, baris brand + copyright/ketentuan/privasi/dukungan di bawah tetap tampil pada desktop pendek (1280×720), tanpa scroll — `scrollHeight = innerHeight`, `auth-brand` dan `auth-panel-foot` terdeteksi.
+- **Verifikasi**: `npm run check` lulus; `npm test` **43/43**; alur demo → approve → login kredensial lulus di Postgres lokal; email HTML dirender dan diperiksa visual.
+- **Bukti**: `replica/screens/demo-email-660.png`, `login-v4-1280x720.png`, `daftar-v4-1280x720.png`.

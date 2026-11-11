@@ -30,6 +30,7 @@ type MailInput = {
   to: string;
   subject: string;
   body: string;
+  html?: string;
   kind?: string;
   requestId?: string | null;
 };
@@ -55,6 +56,7 @@ async function sendViaSmtp(input: MailInput) {
     to: input.to,
     subject: input.subject,
     text: input.body,
+    html: input.html,
   });
 }
 
@@ -71,6 +73,7 @@ async function sendViaResend(input: MailInput) {
       to: [input.to],
       subject: input.subject,
       text: input.body,
+      html: input.html,
     }),
   });
   if (!response.ok) throw new Error(`Resend ${response.status}`);

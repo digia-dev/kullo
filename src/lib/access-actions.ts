@@ -10,6 +10,7 @@ import { hashPassword } from "@/lib/password";
 import { provisionWorkspace } from "@/lib/provision";
 import { appUrl, adminEmails, isPlatformAdmin, sendMail } from "@/lib/mail";
 import { putObject, contentTypeFor } from "@/lib/storage";
+import { renderAccessEmail, renderDemoAccessEmail } from "@/lib/email-template";
 import { newId, nowISO } from "@/lib/utils";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -191,12 +192,16 @@ export async function approveAccessAction(formData: FormData) {
   const request = (await db.select().from(accessRequests).where(eq(accessRequests.id, id)))[0];
   if (!request || request.status === "approved") return;
 
+  const demoPassword =
+    request.kind === "demo" ? `Kullo-${crypto.randomBytes(6).toString("base64url")}` : null;
+  const passwordHash = request.passwordHash ?? hashPassword(demoPassword as string);
+
   const result = await db.transaction(async (tx) =>
     provisionWorkspace(tx, {
       orgName: request.companyName,
       name: request.contactName,
       email: request.email,
-      passwordHash: request.passwordHash ?? hashPassword(crypto.randomBytes(18).toString("base64url")),
+      passwordHash,
       plan: request.plan,
     }),
   );
@@ -206,20 +211,60 @@ export async function approveAccessAction(formData: FormData) {
     .set({ status: "approved", userId: result.userId, orgId: result.orgId, updatedAt: nowISO() })
     .where(eq(accessRequests.id, id));
 
-  await sendMail({
-    to: request.email,
-    subject: `Akses Kullo untuk ${request.companyName} sudah aktif`,
-    body: [
-      `Halo ${request.contactName},`,
-      "",
-      `Akses Kullo untuk ${request.companyName} sudah aktif.`,
-      `Masuk otomatis melalui tautan ini: ${appUrl()}/akses/klaim/${request.token}`,
-      "",
-      "Tautan ini bersifat rahasia. Jangan teruskan ke orang lain.",
-    ].join("\n"),
-    kind: "access-approved",
-    requestId: request.id,
-  });
+  const loginUrl = `${appUrl()}/masuk`;
+  const magicUrl = `${appUrl()}/akses/klaim/${request.token}`;
+
+  if (request.kind === "demo" && demoPassword) {
+    await sendMail({
+      to: request.email,
+      subject: `Demo Kullo untuk ${request.companyName} sudah aktif`,
+      body: [
+        `Halo ${request.contactName},`,
+        "",
+        `Ruang kerja demo ${request.companyName} sudah aktif.`,
+        `Email: ${request.email}`,
+        `Kata sandi: ${demoPassword}`,
+        `Masuk: ${loginUrl}`,
+        `Atau tautan langsung: ${magicUrl}`,
+        "",
+        "Tautan dan kata sandi bersifat rahasia. Jangan teruskan ke orang lain.",
+      ].join("\n"),
+      html: renderDemoAccessEmail({
+        name: request.contactName,
+        company: request.companyName,
+        email: request.email,
+        password: demoPassword,
+        loginUrl,
+        magicUrl,
+      }),
+      kind: "demo-approved",
+      requestId: request.id,
+    });
+  } else {
+    await sendMail({
+      to: request.email,
+      subject: `Akses Kullo untuk ${request.companyName} sudah aktif`,
+      body: [
+        `Halo ${request.contactName},`,
+        "",
+        `Akses Kullo untuk ${request.companyName} sudah aktif.`,
+        `Masuk dengan email dan kata sandi yang Anda daftarkan: ${loginUrl}`,
+        `Atau tautan langsung: ${magicUrl}`,
+        "",
+        "Tautan ini bersifat rahasia. Jangan teruskan ke orang lain.",
+      ].join("\n"),
+      html: renderAccessEmail({
+        title: `Akses ${request.companyName} sudah aktif`,
+        intro: `Halo ${request.contactName}, akun Anda sudah aktif. Masuk dengan email dan kata sandi yang Anda daftarkan, atau gunakan tautan langsung di bawah.`,
+        company: request.companyName,
+        ctaLabel: "Masuk ke Kullo",
+        ctaUrl: magicUrl,
+        footnote: "Tautan ini bersifat rahasia dan hanya berlaku untuk akun Anda.",
+      }),
+      kind: "access-approved",
+      requestId: request.id,
+    });
+  }
   revalidatePath("/app/admin/akses");
 }
 
