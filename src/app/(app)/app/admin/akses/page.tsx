@@ -25,7 +25,12 @@ export default async function AdminAccessPage() {
   const ctx = await requireApp();
   if (!isPlatformAdmin(ctx.user.email)) notFound();
 
-  const [requests, outbox, audit] = await Promise.all([getAccessRequests(), getMailOutbox(), getPlatformAudit()]);
+  // Keep these reads sequential. Running all three at once occasionally
+  // stalled the render for the full serverless timeout against the pooled
+  // Supabase connection; one after another finishes in under a second.
+  const requests = await getAccessRequests();
+  const outbox = await getMailOutbox();
+  const audit = await getPlatformAudit();
 
   return (
     <>
