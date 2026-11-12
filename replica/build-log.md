@@ -481,3 +481,15 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - **Uji dengan rendygiantara@gmail.com** (lokal): approval demo → verifikasi email → login password hasil approval → reset password → login password baru. Berhasil.
 - **Database**: migrasi `0003_motionless_black_knight.sql` + `0004_careless_elektra.sql` diterapkan lokal dan Supabase; 8/8 user Supabase terverifikasi; RLS `auth_tokens` aktif.
 - **Verifikasi**: `npm run check` lulus; `npm test` **43/43**.
+
+### Batch 35: deploy produksi + perbaikan timeout admin (2026-11-12)
+
+- **Deploy**: `d750749` dan `765673e` di-push ke `origin/main`; Vercel produksi `kullo-9vrrqprt2` berstatus Ready.
+- **Bug ditemukan saat uji produksi**: `/app/admin/akses` 504 setelah 300 detik. Tiga query dijalankan bersamaan lewat Supabase pooler dan render tidak selesai; query diubah menjadi berurutan. Halaman kini merespons ~0,4 detik.
+- **Uji link asli produksi** dengan `rendygiantara@gmail.com`:
+  - approval request Supabase `proof_received` → user dibuat, email verifikasi + akses terkirim (`sent_at` terisi);
+  - `https://kullo.web.id/verifikasi/<token>` → `/masuk?verified=1`, `email_verified_at` terisi, token `used_at` terisi;
+  - `/lupa-sandi` → email reset → `https://kullo.web.id/reset-sandi/<token>` → kata sandi baru;
+  - login dengan kata sandi baru → `/app/dashboard` dengan organisasi Digia.
+- **Canonical**: `kullo.web.id` redirect 308 ke `www.kullo.web.id`; path dan query dipertahankan sehingga tautan email tetap bekerja.
+- **Verifikasi**: `npm run check` lulus; `npm test` **43/43**; route `/verifikasi`, `/lupa-sandi`, `/reset-sandi/<token>` produksi mengembalikan 200 (sebelumnya 404).
