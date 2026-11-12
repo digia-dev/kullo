@@ -34,6 +34,8 @@ export async function acceptInviteAction(_prev: InviteState, formData: FormData)
     if (!verifyPassword(current, user.passwordHash)) return { error: "Kata sandi akun Anda tidak cocok. Periksa ejaan, lalu coba lagi." };
   }
 
+  await db.update(users).set({ emailVerifiedAt: nowISO() }).where(eq(users.id, user.id));
+
   await db.update(memberships)
     .set({ status: "active", inviteTokenHash: null, inviteExpiresAt: null, joinedAt: nowISO() })
     .where(eq(memberships.id, membership.id));

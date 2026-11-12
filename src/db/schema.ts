@@ -32,6 +32,7 @@ export const users = pgTable("users", {
   phone: text("phone"),
   avatarColor: text("avatar_color").notNull().default("#0f6cbd"),
   avatarKey: text("avatar_key"),
+  emailVerifiedAt: text("email_verified_at"),
   createdAt: text("created_at").notNull().default(now),
 });
 
@@ -633,4 +634,18 @@ export const platformAudit = pgTable(
     createdAt: text("created_at").notNull().default(now),
   },
   (t) => [index("platform_audit_created").on(t.createdAt)],
+);
+
+export const authTokens = pgTable(
+  "auth_tokens",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: text("expires_at").notNull(),
+    usedAt: text("used_at"),
+    createdAt: text("created_at").notNull().default(now),
+  },
+  (t) => [index("auth_tokens_user").on(t.userId, t.kind)],
 );

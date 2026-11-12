@@ -4,12 +4,13 @@ import crypto from "node:crypto";
 import { and, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db/client";
-import { accessRequests, mailOutbox, platformAudit } from "@/db/schema";
+import { accessRequests, mailOutbox, platformAudit, users } from "@/db/schema";
 import { requireApp } from "@/lib/auth";
 import { hashPassword } from "@/lib/password";
 import { provisionWorkspace } from "@/lib/provision";
 import { appUrl, adminEmails, isPlatformAdmin, sendMail } from "@/lib/mail";
 import { putObject, contentTypeFor } from "@/lib/storage";
+import { issueAuthToken } from "@/lib/auth-tokens";
 import { renderAccessEmail, renderDemoAccessEmail } from "@/lib/email-template";
 import { newId, nowISO } from "@/lib/utils";
 import { rateLimit } from "@/lib/rate-limit";
@@ -213,6 +214,13 @@ export async function approveAccessAction(formData: FormData) {
   const request = (await db.select().from(accessRequests).where(eq(accessRequests.id, id)))[0];
   if (!request || request.status === "approved") return;
 
+  const existingUser = (await db.select({ id: users.id }).from(users).where(eq(users.email, request.email)))[0];
+  if (existingUser) {
+    await db.update(accessRequests).set({ note: "Email sudah memiliki akun. Minta pemohon masuk atau reset kata sandi.", updatedAt: nowISO() }).where(eq(accessRequests.id, id));
+    revalidatePath("/app/admin/akses");
+    return;
+  }
+
   const demoPassword =
     request.kind === "demo" ? `Kullo-${crypto.randomBytes(6).toString("base64url")}` : null;
   const passwordHash = request.passwordHash ?? hashPassword(demoPassword as string);
@@ -232,6 +240,30 @@ export async function approveAccessAction(formData: FormData) {
     .set({ status: "approved", userId: result.userId, orgId: result.orgId, updatedAt: nowISO() })
     .where(eq(accessRequests.id, id));
   await audit(ctx, "approved", id, request.companyName);
+
+  const verifyRaw = await issueAuthToken(result.userId, "verify", 24 * 60 * 60_000);
+  const verifyUrl = `${appUrl()}/verifikasi/${verifyRaw}`;
+  await sendMail({
+    to: request.email,
+    subject: "Verifikasi email Kullo",
+    body: [
+      `Halo ${request.contactName},`,
+      "",
+      "Konfirmasi alamat email ini untuk mengaktifkan login dengan kata sandi.",
+      verifyUrl,
+      "",
+      "Tautan berlaku 24 jam. Tautan masuk di email sebelumnya juga otomatis memverifikasi email.",
+    ].join("\n"),
+    html: renderAccessEmail({
+      title: "Verifikasi email",
+      intro: `Halo ${request.contactName}, konfirmasi alamat email ini untuk mengaktifkan login dengan kata sandi. Tautan masuk juga otomatis memverifikasi email.`,
+      company: request.companyName,
+      ctaLabel: "Verifikasi email",
+      ctaUrl: verifyUrl,
+    }),
+    kind: "email-verification",
+    requestId: request.id,
+  });
 
   const loginUrl = `${appUrl()}/masuk`;
   const magicUrl = `${appUrl()}/akses/klaim/${request.token}`;

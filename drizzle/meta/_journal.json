@@ -22,6 +22,20 @@
       "when": 1794458059517,
       "tag": "0002_cloudy_scarecrow",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794461121229,
+      "tag": "0003_motionless_black_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794461209046,
+      "tag": "0004_careless_elektra",
+      "breakpoints": true
     }
   ]
 }

@@ -469,3 +469,15 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - **Database**: migrasi `drizzle/0002_cloudy_scarecrow.sql` (platform_audit) diterapkan lokal + Supabase; RLS aktif.
 - **Verifikasi**: `npm run check` lulus; `npm test` **43/43** (dengan CSP aktif).
 - **Sisa backlog**: 2FA, reset password, verifikasi email, token split/expiry, rate limit persisten, pagination admin, upload langsung storage, recurring tasks, API publik, i18n, staging/CI.
+
+### Batch 34: reset password + verifikasi email (2026-11-12)
+
+- **Tabel `auth_tokens`**: token reset (60 menit) dan verifikasi (24 jam), disimpan sebagai hash SHA-256, sekali pakai.
+- **Lupa kata sandi**: `/lupa-sandi` → email bertautan `/reset-sandi/<token>`; setelah simpan, semua sesi user dicabut dan email ditandai terverifikasi.
+- **Verifikasi email**: kolom `users.email_verified_at`; halaman `/verifikasi` untuk kirim ulang dan route `/verifikasi/<token>` untuk konfirmasi.
+- **Alur approval**: menyetujui demo/pendaftaran kini mengirim email verifikasi terpisah; klaim magic link otomatis menandai email terverifikasi.
+- **Login**: akun yang belum terverifikasi ditolak dengan pesan dan tautan kirim ulang; user seed/backfill ditandai terverifikasi.
+- **Guard duplikat**: approval berhenti dengan catatan jika email sudah punya akun, bukan error constraint.
+- **Uji dengan rendygiantara@gmail.com** (lokal): approval demo → verifikasi email → login password hasil approval → reset password → login password baru. Berhasil.
+- **Database**: migrasi `0003_motionless_black_knight.sql` + `0004_careless_elektra.sql` diterapkan lokal dan Supabase; 8/8 user Supabase terverifikasi; RLS `auth_tokens` aktif.
+- **Verifikasi**: `npm run check` lulus; `npm test` **43/43**.

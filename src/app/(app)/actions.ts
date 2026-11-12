@@ -2217,6 +2217,7 @@ export async function inviteMemberAction(formData: FormData): Promise<ActionResu
         phone: null,
         avatarColor: "#0f6cbd",
         avatarKey: null,
+        emailVerifiedAt: null,
         createdAt: nowISO(),
       };
       await db.insert(users).values(user);

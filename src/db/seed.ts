@@ -116,7 +116,7 @@ export async function seed() {
   ] as const;
 
   for (const [id, name, email, title, phone, color] of people) {
-    await db.insert(users).values({ id, name, email, passwordHash, title, phone, avatarColor: color });
+    await db.insert(users).values({ id, name, email, passwordHash, title, phone, avatarColor: color, emailVerifiedAt: new Date().toISOString() });
   }
 
   const depts = [

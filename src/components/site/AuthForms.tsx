@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { ArrowRight, KeyRound, Mail, UserRound } from "lucide-react";
-import { loginAction, type AuthState } from "@/lib/auth-actions";
+import {
+  loginAction,
+  requestPasswordResetAction,
+  resendVerificationAction,
+  resetPasswordAction,
+  type AuthState,
+} from "@/lib/auth-actions";
 import {
   requestDemoAction,
   requestSignupAction,
@@ -54,11 +60,17 @@ export function LoginForm({ next }: { next?: string }) {
           {state.error}
         </p>
       )}
+      <p className="help" style={{ margin: 0, textAlign: "right" }}>
+        <Link href="/lupa-sandi" className="textlink">Lupa kata sandi?</Link>
+      </p>
       <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
         {pending ? "Memeriksa…" : "Masuk"} <ArrowRight size={17} />
       </button>
       <p className="help" style={{ margin: 0, textAlign: "center" }}>
         Belum punya akun? <Link href="/daftar" className="textlink">Daftar</Link>
+      </p>
+      <p className="help" style={{ margin: 0, textAlign: "center" }}>
+        Email belum terverifikasi? <Link href="/verifikasi" className="textlink">Kirim ulang verifikasi</Link>
       </p>
     </form>
   );
@@ -200,6 +212,86 @@ export function DemoRequestForm() {
       </button>
       <p className="help" style={{ margin: 0, textAlign: "center" }}>
         Demo diverifikasi admin. Anda akan menerima tautan masuk setelah disetujui.
+      </p>
+    </form>
+  );
+}
+
+
+function RequestMessage({ state }: { state: AuthState }) {
+  return (
+    <>
+      {state.error && (
+        <p className="error-text" role="alert" style={{ margin: 0 }}>
+          {state.error}
+        </p>
+      )}
+      {state.message && (
+        <p className="help" role="status" style={{ margin: 0, color: "var(--success)" }}>
+          {state.message}
+        </p>
+      )}
+    </>
+  );
+}
+
+export function ForgotPasswordForm() {
+  const [state, action, pending] = useActionState(requestPasswordResetAction, initial);
+
+  return (
+    <form action={action} style={{ display: "grid", gap: 14 }}>
+      <label className="field">
+        <span className="label">Email akun</span>
+        <input className="input" type="email" name="email" autoComplete="email" required placeholder="nama@perusahaan.id" />
+      </label>
+      <RequestMessage state={state} />
+      <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
+        {pending ? "Mengirim…" : "Kirim tautan reset"}
+      </button>
+      <p className="help" style={{ margin: 0, textAlign: "center" }}>
+        Ingat kata sandi? <Link href="/masuk" className="textlink">Masuk</Link>
+      </p>
+    </form>
+  );
+}
+
+export function ResetPasswordForm({ token }: { token: string }) {
+  const [state, action, pending] = useActionState(resetPasswordAction, initial);
+
+  return (
+    <form action={action} style={{ display: "grid", gap: 14 }}>
+      <input type="hidden" name="token" value={token} />
+      <label className="field">
+        <span className="label">Kata sandi baru</span>
+        <input className="input" type="password" name="password" autoComplete="new-password" required minLength={8} />
+      </label>
+      <label className="field">
+        <span className="label">Ulangi kata sandi baru</span>
+        <input className="input" type="password" name="confirm" autoComplete="new-password" required minLength={8} />
+      </label>
+      <RequestMessage state={state} />
+      <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
+        {pending ? "Menyimpan…" : "Simpan kata sandi"}
+      </button>
+    </form>
+  );
+}
+
+export function ResendVerificationForm() {
+  const [state, action, pending] = useActionState(resendVerificationAction, initial);
+
+  return (
+    <form action={action} style={{ display: "grid", gap: 14 }}>
+      <label className="field">
+        <span className="label">Email akun</span>
+        <input className="input" type="email" name="email" autoComplete="email" required placeholder="nama@perusahaan.id" />
+      </label>
+      <RequestMessage state={state} />
+      <button type="submit" className="btn btn-primary btn-lg" disabled={pending} style={{ width: "100%" }}>
+        {pending ? "Mengirim…" : "Kirim ulang verifikasi"}
+      </button>
+      <p className="help" style={{ margin: 0, textAlign: "center" }}>
+        Sudah terverifikasi? <Link href="/masuk" className="textlink">Masuk</Link>
       </p>
     </form>
   );

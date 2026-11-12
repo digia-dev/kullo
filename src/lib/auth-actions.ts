@@ -21,14 +21,18 @@ import {
   roles,
   tasks,
   users,
+  sessions,
 } from "@/db/schema";
 import { createSession, hashPassword, verifyPassword } from "@/lib/auth";
+import { consumeAuthToken, findAuthToken, issueAuthToken } from "@/lib/auth-tokens";
+import { appUrl, sendMail } from "@/lib/mail";
+import { renderAccessEmail } from "@/lib/email-template";
 import { SITE } from "@/content/site";
 import { DEFAULT_ROLE_PERMISSIONS, ROLE_LABELS } from "@/lib/rbac";
 import { rateLimit, resetRateLimit, retryMinutes } from "@/lib/rate-limit";
-import { newId, todayISO } from "@/lib/utils";
+import { newId, nowISO, todayISO } from "@/lib/utils";
 
-export type AuthState = { error?: string; ok?: boolean };
+export type AuthState = { error?: string; ok?: boolean; message?: string };
 
 const loginSchema = z.object({
   email: z.string().trim().email("Format email belum lengkap. Contoh: nama@domain.com."),
@@ -360,4 +364,93 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
   await createSession(userId);
   resetRateLimit(`register:${email}`);
   redirect("/app/dashboard");
+}
+
+
+const emailOnlySchema = z.object({
+  email: z.string().trim().email("Format email belum lengkap."),
+});
+
+export async function requestPasswordResetAction(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const parsed = emailOnlySchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Periksa email." };
+  const email = parsed.data.email.toLowerCase();
+  const limit = rateLimit(`reset:${email}`, 3, 15 * 60_000);
+  if (!limit.allowed) return { ok: true, message: "Jika email terdaftar, tautan reset sudah dikirim." };
+
+  const user = (await db.select().from(users).where(eq(users.email, email)))[0];
+  if (user) {
+    const raw = await issueAuthToken(user.id, "reset", 60 * 60_000);
+    const url = `${appUrl()}/reset-sandi/${raw}`;
+    await sendMail({
+      to: user.email,
+      subject: "Atur ulang kata sandi Kullo",
+      body: [
+        `Halo ${user.name},`,
+        "",
+        "Kami menerima permintaan mengatur ulang kata sandi akun Kullo Anda.",
+        "Tautan berlaku 60 menit dan hanya bisa dipakai sekali.",
+        url,
+        "",
+        "Jika Anda tidak memintanya, abaikan email ini.",
+      ].join("\n"),
+      html: renderAccessEmail({
+        title: "Atur ulang kata sandi",
+        intro: `Halo ${user.name}, tautan ini berlaku 60 menit dan hanya bisa dipakai sekali. Abaikan email ini jika Anda tidak memintanya.`,
+        company: "Kullo",
+        ctaLabel: "Atur ulang kata sandi",
+        ctaUrl: url,
+      }),
+      kind: "password-reset",
+    });
+  }
+
+  return { ok: true, message: "Jika email terdaftar, tautan reset sudah dikirim. Periksa inbox dan spam." };
+}
+
+export async function resetPasswordAction(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const token = String(formData.get("token") ?? "");
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+  if (password.length < 8) return { error: "Kata sandi minimal 8 karakter." };
+  if (password !== confirm) return { error: "Ulangi kata sandi dengan nilai yang sama." };
+
+  const row = await findAuthToken(token, "reset");
+  if (!row) return { error: "Tautan reset tidak valid atau sudah kedaluwarsa." };
+
+  await db
+    .update(users)
+    .set({ passwordHash: hashPassword(password), emailVerifiedAt: nowISO() })
+    .where(eq(users.id, row.userId));
+  await consumeAuthToken(row.id);
+  await db.delete(sessions).where(eq(sessions.userId, row.userId));
+  redirect("/masuk?reset=1");
+}
+
+export async function resendVerificationAction(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const parsed = emailOnlySchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Periksa email." };
+  const email = parsed.data.email.toLowerCase();
+  const limit = rateLimit(`verify:${email}`, 3, 15 * 60_000);
+  if (!limit.allowed) return { ok: true, message: "Jika akun belum terverifikasi, tautan sudah dikirim." };
+
+  const user = (await db.select().from(users).where(eq(users.email, email)))[0];
+  if (user && !user.emailVerifiedAt) {
+    const raw = await issueAuthToken(user.id, "verify", 24 * 60 * 60_000);
+    const url = `${appUrl()}/verifikasi/${raw}`;
+    await sendMail({
+      to: user.email,
+      subject: "Verifikasi email Kullo",
+      body: [`Halo ${user.name},`, "", "Konfirmasi alamat email Anda untuk mengaktifkan login kata sandi:", url, "", "Tautan berlaku 24 jam."].join("\n"),
+      html: renderAccessEmail({
+        title: "Verifikasi email",
+        intro: `Halo ${user.name}, konfirmasi alamat email ini untuk mengaktifkan login dengan kata sandi. Tautan berlaku 24 jam.`,
+        company: "Kullo",
+        ctaLabel: "Verifikasi email",
+        ctaUrl: url,
+      }),
+      kind: "email-verification",
+    });
+  }
+  return { ok: true, message: "Jika akun belum terverifikasi, tautan sudah dikirim. Periksa inbox dan spam." };
 }
