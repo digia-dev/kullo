@@ -43,6 +43,17 @@ export function MembersManager({
   const [inviteLink, setInviteLink] = useState("");
   const [copied, setCopied] = useState(false);
   const [edits, setEdits] = useState<Record<string, { role: string; departmentId: string }>>({});
+  const [memberQuery, setMemberQuery] = useState("");
+
+  const visibleMembers = members.filter((member) => {
+    const query = memberQuery.trim().toLowerCase();
+    if (!query) return true;
+    return (
+      member.name.toLowerCase().includes(query) ||
+      member.email.toLowerCase().includes(query) ||
+      (member.title ?? "").toLowerCase().includes(query)
+    );
+  });
 
   function editOf(member: Member) {
     return edits[member.membershipId] ?? { role: member.role, departmentId: member.departmentId ?? "" };
@@ -119,11 +130,24 @@ export function MembersManager({
 
       <section className="panel">
         <div className="panel-head"><h2 className="panel-title">Anggota organisasi</h2><span className="badge">{members.length}</span></div>
+        <div style={{ padding: "0 14px 10px" }}>
+          <input
+            className="input"
+            type="search"
+            value={memberQuery}
+            onChange={(event) => setMemberQuery(event.target.value)}
+            placeholder="Cari nama, email, atau jabatan…"
+            aria-label="Cari anggota"
+          />
+        </div>
         <div className="app-table-wrap">
           <table className="table members-table">
             <thead><tr><th>Anggota</th><th>Peran</th><th>Departemen</th><th>Status</th><th>Bergabung</th><th /></tr></thead>
             <tbody>
-              {members.map((member) => {
+              {visibleMembers.length === 0 ? (
+                <tr><td colSpan={6} className="help">Tidak ada anggota yang cocok.</td></tr>
+              ) : null}
+              {visibleMembers.map((member) => {
                 const edit = editOf(member);
                 const isSelf = member.id === currentUserId;
                 const isOwner = member.role === "owner";

@@ -135,6 +135,10 @@ export function RegisterForm({ defaultPlan = "free" }: { defaultPlan?: string })
           </div>
         </label>
       </div>
+      <label className="field" style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 12.5 }}>
+        <input type="checkbox" name="consent" required style={{ marginTop: 2 }} />
+        <span>Saya menyetujui ketentuan penggunaan dan kebijakan privasi Kullo.</span>
+      </label>
       {state.error && (
         <p className="error-text" role="alert" style={{ margin: 0 }}>
           {state.error}

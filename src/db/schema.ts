@@ -620,3 +620,17 @@ export const mailOutbox = pgTable("mail_outbox", {
   sentAt: text("sent_at"),
   createdAt: text("created_at").notNull().default(now),
 });
+
+export const platformAudit = pgTable(
+  "platform_audit",
+  {
+    id: text("id").primaryKey(),
+    actorId: text("actor_id").references(() => users.id, { onDelete: "set null" }),
+    actorEmail: text("actor_email").notNull(),
+    action: text("action").notNull(),
+    requestId: text("request_id").references(() => accessRequests.id, { onDelete: "set null" }),
+    meta: text("meta"),
+    createdAt: text("created_at").notNull().default(now),
+  },
+  (t) => [index("platform_audit_created").on(t.createdAt)],
+);

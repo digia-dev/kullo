@@ -60,7 +60,16 @@ export type Person = {
 export async function getPeople(orgId: string): Promise<Person[]> {
   const rows = await db
     .select({
-      user: users,
+      user: {
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        title: users.title,
+        phone: users.phone,
+        avatarColor: users.avatarColor,
+        avatarKey: users.avatarKey,
+        createdAt: users.createdAt,
+      },
       membershipId: memberships.id,
       role: memberships.role,
       status: memberships.status,

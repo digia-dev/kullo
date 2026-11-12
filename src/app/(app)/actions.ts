@@ -42,7 +42,7 @@ import {
   timeLogs,
   users,
 } from "@/db/schema";
-import { requireApp, type AppContext, newInviteToken } from "@/lib/auth";
+import { requireApp, type AppContext, newInviteToken, revokeOtherSessions } from "@/lib/auth";
 import { can, PermissionError } from "@/lib/rbac";
 import { hashPassword } from "@/lib/password";
 import { newId, nowISO, todayISO } from "@/lib/utils";
@@ -389,6 +389,20 @@ export async function addCommentAction(taskId: string, body: string): Promise<Ac
     if (task.assigneeId && task.assigneeId !== ctx.user.id) {
       await notify(ctx, task.assigneeId, "comment", "Komentar baru", `${ctx.user.name}: ${body.trim().slice(0, 90)}`, `/app/tasks?task=${taskId}`);
     }
+    if (body.includes("@")) {
+      const mentioned = await db
+        .select({ id: users.id, name: users.name })
+        .from(memberships)
+        .innerJoin(users, eq(users.id, memberships.userId))
+        .where(eq(memberships.orgId, ctx.org.id));
+      const notified = new Set<string>();
+      for (const person of mentioned) {
+        if (person.id === ctx.user.id || notified.has(person.id)) continue;
+        if (!body.includes(`@${person.name}`)) continue;
+        notified.add(person.id);
+        await notify(ctx, person.id, "mention", "Anda disebut di komentar", `${ctx.user.name} menyebut Anda di ${task.title}.`, `/app/tasks?task=${taskId}`);
+      }
+    }
     await log(ctx, "task", taskId, "berkomentar", body.trim().slice(0, 120));
     refresh();
     return { ok: true };
@@ -434,6 +448,20 @@ export async function addCommentWithFilesAction(formData: FormData): Promise<Act
     });
     if (task.assigneeId && task.assigneeId !== ctx.user.id) {
       await notify(ctx, task.assigneeId, "comment", "Komentar baru", `${ctx.user.name}: ${(body || "Mengirim gambar").slice(0, 90)}`, `/app/tasks?task=${taskId}`);
+    }
+    if (body.includes("@")) {
+      const mentioned = await db
+        .select({ id: users.id, name: users.name })
+        .from(memberships)
+        .innerJoin(users, eq(users.id, memberships.userId))
+        .where(eq(memberships.orgId, ctx.org.id));
+      const notified = new Set<string>();
+      for (const person of mentioned) {
+        if (person.id === ctx.user.id || notified.has(person.id)) continue;
+        if (!body.includes(`@${person.name}`)) continue;
+        notified.add(person.id);
+        await notify(ctx, person.id, "mention", "Anda disebut di komentar", `${ctx.user.name} menyebut Anda di ${task.title}.`, `/app/tasks?task=${taskId}`);
+      }
     }
     await log(ctx, "task", taskId, "berkomentar", body || `${documentIds.length} gambar`);
     refresh();
@@ -2048,6 +2076,7 @@ export async function changePasswordAction(currentPassword: string, nextPassword
     if (!verifyPassword(currentPassword, ctx.user.passwordHash)) return { ok: false, error: "Kata sandi saat ini tidak cocok." };
     if (nextPassword.length < 8) return { ok: false, error: "Kata sandi baru minimal 8 karakter." };
     await db.update(users).set({ passwordHash: hashPassword(nextPassword) }).where(eq(users.id, ctx.user.id));
+    await revokeOtherSessions(ctx.user.id);
     await log(ctx, "user", ctx.user.id, "mengubah kata sandi", null);
     refresh();
     return { ok: true };

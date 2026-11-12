@@ -15,6 +15,13 @@
       "when": 1794346230187,
       "tag": "0001_overjoyed_ultimates",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794458059517,
+      "tag": "0002_cloudy_scarecrow",
+      "breakpoints": true
     }
   ]
 }

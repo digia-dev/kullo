@@ -453,3 +453,19 @@ Two documented accessibility corrections in DESIGN.md Â§21: control border `#8
 - **Toggle mobile**: tombol atribut kini ikon panah 30×30 tanpa teks, dengan `aria-label` dinamis; tetap melipat Status/Prioritas/PIC/Tenggat.
 - **Verifikasi**: `npm run check` lulus; `npm test` **43/43**; uji UI: Tersambung 0, Dependensi 0, mention popup 1 item lalu tersisip `@Rizky Pratama`, toggle 30×30.
 - **Bukti**: `task-mention-1440.png`, `task-toggle-mobile-390.png`.
+
+### Batch 33: remediasi audit kritis (2026-11-12)
+
+- **Kebocoran data**: `getPeople` tidak lagi mengambil seluruh baris `users`; `password_hash` tidak ikut ke data layer.
+- **Email**: subjek dibersihkan dari CR/LF dan dipotong 90 karakter (cegah header injection).
+- **Sesi**: ganti kata sandi mencabut semua sesi lain milik user.
+- **Admin**: tabel `platform_audit` mencatat invoice/approve/reject; inbox menampilkan audit 20 terakhir. Alasan penolakan kini bisa diisi admin, bukan hard-coded.
+- **Mention**: komentar dengan `@Nama` mengirim notifikasi in-app ke anggota yang disebut, di kedua jalur komentar (teks dan lampiran).
+- **Anggota**: pencarian nama/email/jabatan di halaman anggota; empty state saat tidak ada hasil.
+- **Pendaftaran**: checkbox persetujuan ketentuan wajib; email yang sudah punya akun ditolak lebih awal.
+- **Bukti bayar**: hanya gambar/PDF yang diterima.
+- **Keamanan**: CSP ditambahkan (`default-src 'self'`, frame-ancestors none, Supabase img/connect).
+- **Auth pendek**: halaman auth kembali bisa scroll saat tinggi viewport ≤640px.
+- **Database**: migrasi `drizzle/0002_cloudy_scarecrow.sql` (platform_audit) diterapkan lokal + Supabase; RLS aktif.
+- **Verifikasi**: `npm run check` lulus; `npm test` **43/43** (dengan CSP aktif).
+- **Sisa backlog**: 2FA, reset password, verifikasi email, token split/expiry, rate limit persisten, pagination admin, upload langsung storage, recurring tasks, API publik, i18n, staging/CI.

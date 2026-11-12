@@ -5230,3 +5230,11 @@ a.task-attachment-name:hover { color: var(--accent); text-decoration: underline;
   background: var(--accent);
   color: var(--on-accent);
 }
+
+@media (max-height: 640px) {
+  .auth-page {
+    height: auto;
+    min-height: 100svh;
+    overflow-y: auto;
+  }
+}

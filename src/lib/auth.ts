@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, ne } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import crypto from "node:crypto";
@@ -32,6 +32,15 @@ export async function createSession(userId: string) {
     path: "/",
     expires,
   });
+}
+
+export async function revokeOtherSessions(userId: string) {
+  const jar = await cookies();
+  const token = jar.get(COOKIE)?.value;
+  if (!token) return;
+  await db
+    .delete(sessions)
+    .where(and(eq(sessions.userId, userId), ne(sessions.tokenHash, hashToken(token))));
 }
 
 export async function destroySession() {

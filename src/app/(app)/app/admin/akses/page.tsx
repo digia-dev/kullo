@@ -6,6 +6,7 @@ import {
   approveAccessAction,
   getAccessRequests,
   getMailOutbox,
+  getPlatformAudit,
   markInvoiceSentAction,
   rejectAccessAction,
 } from "@/lib/access-actions";
@@ -24,7 +25,7 @@ export default async function AdminAccessPage() {
   const ctx = await requireApp();
   if (!isPlatformAdmin(ctx.user.email)) notFound();
 
-  const [requests, outbox] = await Promise.all([getAccessRequests(), getMailOutbox()]);
+  const [requests, outbox, audit] = await Promise.all([getAccessRequests(), getMailOutbox(), getPlatformAudit()]);
 
   return (
     <>
@@ -86,7 +87,7 @@ export default async function AdminAccessPage() {
                 {request.status !== "rejected" ? (
                   <form action={rejectAccessAction}>
                     <input type="hidden" name="id" value={request.id} />
-                    <input type="hidden" name="note" value="Permintaan belum dapat disetujui. Hubungi hi.digia@gmail.com." /> 
+                    <input className="input" name="note" placeholder="Alasan penolakan (opsional)" style={{ minWidth: 220 }} />
                     <button className="btn btn-secondary btn-sm" type="submit">Tolak</button>
                   </form>
                 ) : null}
@@ -94,6 +95,16 @@ export default async function AdminAccessPage() {
             </article>
           );
         })}
+      </div>
+
+      <h2 style={{ marginTop: 24 }}>Audit admin</h2>
+      <div className="panel" style={{ padding: 12, display: "grid", gap: 6 }}>
+        {audit.length === 0 ? <p className="help" style={{ margin: 0 }}>Belum ada aksi admin.</p> : null}
+        {audit.map((row) => (
+          <p key={row.id} className="help" style={{ margin: 0 }}>
+            {new Date(row.createdAt).toLocaleString("id-ID")} · {row.actorEmail} · {row.action} · {row.requestId ?? "-"}{row.meta ? ` · ${row.meta}` : ""}
+          </p>
+        ))}
       </div>
 
       <h2 style={{ marginTop: 24 }}>Outbox email</h2>

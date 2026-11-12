@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 import { and, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db/client";
-import { accessRequests, mailOutbox } from "@/db/schema";
+import { accessRequests, mailOutbox, platformAudit } from "@/db/schema";
 import { requireApp } from "@/lib/auth";
 import { hashPassword } from "@/lib/password";
 import { provisionWorkspace } from "@/lib/provision";
@@ -21,6 +21,22 @@ const PLANS: Record<string, string> = {
   pro: "Pro — Rp399.000/bulan",
   business: "Bisnis — Rp1.199.000/bulan",
 };
+
+async function audit(ctx: { user: { id: string; email: string } }, action: string, requestId: string, meta: string | null = null) {
+  await db.insert(platformAudit).values({
+    id: newId("aud"),
+    actorId: ctx.user.id,
+    actorEmail: ctx.user.email,
+    action,
+    requestId,
+    meta,
+    createdAt: nowISO(),
+  });
+}
+
+function safeSubject(value: string) {
+  return value.replace(/[\r\n]+/g, " ").slice(0, 90);
+}
 
 function token() {
   return crypto.randomBytes(24).toString("base64url");
@@ -47,7 +63,7 @@ async function notifyAdmins(request: { id: string; kind: string; companyName: st
     `Tinjau di ${appUrl()}/app/admin/akses`,
   ].join("\n");
   for (const to of adminEmails()) {
-    await sendMail({ to, subject: `${label}: ${request.companyName}`, body, kind: "admin-notification", requestId: request.id });
+    await sendMail({ to, subject: `${label}: ${safeSubject(request.companyName)}`, body, kind: "admin-notification", requestId: request.id });
   }
 }
 
@@ -89,6 +105,7 @@ export async function requestSignupAction(_prev: RequestState, formData: FormDat
   const password = String(formData.get("password") ?? "");
   const phone = text(formData, "phone") || null;
   const plan = text(formData, "plan") || "free";
+  if (formData.get("consent") !== "on") return { error: "Setujui ketentuan dan kebijakan privasi untuk melanjutkan." };
 
   if (name.length < 2) return { error: "Nama minimal 2 karakter." };
   if (orgName.length < 2) return { error: "Nama organisasi minimal 2 karakter." };
@@ -133,6 +150,9 @@ export async function uploadPaymentProofAction(_prev: RequestState, formData: Fo
   const file = formData.get("proof");
   if (!raw) return { error: "Tautan tidak valid." };
   if (!(file instanceof File) || file.size === 0) return { error: "Pilih berkas bukti pembayaran." };
+  if (!(file.type === "application/pdf" || file.type.startsWith("image/"))) {
+    return { error: "Bukti harus berupa gambar atau PDF." };
+  }
   if (file.size > 8 * 1024 * 1024) return { error: "Ukuran berkas maksimal 8 MB." };
 
   const request = (await db.select().from(accessRequests).where(eq(accessRequests.token, raw)))[0];
@@ -167,9 +187,10 @@ export async function markInvoiceSentAction(formData: FormData) {
   const request = (await db.select().from(accessRequests).where(eq(accessRequests.id, id)))[0];
   if (!request) return;
   await db.update(accessRequests).set({ status: "invoice_sent", updatedAt: nowISO() }).where(eq(accessRequests.id, id));
+  await audit(ctx, "invoice_sent", id);
   await sendMail({
     to: request.email,
-    subject: `Invoice Kullo untuk ${request.companyName}`,
+    subject: `Invoice Kullo untuk ${safeSubject(request.companyName)}`,
     body: [
       `Halo ${request.contactName},`,
       "",
@@ -210,6 +231,7 @@ export async function approveAccessAction(formData: FormData) {
     .update(accessRequests)
     .set({ status: "approved", userId: result.userId, orgId: result.orgId, updatedAt: nowISO() })
     .where(eq(accessRequests.id, id));
+  await audit(ctx, "approved", id, request.companyName);
 
   const loginUrl = `${appUrl()}/masuk`;
   const magicUrl = `${appUrl()}/akses/klaim/${request.token}`;
@@ -217,7 +239,7 @@ export async function approveAccessAction(formData: FormData) {
   if (request.kind === "demo" && demoPassword) {
     await sendMail({
       to: request.email,
-      subject: `Demo Kullo untuk ${request.companyName} sudah aktif`,
+      subject: `Demo Kullo untuk ${safeSubject(request.companyName)} sudah aktif`,
       body: [
         `Halo ${request.contactName},`,
         "",
@@ -243,7 +265,7 @@ export async function approveAccessAction(formData: FormData) {
   } else {
     await sendMail({
       to: request.email,
-      subject: `Akses Kullo untuk ${request.companyName} sudah aktif`,
+      subject: `Akses Kullo untuk ${safeSubject(request.companyName)} sudah aktif`,
       body: [
         `Halo ${request.contactName},`,
         "",
@@ -276,9 +298,10 @@ export async function rejectAccessAction(formData: FormData) {
   const request = (await db.select().from(accessRequests).where(eq(accessRequests.id, id)))[0];
   if (!request) return;
   await db.update(accessRequests).set({ status: "rejected", note, updatedAt: nowISO() }).where(eq(accessRequests.id, id));
+  await audit(ctx, "rejected", id, note);
   await sendMail({
     to: request.email,
-    subject: `Permintaan Kullo untuk ${request.companyName}`,
+    subject: `Permintaan Kullo untuk ${safeSubject(request.companyName)}`,
     body: `Halo ${request.contactName},\n\n${note}\n\nAnda dapat menghubungi hi.digia@gmail.com untuk pertanyaan.`,
     kind: "access-rejected",
     requestId: request.id,
@@ -288,6 +311,10 @@ export async function rejectAccessAction(formData: FormData) {
 
 export async function getAccessRequests() {
   return db.select().from(accessRequests).orderBy(desc(accessRequests.createdAt));
+}
+
+export async function getPlatformAudit() {
+  return db.select().from(platformAudit).orderBy(desc(platformAudit.createdAt)).limit(20);
 }
 
 export async function getMailOutbox() {
